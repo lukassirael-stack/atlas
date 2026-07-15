@@ -20,7 +20,7 @@ button,input,select,textarea{font-family:'Jost',sans-serif}
 .brand{color:var(--cream);font:500 16px 'Cinzel',serif;letter-spacing:.06em;text-decoration:none;display:flex;align-items:center;gap:10px}
 .brand em{font-style:normal;color:var(--gold-lume)}
 .brand-mark{display:grid;place-items:center;width:32px;height:32px;border:1px solid var(--gold);border-radius:50%;font:18px 'Cinzel';color:var(--gold-lume)}
-.brand-logo{height:40px;width:auto;display:block;filter:drop-shadow(0 1px 6px rgba(5,10,7,.4))}
+.brand-logo{height:42px;width:auto;display:block}
 .brand-logo-sm{height:34px}
 .topbar nav{display:flex;gap:28px}
 .topbar nav a{color:var(--cream-soft);text-decoration:none;font-size:13px;letter-spacing:.04em;padding:27px 0 24px;border-bottom:2px solid transparent}
