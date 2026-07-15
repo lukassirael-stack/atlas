@@ -1,0 +1,68 @@
+<!-- DNA MÍSTA — připraveno pro detail místa (profil). Hodnoty se mění v points= a v <text>. -->
+<!-- CSS níže vlož do stylu profilu. Barvy dědí z proměnných --cream, --gold, --line. -->
+<style>
+.dna-section{max-width:1160px;margin:20px auto;padding:60px clamp(22px,6vw,88px);display:grid;grid-template-columns:.8fr 1.2fr;gap:60px;align-items:center;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.dna-intro h2{font:400 40px 'Cormorant Garamond',serif;margin:0;color:var(--cream)}
+.dna-intro>p:not(.eyebrow){max-width:350px;line-height:1.6;color:var(--cream-soft)}
+.dna-card{background:linear-gradient(130deg,rgba(201,161,74,.14),rgba(22,36,29,.35));border:1px solid var(--line);border-radius:22px;padding:26px;display:flex;gap:22px;align-items:center}
+.radar-figure{margin:0;flex:1 1 330px;min-width:0}
+.radar-svg{width:100%;height:auto;display:block;max-width:360px;margin:0 auto}
+.radar-ring{fill:none;stroke:rgba(201,161,74,.2);stroke-width:.8}
+.radar-ring.outer{stroke:rgba(201,161,74,.45)}
+.radar-axis{stroke:rgba(201,161,74,.22);stroke-width:.8}
+.radar-shadow{fill:rgba(4,10,7,.6)}
+.radar-area{fill:url(#dnaFill);stroke:#ffe9b0;stroke-width:1.6;stroke-linejoin:round;transform-box:view-box;transform-origin:150px 115px;animation:dnaBreathe 7s ease-in-out infinite}
+.radar-vertex{fill:#fff8e4;stroke:#c9a14a;stroke-width:1}
+.radar-heart{fill:#ffe9b0}
+.radar-name{fill:rgba(251,247,239,.75);font:400 10px 'Jost',sans-serif;letter-spacing:.08em;text-transform:uppercase}
+.radar-value{fill:#ffe9b0;font:600 13px 'Jost',sans-serif}
+@keyframes dnaBreathe{0%,100%{transform:scale(.985);opacity:.94}50%{transform:scale(1.015);opacity:1}}
+@media(prefers-reduced-motion:reduce){.radar-area{animation:none}}
+.dna-legend{display:grid;gap:12px;font-size:12px;color:var(--cream-soft)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+.calm{background:var(--gold)}.energy{background:#74aa81}.mystic{background:#b57da1}.beauty{background:#d98a68}.heal{background:#6e9db4}
+</style>
+
+<section class="dna-section" aria-label="DNA místa"><div class="dna-intro"><p class="eyebrow">Jedinečný otisk každého místa</p><h2>DNA místa</h2><p>Charakter místa vzniká ze zkušeností komunity – na jediný pohled poznáš, co ti může přinést.</p><button class="text-button" id="dna-info">Jak se počítá?</button></div><div class="dna-card">
+        <figure class="radar-figure">
+          <svg class="radar-svg" viewBox="0 0 300 250" role="img" aria-label="DNA místa: Klid 96 %, Energie 84 %, Mystika 91 %, Krása 99 %, Léčivost 78 %">
+            <defs>
+              <radialGradient id="dnaFill" cx="50%" cy="46%" r="60%">
+                <stop offset="0%" stop-color="#ffe9b0" stop-opacity=".9"/>
+                <stop offset="58%" stop-color="#c9a14a" stop-opacity=".5"/>
+                <stop offset="100%" stop-color="#7d5f22" stop-opacity=".28"/>
+              </radialGradient>
+              <filter id="dnaSoft" x="-45%" y="-45%" width="190%" height="190%"><feGaussianBlur stdDeviation="7"/></filter>
+              <filter id="dnaGlow" x="-45%" y="-45%" width="190%" height="190%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            </defs>
+            <g class="radar-grid">
+              <polygon class="radar-ring" points="150,96 168.07,109.13 161.17,130.37 138.83,130.37 131.93,109.13"/>
+              <polygon class="radar-ring" points="150,77 186.14,103.26 172.34,145.74 127.66,145.74 113.86,103.26"/>
+              <polygon class="radar-ring" points="150,58 204.21,97.39 183.51,161.11 116.49,161.11 95.79,97.39"/>
+              <polygon class="radar-ring outer" points="150,39 222.28,91.52 194.67,176.48 105.33,176.48 77.72,91.52"/>
+              <line class="radar-axis" x1="150" y1="115" x2="150" y2="39"/>
+              <line class="radar-axis" x1="150" y1="115" x2="222.28" y2="91.52"/>
+              <line class="radar-axis" x1="150" y1="115" x2="194.67" y2="176.48"/>
+              <line class="radar-axis" x1="150" y1="115" x2="105.33" y2="176.48"/>
+              <line class="radar-axis" x1="150" y1="115" x2="77.72" y2="91.52"/>
+            </g>
+            <polygon class="radar-shadow" points="150,46.04 214.72,99.27 194.65,174.95 109.77,179.87 97.62,100.68" filter="url(#dnaSoft)"/>
+            <polygon class="radar-area" points="150,42.04 210.72,95.27 190.65,170.95 105.77,175.87 93.62,96.68"/>
+            <g filter="url(#dnaGlow)">
+              <circle class="radar-vertex" cx="150" cy="42.04" r="3"/>
+              <circle class="radar-vertex" cx="210.72" cy="95.27" r="3"/>
+              <circle class="radar-vertex" cx="190.65" cy="170.95" r="3"/>
+              <circle class="radar-vertex" cx="105.77" cy="175.87" r="3"/>
+              <circle class="radar-vertex" cx="93.62" cy="96.68" r="3"/>
+            </g>
+            <circle class="radar-heart" cx="150" cy="115" r="2.6"/>
+            <g>
+              <text class="radar-name" x="150" y="15" text-anchor="middle">Klid</text><text class="radar-value" x="150" y="29" text-anchor="middle">96 %</text>
+              <text class="radar-name" x="240" y="82" text-anchor="start">Energie</text><text class="radar-value" x="240" y="96" text-anchor="start">84 %</text>
+              <text class="radar-name" x="206" y="192" text-anchor="start">Mystika</text><text class="radar-value" x="206" y="206" text-anchor="start">91 %</text>
+              <text class="radar-name" x="94" y="192" text-anchor="end">Krása</text><text class="radar-value" x="94" y="206" text-anchor="end">99 %</text>
+              <text class="radar-name" x="60" y="82" text-anchor="end">Léčivost</text><text class="radar-value" x="60" y="96" text-anchor="end">78 %</text>
+            </g>
+          </svg>
+        </figure>
+        <div class="dna-legend"><span><i class="dot calm"></i>Klid a regenerace</span><span><i class="dot energy"></i>Síla a energie</span><span><i class="dot mystic"></i>Mystika a meditace</span><span><i class="dot beauty"></i>Krása místa</span><span><i class="dot heal"></i>Léčivost místa</span></div></div></section>

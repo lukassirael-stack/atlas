@@ -3,31 +3,43 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#1f3129" />
+    <meta name="theme-color" content="#16241d" />
     <title>Atlas energetických míst</title>
+    <link rel="icon" type="image/png" sizes="64x64" href="img/favicon-64.png" />
+    <link rel="apple-touch-icon" href="img/apple-touch-icon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,600&family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
     <link rel="stylesheet" href="atlas.css" />
     <link rel="stylesheet" href="filters.css" />
   </head>
   <body>
-    <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
     <header class="topbar">
       <a class="brand" href="#home" aria-label="Atlas energetických míst">
-        <span class="brand-mark">⌁</span><span>Atlas <em>energetických</em> míst</span>
+        <img class="brand-logo" src="img/logo.png" alt="" /><span>Atlas <em>energetických</em> míst</span>
       </a>
       <nav aria-label="Hlavní navigace">
-        <a class="active" href="#mapa">Mapa</a><a href="#objevit">Objevuj</a><a href="#pridat">Přidat místo</a><a href="#komunita">Komunita</a>
+        <a class="active" href="#mapa">Mapa</a><a href="#objevit">Objevuj</a><a href="#komunita">Komunita</a>
       </nav>
-      <div class="header-actions"><button class="icon-button" aria-label="Hledat">⌕</button><button class="profile" aria-label="Profil">E</button><button class="menu-button" aria-label="Menu">☰</button></div>
+      <div class="header-actions"><button class="icon-button" aria-label="Hledat">⌕</button><a class="add-cta" href="#pridat">⊕<span>Přidat místo</span></a><button class="profile" aria-label="Profil">E</button><button class="menu-button" aria-label="Menu">☰</button></div>
     </header>
 
     <main id="home">
+      <section class="hero">
+        <div class="hero-bg"></div><div class="hero-veil"></div>
+        <p class="eyebrow">Atlas energetických míst</p>
+        <div class="hero-copy">
+          <h1>Jsou místa,<br /><i>která promlouvají.</i></h1>
+          <p class="lead">Prameny, stavby, portály a tiché brány. Prozkoumej tajemná místa naší země.</p>
+          <div class="hero-actions"><a class="button primary" href="#mapa">Otevřít mapu</a><button class="button quiet" id="surprise">✦ Překvapit mě</button><a class="button quiet" href="#pridat">⊕ Přidat místo</a></div>
+          <p class="hero-hint">✦ ✦ ✦</p>
+        </div>
+      </section>
+
       <section class="filter-dock" aria-label="Hlavní filtr míst">
-        <button class="journey-filter" id="journey-filter" aria-expanded="false" aria-controls="category-panel"><span class="journey-icon">✦</span><span><small>Vyberte si cestu</small><strong>Co chcete na místě prožít?</strong></span><b>⌄</b></button>
-        <div class="category-panel" id="category-panel" hidden><div class="category-panel-head"><div><p class="eyebrow">Typ zážitku</p><h2>Vyberte jeden nebo více štítků</h2></div><button class="panel-close" id="panel-close" aria-label="Zavřít výběr">×</button></div><div class="category-list" id="category-list">
+        <button class="journey-filter" id="journey-filter" aria-expanded="false" aria-controls="category-panel"><span class="journey-icon">✦</span><span><small>Naladění</small><strong>Jaké místo tě přitahuje?</strong></span><b>⌄</b></button>
+        <div class="category-panel" id="category-panel" hidden><div class="category-panel-head"><div><p class="eyebrow">Typ zážitku</p><h2>Vyber jeden nebo víc štítků</h2></div><button class="panel-close" id="panel-close" aria-label="Zavřít výběr">×</button></div><div class="category-list" id="category-list">
           <button data-category="🌿 Klid a regenerace"><span>🌿</span><strong>Klid a regenerace</strong><small>Místa hlubokého odpočinku, ztišení a obnovy.</small></button>
           <button data-category="⚡ Síla a energie"><span>⚡</span><strong>Síla a energie</strong><small>Místa vitality, motivace a životní energie.</small></button>
           <button data-category="❤️ Místo srdce"><span>❤️</span><strong>Místo srdce</strong><small>Výjimečně krásná místa pro radost, vděčnost a dojetí.</small></button>
@@ -46,18 +58,11 @@
           <button data-category="🌀 Anomálie a záhady"><span>🌀</span><strong>Anomálie a záhady</strong><small>Lokality s nevysvětlenými jevy a neobvyklými fenomény.</small></button>
         </div><div class="category-actions"><button class="text-button" id="clear-categories">Vymazat výběr</button><button class="button primary" id="apply-categories">Zobrazit místa <span>→</span></button></div></div>
       </section>
-      <section class="hero" id="mapa">
-        <div class="hero-copy">
-          <p class="eyebrow">Mapa míst, která mají duši</p>
-          <h1>Najděte místo,<br /><i>které vás volá.</i></h1>
-          <p class="lead">Objevujte přírodní zákoutí, posvátná místa a tiché krajiny, kde se můžete znovu nadechnout.</p>
-          <div class="hero-actions"><a class="button primary" href="#objevit">Začít objevovat <span>→</span></a><button class="button quiet" id="surprise">✦ Překvapit mě</button></div>
-          <div class="mini-stats"><div><strong>12 458</strong><span>ověřených míst</span></div><div><strong>78</strong><span>zemí</span></div><div><strong>56 231</strong><span>cestovatelů</span></div></div>
-        </div>
 
+      <section class="map-section" id="mapa">
         <div class="map-shell" aria-label="Interaktivní mapa energetických míst">
           <div class="map-texture"></div><div class="map-grid"></div>
-          <div class="map-top"><span class="live-dot"></span> 12 458 ověřených míst po světě <button id="locate">◎ Najít mě</button></div>
+          <div class="map-top"><span class="live-dot"></span> Živá mapa posvátné krajiny <button id="locate">◎ Najít mě</button></div>
           <button class="map-pin pin-one" data-place="Praděd" style="--c:#c9973c">⌂</button>
           <button class="map-pin pin-two" data-place="Tisícový kámen" style="--c:#e8d5a8">⌁</button>
           <button class="map-pin pin-three" data-place="Kaple sv. Huberta" style="--c:#b06c45">♜</button>
@@ -67,29 +72,55 @@
           <div class="map-zoom"><button id="zoom-in">+</button><button id="zoom-out">−</button></div>
           <article class="place-card" id="place-card">
             <div class="place-image"><span>♡</span></div>
-            <div class="place-content"><p class="eyebrow">Moravskoslezský kraj · 49.7123 N, 18.4576 E</p><h2 id="place-name">Tisícový kámen</h2><div class="tags"><span>🪨 Megalit</span><span>🌿 Klid</span><span>✨ Portál</span></div><p id="place-description">Balvanové útvary ukryté v lese. Místní říkají, že tu člověk znovu najde vlastní směr.</p><div class="rating">★★★★★ <b>4,8</b> <small>(128 návštěv)</small></div><button class="detail-button">Zobrazit detail <span>→</span></button></div>
+            <div class="place-content"><p class="eyebrow">Moravskoslezský kraj · 49.7123 N, 18.4576 E</p><h2 id="place-name">Tisícový kámen</h2><div class="tags"><span>🪨 Megalit</span><span>🌿 Klid</span><span>✨ Portál</span></div><p id="place-description">Balvanové útvary ukryté v lese. Místní říkají, že tu člověk znovu najde vlastní směr.</p><div class="dna-line" id="place-dna"><b>Krása 99 %</b><span>nejsilnější rys</span><small>128 zápisů</small></div><button class="detail-button">Zobrazit detail <span>→</span></button></div>
           </article>
         </div>
       </section>
 
       <section class="discover" id="objevit">
-        <div class="section-heading"><div><p class="eyebrow">Objevujte po svém</p><h2>Kam vás to táhne?</h2></div><button class="text-button" id="filter-toggle">☷ Energetické filtry</button></div>
+        <div class="section-heading"><div><p class="eyebrow">Objevuj po svém</p><h2>Kam tě to vede?</h2></div><button class="text-button" id="filter-toggle">☷ Energetické filtry</button></div>
         <div class="filter-row" id="filters"><button class="selected">Doporučená místa</button><button>Nejblíž mně</button><button>Nově přidaná</button><button>Nejlépe hodnocená</button></div>
         <div class="place-grid">
-          <article class="place-tile tile-one"><div class="tile-image"></div><div class="tile-info"><span>Příroda · Jeseníky</span><h3>Praděd</h3><p>★★★★★ <b>4,9</b> · 89 km</p></div></article>
-          <article class="place-tile tile-two"><div class="tile-image"></div><div class="tile-info"><span>Historie · Křivoklátsko</span><h3>Kaple sv. Huberta</h3><p>★★★★★ <b>4,7</b> · 112 km</p></div></article>
-          <article class="place-tile tile-three"><div class="tile-image"></div><div class="tile-info"><span>Voda · Vysočina</span><h3>Studánka U tří bříz</h3><p>★★★★★ <b>4,8</b> · 76 km</p></div></article>
+          <article class="place-tile tile-one"><div class="tile-image"></div><div class="tile-info"><span>Příroda · Jeseníky</span><h3>Praděd</h3><p><b>Energie 92 %</b> · 89 km</p></div></article>
+          <article class="place-tile tile-two"><div class="tile-image"></div><div class="tile-info"><span>Historie · Křivoklátsko</span><h3>Kaple sv. Huberta</h3><p><b>Klid 94 %</b> · 112 km</p></div></article>
+          <article class="place-tile tile-three"><div class="tile-image"></div><div class="tile-info"><span>Voda · Vysočina</span><h3>Studánka U tří bříz</h3><p><b>Léčivost 91 %</b> · 76 km</p></div></article>
         </div>
+        <div class="add-invite"><div><p class="eyebrow">Živý atlas</p><h3>Chybí ti tu tvoje místo?</h3></div><a class="button primary" href="#pridat">⊕ Přidej ho do atlasu</a></div>
       </section>
 
-      <section class="dna-section" aria-label="DNA místa"><div class="dna-intro"><p class="eyebrow">Jedinečný otisk každého místa</p><h2>DNA místa</h2><p>Charakter lokality vzniká ze zkušeností komunity – na jediný pohled poznáte, co vám může přinést.</p><button class="text-button" id="dna-info">Jak se počítá?</button></div><div class="dna-card"><div class="radar"><span class="radar-label l1">Klid<br><b>96 %</b></span><span class="radar-label l2">Energie<br><b>84 %</b></span><span class="radar-label l3">Mystika<br><b>91 %</b></span><span class="radar-label l4">Krása<br><b>99 %</b></span><span class="radar-label l5">Léčivost<br><b>78 %</b></span><span class="radar-core">⌁</span></div><div class="dna-legend"><span><i class="dot calm"></i>Klid a regenerace</span><span><i class="dot energy"></i>Síla a energie</span><span><i class="dot mystic"></i>Mystika a meditace</span><span><i class="dot beauty"></i>Krása místa</span></div></div></section>
+
+      <section class="manifest" aria-label="Každé místo má svůj příběh"><div class="manifest-bg"></div><div class="manifest-veil"></div><div><p class="eyebrow">Každé místo má svůj příběh</p><h2>Objev jeho hloubku a poselství.</h2><p class="star">✦</p></div></section>
+
       <section class="features" id="pridat">
-        <div class="section-heading"><div><p class="eyebrow">Váš osobní atlas</p><h2>Živá mapa tvořená lidmi</h2></div><button class="button primary" id="add-place">⊕ Přidat místo</button></div>
-        <div class="feature-grid"><article><span>⊕</span><h3>Staňte se tvůrcem</h3><p>Přidejte místo s fotkami, GPS souřadnicemi a příběhem. Správce jej před zveřejněním ověří.</p></article><article><span>✦</span><h3>Sbírejte inspiraci</h3><p>Ukládejte si místa, sledujte jejich příběh a vytvářejte vlastní sbírky či trasy.</p></article><article><span>◌</span><h3>Sdílejte prožitek</h3><p>Pište zkušenosti, přidejte fotografie a pomozte vytvářet DNA každého místa.</p></article><article><span>♧</span><h3>Buďte spolu</h3><p>Objevujte s komunitou poutníků, hledačů klidu, historie i přírodních krás.</p></article></div>
+        <div class="section-heading"><div><p class="eyebrow">Tvůj osobní atlas</p><h2>Živá mapa, kterou tvoří lidé</h2></div><button class="button primary" id="add-place">⊕ Přidat místo</button></div>
+        <div class="feature-grid"><article><span>⊕</span><h3>Staň se tvůrcem</h3><p>Přidej místo s fotkami, GPS souřadnicemi a příběhem. Správce ho před zveřejněním ověří.</p></article><article><span>✦</span><h3>Sbírej inspiraci</h3><p>Ukládej si místa, sleduj jejich příběh a skládej vlastní sbírky i trasy.</p></article><article><span>◌</span><h3>Sdílej prožitek</h3><p>Napiš svou zkušenost, přidej fotky a pomoz utvářet DNA každého místa.</p></article><article><span>♧</span><h3>Buď součástí</h3><p>Objevuj s komunitou poutníků, hledačů klidu, historie i přírodních krás.</p></article></div>
       </section>
     </main>
-    <footer id="komunita"><span class="brand-mark">⌁</span><strong>Atlas energetických míst</strong><p>Objevuj. Prožívej. Sdílej.</p></footer>
-    <div class="modal-backdrop" id="place-modal" aria-hidden="true"><section class="add-modal" role="dialog" aria-modal="true" aria-labelledby="add-title"><button class="modal-close" id="modal-close" aria-label="Zavřít">×</button><p class="eyebrow">Komunitní atlas</p><h2 id="add-title">Přidejte energetické místo</h2><p>Každý návrh před zveřejněním zkontroluje správce.</p><form id="place-form"><label>Název místa<input required placeholder="Např. Studánka pod Javorem" /></label><div class="form-two"><label>GPS šířka<input required placeholder="49.12345" inputmode="decimal" /></label><label>GPS délka<input required placeholder="16.12345" inputmode="decimal" /></label></div><label>Typ a energie místa<select required><option value="">Vyberte hlavní štítek</option><option>🌿 Místo klidu</option><option>⚡ Místo síly a energie</option><option>💧 Léčivý pramen</option><option>🌳 Posvátný strom</option><option>🪨 Megalit / skála</option><option>🧘 Meditační místo</option><option>✨ Portál</option></select></label><label>Váš příběh místa<textarea required placeholder="Co zde lidé mohou prožít? Jak se sem dostat? Jsou tu legendy nebo doporučení pro návštěvu?"></textarea></label><button class="button primary" type="submit">Odeslat ke schválení →</button></form></section></div><div class="toast" id="toast" role="status"></div>
+
+    <footer id="komunita"><img class="brand-logo brand-logo-sm" src="img/logo.png" alt="" /><strong>Atlas energetických míst</strong><p>Objevuj. Prožívej. Sdílej.</p></footer>
+
+    <div class="modal-backdrop" id="place-modal" aria-hidden="true"><section class="add-modal" role="dialog" aria-modal="true" aria-labelledby="add-title"><button class="modal-close" id="modal-close" aria-label="Zavřít">×</button><p class="eyebrow">Komunitní atlas</p><h2 id="add-title">Přidej energetické místo</h2><p>Místo zaneseš jen tehdy, když u něj stojíš — každý bod v atlasu tak někdo skutečně navštívil. Návrh před zveřejněním zkontroluje správce.</p><form id="place-form">
+        <p class="form-step">1 · Důkaz, že tu stojíš</p>
+        <div class="geo-capture" id="geo-capture"><button type="button" class="geo-button" id="geo-get">◎ Načíst mou polohu</button><p class="geo-status" id="geo-status" role="status">Poloha zatím nenačtena. Musíš stát přímo na místě.</p></div>
+        <label class="photo-drop" for="place-photo" id="photo-drop"><span class="photo-icon">⌾</span><span class="photo-text">Vyfoť místo</span><small>Fotka vzniká tady a teď</small></label>
+        <input type="file" id="place-photo" accept="image/*" capture="environment" hidden />
+        <img class="photo-preview" id="photo-preview" alt="Náhled fotky místa" hidden />
+
+        <p class="form-step">2 · Co to je</p>
+        <label>Název místa<input type="text" required placeholder="Např. Studánka pod Javorem" /></label>
+        <div class="tag-field"><p class="tag-label">Štítky místa <small>vyber až tři</small></p><div class="tag-picker" id="tag-picker"><button type="button" data-tag="🌿 Klid a regenerace">🌿 Klid a regenerace</button><button type="button" data-tag="⚡ Síla a energie">⚡ Síla a energie</button><button type="button" data-tag="❤️ Místo srdce">❤️ Místo srdce</button><button type="button" data-tag="🔥 Léčivá místa">🔥 Léčivá místa</button><button type="button" data-tag="💧 Léčivé prameny">💧 Léčivé prameny</button><button type="button" data-tag="🌳 Posvátné stromy">🌳 Posvátné stromy</button><button type="button" data-tag="🪨 Megality a posvátné skály">🪨 Megality a posvátné skály</button><button type="button" data-tag="🧘 Meditační místa">🧘 Meditační místa</button><button type="button" data-tag="✨ Portály">✨ Portály</button><button type="button" data-tag="🔮 Magická a rituální místa">🔮 Magická a rituální místa</button><button type="button" data-tag="🏛 Historická a posvátná místa">🏛 Historická a posvátná místa</button><button type="button" data-tag="🌙 Pohanská a keltská místa">🌙 Pohanská a keltská místa</button><button type="button" data-tag="👁 Kontaktní místa">👁 Kontaktní místa</button><button type="button" data-tag="🌑 Stínová místa">🌑 Stínová místa</button><button type="button" data-tag="🌅 Výhledy a krajinné scenérie">🌅 Výhledy a krajinné scenérie</button><button type="button" data-tag="🌀 Anomálie a záhady">🌀 Anomálie a záhady</button></div></div>
+        <label>Popis místa<small>Co to je, co tu uvidíš, kousek historie.</small><textarea required placeholder="Kamenná studánka pod třemi břízami, obezděná v 19. století…"></textarea></label>
+
+        <p class="form-step">3 · Příběh <span>nepovinné — můžeš dopsat později</span></p>
+        <label>Jak se sem dostat<small>Odkud vyrazit, kde nechat auto, jak dlouho se jde.</small><textarea placeholder="Od kapličky po modré značce asi 20 minut, poslední úsek bez cesty…"></textarea></label>
+        <label>Hloubka místa<small>Co se tu dá vnímat, jaká je atmosféra, jaké legendy se váží.</small><textarea placeholder="Zvláštní ticho — i vítr jako by se tu zastavil. Místní říkají…"></textarea></label>
+        <label>Práce s místem<small>Meditace, rituál, tichý sed — jak k místu přistoupit.</small><textarea placeholder="Posaď se zády ke třem břízám, tři nádechy do klidu…"></textarea></label>
+        <label>Nejlepší čas<small>Denní doba, roční období, počasí.</small><input type="text" placeholder="Např. za rozbřesku, nejlépe na podzim" /></label>
+
+        <button class="button primary" type="submit">Odeslat ke schválení →</button>
+      </form></section></div>
+
+    <div class="toast" id="toast" role="status"></div>
     <script src="app.js"></script>
   </body>
 </html>
