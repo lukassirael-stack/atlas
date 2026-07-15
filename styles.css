@@ -1,3 +1,6 @@
+/* ATLAS ENERGETICKÝCH MÍST — jeden styl pro celý web */
+
+/* ---------- základ, hlavička, hero, mapa, sekce, patička ---------- */
 :root{
   --paper:#fbf7ef;--paper-lift:#fffdf8;--paper-deep:#f4ecdc;
   --ink:#2b3d33;--ink-soft:#6a7a6f;--forest:#1f3129;
@@ -170,3 +173,70 @@ footer p{margin-left:auto;color:var(--cream-soft);font-family:'Cormorant Garamon
   footer p{width:100%;margin:6px 0 0}
   .quiet{padding-left:14px;padding-right:14px}
 }
+
+/* ---------- modál a formulář přidání místa ---------- */
+.modal-backdrop{visibility:hidden;opacity:0;position:fixed;z-index:50;inset:0;background:rgba(5,12,8,.7);backdrop-filter:blur(4px);display:grid;place-items:center;padding:18px;transition:.2s}
+.modal-backdrop.open{visibility:visible;opacity:1}
+.add-modal{width:min(580px,100%);max-height:92vh;overflow:auto;position:relative;background:var(--paper-lift);color:var(--forest);border-radius:20px;padding:32px;box-shadow:0 22px 80px rgba(0,0,0,.55)}
+.add-modal h2{font:400 30px 'Cormorant Garamond',serif;margin:0 0 6px;color:var(--forest)}
+.add-modal>p:not(.eyebrow){font-size:13px;color:var(--ink-soft);margin:0 0 20px}
+.modal-close{position:absolute;right:16px;top:12px;border:0;background:none;font-size:29px;cursor:pointer;color:var(--ink-soft)}
+form{display:grid;gap:13px}
+label{display:grid;gap:5px;font-size:12px;font-weight:500;color:var(--ink)}
+input,textarea,select{width:100%;font:14px 'Jost';border:1px solid #d5c8ab;border-radius:8px;background:#fffdf8;color:var(--forest);padding:10px}
+input:focus,textarea:focus,select:focus{outline:0;border-color:var(--gold-deep);box-shadow:0 0 0 3px rgba(201,161,74,.15)}
+textarea{height:90px;resize:vertical}
+.form-two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.geo-capture{border:1px dashed #cfc0a0;border-radius:12px;background:#fffaf0;padding:16px;display:grid;gap:10px;justify-items:center;text-align:center;transition:.2s}
+.geo-capture.ready{border-style:solid;border-color:var(--gold-deep);background:#f7f0de}
+.geo-button{border:1px solid var(--gold-deep);background:var(--forest);color:var(--gold-lume);border-radius:99px;padding:11px 20px;font:500 13px 'Jost';cursor:pointer;transition:.2s}
+.geo-button:hover:not(:disabled){background:#2b4536;transform:translateY(-1px)}
+.geo-button:disabled{opacity:.55;cursor:default}
+.geo-status{margin:0;font-size:12px;line-height:1.55;color:var(--ink-soft)}
+.geo-status.ok{color:var(--forest)}
+.geo-status.ok b{font-size:14px;letter-spacing:.02em}
+.geo-status.err{color:#a2452f}
+.form-step{margin:14px 0 -2px;font:500 11px 'Cinzel',serif;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-deep);border-top:1px solid #e6dcc4;padding-top:14px}
+.form-step:first-of-type{margin-top:0;border-top:0;padding-top:0}
+.form-step span{font-family:'Jost',sans-serif;font-weight:400;letter-spacing:.02em;text-transform:none;color:var(--ink-soft);margin-left:6px}
+label small{font-weight:400;font-size:11px;color:var(--ink-soft);line-height:1.4}
+textarea{height:78px}
+.photo-drop{display:grid!important;justify-items:center;gap:3px;border:1px dashed #cfc0a0;border-radius:12px;background:#fffaf0;padding:16px;cursor:pointer;text-align:center;transition:.2s}
+.photo-drop:hover{border-color:var(--gold-deep);background:#f7f0de}
+.photo-icon{font-size:23px;color:var(--gold-deep);line-height:1}
+.photo-text{font-size:13px;font-weight:500;color:var(--forest)}
+.photo-drop small{font-size:11px;color:var(--ink-soft);font-weight:400}
+.photo-preview{width:100%;height:160px;object-fit:cover;border-radius:12px;border:1px solid var(--gold-deep)}
+.tag-field{display:grid;gap:7px}
+.tag-label{margin:0;font-size:12px;font-weight:500;color:var(--ink)}
+.tag-label small{font-weight:400;color:var(--ink-soft);margin-left:6px}
+.tag-picker{display:flex;flex-wrap:wrap;gap:6px;max-height:128px;overflow:auto;padding:7px;border:1px solid #d5c8ab;border-radius:10px;background:#fffdf8}
+.tag-picker button{border:1px solid #dccfb2;background:#fff;color:var(--forest);border-radius:99px;padding:6px 11px;font:400 11px 'Jost';cursor:pointer;transition:.15s;white-space:nowrap}
+.tag-picker button:hover{border-color:var(--gold-deep)}
+.tag-picker button.on{background:var(--gold);border-color:var(--gold-deep);font-weight:500}
+.toast{z-index:60}
+@media(max-width:560px){.add-modal{padding:24px 18px}.form-two{grid-template-columns:1fr}}
+
+/* ---------- filtr cest a panel kategorií ---------- */
+.filter-dock{position:relative;z-index:15;max-width:1264px;margin:-34px auto 0;padding:0 clamp(22px,6vw,88px);display:flex;flex-direction:column;align-items:center}
+.journey-filter{width:min(680px,100%);margin:0 auto;display:flex;align-items:center;gap:14px;text-align:left;color:var(--forest);background:var(--paper-lift);border:1px solid var(--gold);border-radius:18px;padding:14px 18px;box-shadow:0 14px 34px rgba(31,49,41,.12);cursor:pointer;transition:.2s}
+.journey-filter:hover{box-shadow:0 18px 40px rgba(31,49,41,.16);transform:translateY(-1px)}
+.journey-filter .journey-icon{display:grid;place-items:center;width:44px;height:44px;border-radius:13px;background:var(--forest);color:var(--gold-lume);font-size:23px}
+.journey-filter small{display:block;color:var(--gold-deep);font-size:10px;text-transform:uppercase;letter-spacing:.16em;font-weight:500;font-family:'Cinzel',serif;margin-bottom:3px}
+.journey-filter strong{font:500 20px 'Cormorant Garamond',serif;color:var(--forest)}
+.journey-filter>b{font-size:22px;margin-left:auto;color:var(--gold-deep)}
+.category-panel{margin-top:12px;width:min(680px,100%);background:var(--paper-lift);color:var(--forest);border-radius:20px;padding:26px;box-shadow:0 20px 50px rgba(31,49,41,.14);border:1px solid var(--line)}
+.category-panel[hidden]{display:none}
+.category-panel-head{display:flex;justify-content:space-between;align-items:start}
+.category-panel h2{margin:0;font:400 28px 'Cormorant Garamond',serif;color:var(--forest)}
+.panel-close{border:0;background:transparent;color:var(--ink-soft);font-size:29px;cursor:pointer}
+.category-list{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:19px 0}
+.category-list button{min-height:86px;text-align:left;position:relative;display:grid;grid-template-columns:34px 1fr;column-gap:8px;align-content:center;border:1px solid var(--line);background:#fffdf8;color:var(--forest);border-radius:12px;padding:11px;cursor:pointer;transition:.15s}
+.category-list button:hover,.category-list button.chosen{border-color:var(--gold-deep);background:#f6ecd2;box-shadow:inset 0 0 0 1px var(--gold-deep)}
+.category-list button.chosen:after{content:'✓';position:absolute;right:10px;top:8px;color:var(--gold-deep);font-weight:700}
+.category-list span{grid-row:span 2;font-size:23px;align-self:center}
+.category-list strong{font-size:13px;font-weight:500}
+.category-list small{font-size:10px;line-height:1.35;color:var(--ink-soft);margin-top:3px}
+.category-actions{border-top:1px solid var(--line);padding-top:16px;display:flex;justify-content:space-between;align-items:center}
+.category-actions .text-button{color:var(--ink-soft)}
+@media(max-width:700px){.filter-dock{margin:-26px auto 0;padding:0 18px}.journey-filter{border-radius:14px}.journey-filter strong{font-size:18px}.category-panel{padding:18px}.category-panel h2{font-size:24px}.category-list{grid-template-columns:1fr;max-height:450px;overflow:auto}.category-list button{min-height:72px}.category-actions{gap:10px}.category-actions .button{padding:11px 14px}}
