@@ -1,6 +1,3 @@
-const toast = document.querySelector('#toast');
-function notify(message){if(!toast)return;toast.textContent=message;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2800)}
-
 /* ---- modály ---- */
 function openModal(id){const m=document.querySelector(id);if(!m)return;m.classList.add('open');m.setAttribute('aria-hidden','false');m.querySelector('textarea,input,button')?.focus()}
 function closeModal(m){if(!m)return;m.classList.remove('open');m.setAttribute('aria-hidden','true')}

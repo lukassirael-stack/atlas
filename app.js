@@ -6,8 +6,6 @@ const places = {
   'Pustevny': {region:'Beskydy · 49.4906 N, 18.2494 E', popis:'Horské sedlo s dřevěnými stavbami, mlhou a nezaměnitelnou atmosférou.', rys:'Mystika 88 %', zapisy:156, stitky:['🌙 Pohanské','🌅 Výhled','🔮 Magie']},
   'Hora Radhošť': {region:'Beskydy · 49.4589 N, 18.2464 E', popis:'Hora legend, větru a dalekých obzorů.', rys:'Síla 95 %', zapisy:198, stitky:['⚡ Energie','🌙 Keltské','🌅 Výhled']}
 };
-const toast = document.querySelector('#toast');
-function notify(message){toast.textContent=message;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2600)}
 document.querySelectorAll('.map-pin').forEach(pin=>pin.addEventListener('click',()=>{
   const name=pin.dataset.place, place=places[name];
   document.querySelector('#place-name').textContent=name;
@@ -33,6 +31,7 @@ function openModal(){modal.classList.add('open');modal.setAttribute('aria-hidden
 function closeModal(){modal.classList.remove('open');modal.setAttribute('aria-hidden','true')}
 document.querySelector('#add-place')?.addEventListener('click',openModal);
 document.querySelectorAll('a[href="#pridat"]').forEach(link=>link.addEventListener('click',event=>{event.preventDefault();openModal()}));
+if(location.hash==='#pridat')openModal();
 document.querySelector('#modal-close')?.addEventListener('click',closeModal);
 modal?.addEventListener('click',event=>{if(event.target===modal)closeModal()});
 document.addEventListener('keydown',event=>{if(event.key==='Escape')closeModal()});

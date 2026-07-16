@@ -312,3 +312,44 @@ textarea{height:78px}
   .log-head time{margin-left:0;width:100%}
   .slider-row{grid-template-columns:66px 1fr 30px;gap:8px}
 }
+
+/* ---------- mobilní menu + přihlášení ---------- */
+.profile{width:auto;height:auto;border-radius:99px;padding:8px 15px;font:500 12px 'Jost';letter-spacing:.03em;background:transparent;border:1px solid var(--line);color:var(--cream-soft);cursor:pointer;transition:.2s;white-space:nowrap}
+.profile:hover{border-color:var(--gold);color:var(--cream)}
+.mobile-nav{position:absolute;top:100%;left:0;right:0;z-index:25;background:rgba(15,27,21,.97);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);display:grid;padding:6px 17px 14px;box-shadow:0 18px 40px rgba(5,12,8,.5)}
+.mobile-nav[hidden]{display:none}
+.mobile-nav a{color:var(--cream);text-decoration:none;padding:14px 4px;border-bottom:1px solid rgba(201,161,74,.14);font-size:15px;letter-spacing:.02em}
+.mobile-nav a:last-child{border-bottom:0}
+.mobile-nav a:hover{color:var(--gold-lume)}
+@media(min-width:901px){.mobile-nav{display:none!important}}
+
+/* ---------- stránka O projektu ---------- */
+.about-hero{max-width:820px;margin:auto;padding:76px clamp(22px,6vw,88px) 34px;text-align:center}
+.about-hero h1{margin:0;font:400 clamp(36px,5vw,64px)/1.06 'Cormorant Garamond',serif;color:var(--cream)}
+.about-lead{max-width:600px;margin:22px auto 0;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:clamp(18px,2.2vw,22px);line-height:1.55;color:var(--cream-soft)}
+.about-body{max-width:820px;margin:auto;padding:0 clamp(22px,6vw,88px) 40px}
+.about-section{padding:38px 0;border-top:1px solid var(--line)}
+.about-section h2{margin:0 0 16px;font:400 clamp(26px,3vw,36px)/1.15 'Cormorant Garamond',serif;color:var(--cream)}
+.about-section p:not(.eyebrow){margin:0 0 14px;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:18px;line-height:1.65;color:var(--cream-soft)}
+.about-section p:last-child{margin-bottom:0}
+.about-section b{color:var(--gold-lume);font-weight:600}
+.about-section.highlight{border:1px solid var(--line);border-radius:20px;background:linear-gradient(130deg,rgba(201,161,74,.13),rgba(22,36,29,.3));padding:34px clamp(20px,4vw,38px);margin:8px 0}
+.about-two{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:6px 0 18px}
+.about-box{border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:14px;background:rgba(251,247,239,.05);padding:18px 20px}
+.about-box.quiet{border-left-color:rgba(201,161,74,.3)}
+.about-box h3{margin:0 0 8px;font:500 16px 'Jost';color:var(--gold-lume);letter-spacing:.02em}
+.about-box p{margin:0!important;font-size:16px!important}
+.about-cta{padding:44px 0 20px;border-top:1px solid var(--line);text-align:center}
+.about-cta h2{margin:0 0 12px;font:400 clamp(28px,3.4vw,40px) 'Cormorant Garamond',serif;color:var(--cream)}
+.about-cta p:not(.eyebrow){margin:0;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:18px;color:var(--cream-soft)}
+.about-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:26px}
+.about-actions .button{min-width:186px;padding:15px 26px;font-size:15px;text-align:center;text-decoration:none}
+@media(max-width:560px){
+  .about-hero{padding:46px 18px 24px}
+  .about-body{padding:0 18px 30px}
+  .about-section{padding:30px 0}
+  .about-section p:not(.eyebrow){font-size:16px}
+  .about-section.highlight{padding:24px 18px}
+  .about-two{grid-template-columns:1fr}
+  .about-actions .button{width:100%}
+}
