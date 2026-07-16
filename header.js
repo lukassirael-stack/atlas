@@ -16,4 +16,3 @@ document.addEventListener('keydown',event=>{
 mobileNav?.querySelectorAll('a').forEach(link=>link.addEventListener('click',()=>{
   mobileNav.hidden=true;menuButton.setAttribute('aria-expanded','false');menuButton.textContent='☰';
 }));
-document.querySelector('.profile')?.addEventListener('click',()=>notify('Přihlášení připravujeme — brzy si budeš moct vést vlastní zápisy.'));

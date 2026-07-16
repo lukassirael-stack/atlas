@@ -1,10 +1,11 @@
 /* ---- modály ---- */
 function openModal(id){const m=document.querySelector(id);if(!m)return;m.classList.add('open');m.setAttribute('aria-hidden','false');m.querySelector('textarea,input,button')?.focus()}
 function closeModal(m){if(!m)return;m.classList.remove('open');m.setAttribute('aria-hidden','true')}
-document.querySelector('#open-log')?.addEventListener('click',()=>openModal('#log-modal'));
-document.querySelector('#open-log-2')?.addEventListener('click',()=>openModal('#log-modal'));
-document.querySelector('#open-comment')?.addEventListener('click',()=>openModal('#comment-modal'));
-document.querySelector('#open-comment-2')?.addEventListener('click',()=>openModal('#comment-modal'));
+function otevriSUctem(id){if(window.vyzadujUcet&&!window.vyzadujUcet())return;openModal(id)}
+document.querySelector('#open-log')?.addEventListener('click',()=>otevriSUctem('#log-modal'));
+document.querySelector('#open-log-2')?.addEventListener('click',()=>otevriSUctem('#log-modal'));
+document.querySelector('#open-comment')?.addEventListener('click',()=>otevriSUctem('#comment-modal'));
+document.querySelector('#open-comment-2')?.addEventListener('click',()=>otevriSUctem('#comment-modal'));
 document.querySelectorAll('.modal-close').forEach(button=>button.addEventListener('click',()=>closeModal(document.querySelector('#'+button.dataset.close))));
 document.querySelectorAll('.modal-backdrop').forEach(backdrop=>backdrop.addEventListener('click',event=>{if(event.target===backdrop)closeModal(backdrop)}));
 document.addEventListener('keydown',event=>{if(event.key==='Escape')document.querySelectorAll('.modal-backdrop.open').forEach(closeModal)});

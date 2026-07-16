@@ -364,3 +364,13 @@ textarea{height:78px}
 .photo-thumb.main{border:2px solid var(--gold-deep)}
 .photo-thumb.main:after{content:'hlavní';position:absolute;left:5px;bottom:5px;font:600 8px 'Jost';letter-spacing:.1em;text-transform:uppercase;background:var(--gold);color:var(--forest);border-radius:99px;padding:3px 8px}
 @media(max-width:560px){.photo-grid{grid-template-columns:repeat(2,1fr)}}
+
+/* ---------- přihlášení ---------- */
+.auth-status{margin:0;font-size:12px;line-height:1.5;color:var(--ink-soft);min-height:16px}
+.auth-status.ok{color:#2f6b46}
+.auth-status.ok b{color:var(--forest)}
+.auth-status.err{color:#a2452f}
+.auth-note{margin:18px 0 0!important;padding-top:14px;border-top:1px solid #e6dcc4;font-size:12px!important;color:var(--ink-soft)!important;line-height:1.55}
+.link-button{border:0;background:none;padding:0;color:var(--gold-deep);font:400 12px 'Jost';text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.link-button:hover{color:var(--forest)}
+.profile.prihlasen{border-color:var(--gold);color:var(--gold-lume);background:rgba(201,161,74,.14)}

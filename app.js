@@ -29,9 +29,9 @@ document.querySelector('#filter-toggle')?.addEventListener('click',()=>document.
 const modal=document.querySelector('#place-modal');
 function openModal(){modal.classList.add('open');modal.setAttribute('aria-hidden','false');document.querySelector('#place-form input[type="text"]').focus()}
 function closeModal(){modal.classList.remove('open');modal.setAttribute('aria-hidden','true')}
-document.querySelector('#add-place')?.addEventListener('click',openModal);
-document.querySelectorAll('a[href="#pridat"]').forEach(link=>link.addEventListener('click',event=>{event.preventDefault();openModal()}));
-if(location.hash==='#pridat')openModal();
+document.querySelector('#add-place')?.addEventListener('click',()=>{if(window.vyzadujUcet&&!window.vyzadujUcet())return;openModal()});
+document.querySelectorAll('a[href="#pridat"]').forEach(link=>link.addEventListener('click',event=>{event.preventDefault();if(window.vyzadujUcet&&!window.vyzadujUcet())return;openModal()}));
+if(location.hash==='#pridat')setTimeout(()=>{if(!window.vyzadujUcet||window.vyzadujUcet())openModal()},600);
 document.querySelector('#modal-close')?.addEventListener('click',closeModal);
 modal?.addEventListener('click',event=>{if(event.target===modal)closeModal()});
 document.addEventListener('keydown',event=>{if(event.key==='Escape')closeModal()});
