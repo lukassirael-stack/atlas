@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=3" />
+    <link rel="stylesheet" href="styles.css?v=4" />
   </head>
   <body>
     <header class="topbar">
@@ -121,6 +121,9 @@
         <div class="geo-capture" id="geo-capture"><button type="button" class="geo-button" id="geo-get">◎ Načíst mou polohu</button><p class="geo-status" id="geo-status" role="status">Poloha zatím nenačtena. Musíš stát přímo na místě.</p></div>
         <p class="form-step">2 · Co jsi tu prožil</p>
         <label>Tvůj zápis<small>Co se dělo, co jsi vnímal, co sis odnesl.</small><textarea required placeholder="Přišel jsem za rozbřesku…"></textarea></label>
+        <label class="photo-drop" for="log-photo" id="log-photo-drop"><span class="photo-icon">⌾</span><span class="photo-text">Přidej fotku z návštěvy</span><small>Nepovinné — takhle to tu vypadalo, když jsi tu byl</small></label>
+        <input type="file" id="log-photo" accept="image/*" hidden />
+        <img class="photo-preview" id="log-photo-preview" alt="Náhled fotky ze zápisu" hidden />
         <p class="form-step">3 · Jak jsi místo vnímal <span>tvoje hodnocení tvoří DNA</span></p>
         <div class="dna-sliders" id="dna-sliders">
           <label class="slider-row"><span>Klid</span><input type="range" min="0" max="100" step="5" value="70" data-axis="Klid" /><output>70</output></label>
@@ -140,6 +143,6 @@
 
     <div class="toast" id="toast" role="status"></div>
     <script src="header.js?v=1"></script>
-    <script src="misto.js?v=2"></script>
+    <script src="misto.js?v=3"></script>
   </body>
 </html>

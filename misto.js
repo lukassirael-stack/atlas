@@ -33,6 +33,19 @@ geoButton?.addEventListener('click',()=>{
   },{enableHighAccuracy:true,timeout:12000,maximumAge:0});
 });
 
+/* ---- fotka ze zápisu ---- */
+const logPhotoInput=document.querySelector('#log-photo');
+const logPhotoPreview=document.querySelector('#log-photo-preview');
+const logPhotoText=document.querySelector('#log-photo-drop .photo-text');
+logPhotoInput?.addEventListener('change',()=>{
+  const file=logPhotoInput.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{logPhotoPreview.src=reader.result;logPhotoPreview.hidden=false;logPhotoText.textContent='Fotka připravena — klepni pro změnu'};
+  reader.readAsDataURL(file);
+});
+function logPhotoReset(){if(!logPhotoPreview)return;logPhotoPreview.hidden=true;logPhotoPreview.removeAttribute('src');logPhotoText.textContent='Přidej fotku z návštěvy'}
+
 /* ---- posuvníky DNA ---- */
 document.querySelectorAll('.slider-row input[type=range]').forEach(slider=>{
   const out=slider.parentElement.querySelector('output');
@@ -46,7 +59,7 @@ document.querySelector('#log-form')?.addEventListener('submit',event=>{
   if(!geoFix){notify('Nejdřív načti svou polohu — zápis vzniká jen na místě.');geoButton?.focus();return}
   const dna=[...document.querySelectorAll('.slider-row input[type=range]')].map(slider=>`${slider.dataset.axis} ${slider.value}`).join(' · ');
   closeModal(document.querySelector('#log-modal'));
-  event.currentTarget.reset();geoReset();
+  event.currentTarget.reset();geoReset();logPhotoReset();
   document.querySelectorAll('.slider-row input[type=range]').forEach(slider=>slider.dispatchEvent(new Event('input')));
   notify(`Zápis uložen. Tvé vnímání (${dna}) vstoupí do DNA místa.`);
 });

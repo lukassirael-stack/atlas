@@ -64,24 +64,45 @@ tagPicker?.addEventListener('click',event=>{
   chip.classList.toggle('on');
 });
 const photoInput=document.querySelector('#place-photo');
-const photoPreview=document.querySelector('#photo-preview');
+const photoGrid=document.querySelector('#photo-grid');
 const photoText=document.querySelector('#photo-drop .photo-text');
+const MAX_PHOTOS=6;
+let photos=[];
+function renderPhotos(){
+  if(!photoGrid)return;
+  photoGrid.innerHTML='';
+  photoGrid.hidden=!photos.length;
+  photos.forEach((photo,index)=>{
+    const figure=document.createElement('figure');
+    figure.className='photo-thumb'+(index===0?' main':'');
+    const image=document.createElement('img');image.src=photo;image.alt='';
+    const remove=document.createElement('button');remove.type='button';remove.textContent='×';remove.setAttribute('aria-label','Odebrat fotku');
+    remove.addEventListener('click',()=>{photos.splice(index,1);renderPhotos()});
+    figure.append(image,remove);photoGrid.appendChild(figure);
+  });
+  photoText.textContent=photos.length?`${photos.length} z ${MAX_PHOTOS} fotek — klepni pro další`:'Přidej fotky místa';
+}
 photoInput?.addEventListener('change',()=>{
-  const file=photoInput.files[0];
-  if(!file)return;
-  const reader=new FileReader();
-  reader.onload=()=>{photoPreview.src=reader.result;photoPreview.hidden=false;photoText.textContent='Fotka připravena — klepni pro změnu'};
-  reader.readAsDataURL(file);
+  const files=[...photoInput.files];
+  const room=MAX_PHOTOS-photos.length;
+  if(!room){notify(`Víc než ${MAX_PHOTOS} fotek zatím nepřijmeme.`);photoInput.value='';return}
+  if(files.length>room)notify(`Vejde se ještě ${room} — přidávám prvních ${room}.`);
+  files.slice(0,room).forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=()=>{photos.push(reader.result);renderPhotos()};
+    reader.readAsDataURL(file);
+  });
+  photoInput.value='';
 });
 function formReset(){
   geoReset();
-  photoPreview.hidden=true;photoPreview.removeAttribute('src');photoText.textContent='Vyfoť místo';
+  photos=[];renderPhotos();
   tagPicker.querySelectorAll('.on').forEach(chip=>chip.classList.remove('on'));
 }
 document.querySelector('#place-form')?.addEventListener('submit',event=>{
   event.preventDefault();
   if(!geoFix){notify('Nejdřív načti svou polohu — místo lze zanést jen přímo na místě.');geoButton.focus();return}
-  if(!photoInput.files.length){notify('Přidej fotku místa — je to důkaz, že jsi tu byl.');return}
+  if(!photos.length){notify('Přidej aspoň jednu fotku — ať ostatní vidí, kam jdou.');return}
   if(!tagPicker.querySelector('.on')){notify('Vyber alespoň jeden štítek místa.');return}
   const tags=[...tagPicker.querySelectorAll('.on')].map(chip=>chip.dataset.tag);
   closeModal();event.currentTarget.reset();formReset();
