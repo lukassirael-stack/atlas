@@ -28,7 +28,6 @@ document.querySelector('#locate')?.addEventListener('click',()=>notify('Ukazujem
 document.querySelector('#zoom-in')?.addEventListener('click',()=>notify('Mapa přiblížena'));
 document.querySelector('#zoom-out')?.addEventListener('click',()=>notify('Mapa oddálena'));
 document.querySelector('#filter-toggle')?.addEventListener('click',()=>document.querySelector('#filters').scrollIntoView({behavior:'smooth',block:'center'}));
-document.querySelector('.detail-button')?.addEventListener('click',()=>notify('Detail místa bude brzy k dispozici.'));
 const modal=document.querySelector('#place-modal');
 function openModal(){modal.classList.add('open');modal.setAttribute('aria-hidden','false');document.querySelector('#place-form input[type="text"]').focus()}
 function closeModal(){modal.classList.remove('open');modal.setAttribute('aria-hidden','true')}

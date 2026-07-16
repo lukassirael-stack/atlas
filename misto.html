@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="cs">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#16241d" />
+    <title>Tisícový kámen — Atlas energetických míst</title>
+    <link rel="icon" type="image/png" sizes="64x64" href="img/favicon-64.png" />
+    <link rel="apple-touch-icon" href="img/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css?v=2" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="index.html" aria-label="Atlas energetických míst">
+        <img class="brand-logo" src="img/logo.png" alt="" /><span>Atlas <em>energetických</em> míst</span>
+      </a>
+      <nav aria-label="Hlavní navigace">
+        <a href="index.html#mapa">Mapa</a><a href="index.html#objevit">Objevuj</a><a href="index.html#komunita">Komunita</a>
+      </nav>
+      <div class="header-actions"><button class="icon-button" aria-label="Hledat">⌕</button><a class="add-cta" href="index.html#pridat">⊕<span>Přidat místo</span></a><button class="profile" aria-label="Profil">E</button><button class="menu-button" aria-label="Menu">☰</button></div>
+    </header>
+
+    <main>
+      <section class="place-hero">
+        <div class="place-hero-bg"></div><div class="place-hero-veil"></div>
+        <div class="place-hero-copy">
+          <a class="back-link" href="index.html#mapa">← Zpět na mapu</a>
+          <p class="eyebrow">Moravskoslezský kraj · 49.7123 N, 18.4576 E</p>
+          <h1>Tisícový kámen</h1>
+          <div class="tags"><span>🪨 Megality a posvátné skály</span><span>🌿 Klid a regenerace</span><span>✨ Portály</span></div>
+          <p class="place-meta"><b>128 zápisů</b> · nejsilnější rys <b>Krása 99 %</b> · přidal <a href="#">Poutnice_M</a>, květen 2026</p>
+        </div>
+      </section>
+
+      <section class="place-actions">
+        <button class="button primary" id="open-log">◎ Zapsat návštěvu</button>
+        <button class="button quiet" id="open-comment">✎ Přidat komentář</button>
+        <p class="actions-note">Zápis lze pořídit jen přímo na místě — utváří DNA. Komentář napíšeš odkudkoli.</p>
+      </section>
+
+      <div class="place-body">
+        <div class="place-text">
+          <section class="place-section"><p class="eyebrow">Popis místa</p><p>Skupina balvanů ukrytá v bukovém lese nad údolím. Největší z nich, zvaný Tisícový, nese na temeni mělkou mísovitou prohlubeň — podle geologů dílo eroze, podle místní tradice obětní miska. První písemná zmínka pochází z roku 1687, kdy sem chodívali poutníci před cestou do Frýdku.</p></section>
+          <section class="place-section"><p class="eyebrow">Jak se sem dostat</p><p>Od parkoviště u hájovny po zelené značce asi 25 minut mírným stoupáním. Poslední úsek odbočuje vpravo na nezpevněnou pěšinu — snadno se mine, hledej starý smrk s dvojitým kmenem. Vhodná pevná obuv, po dešti kluzko.</p></section>
+          <section class="place-section"><p class="eyebrow">Hloubka místa</p><p>Ticho, které tu je, není jen nepřítomnost zvuku. Lidé opakovaně popisují pocit, že se čas zpomalí a myšlenky se srovnají samy od sebe. Pověst říká, že kdo si k Tisícovému sedne se skutečnou otázkou, odchází s odpovědí — ne slovy, ale jistotou v těle.</p></section>
+          <section class="place-section"><p class="eyebrow">Práce s místem</p><p>Sedni si zády k největšímu balvanu, tváří k údolí. Tři pomalé nádechy do břicha, výdech delší než nádech. Nesnaž se nic hledat — jen poslouchej les. Až přijde ztišení, polož svou otázku a nech ji být. Doporučená doba: dvacet minut. Kámen se nedotýkej mokrýma rukama, mech je křehký.</p></section>
+          <section class="place-section"><p class="eyebrow">Nejlepší čas</p><p>Za rozbřesku, nejlépe koncem září, kdy mlha stoupá z údolí a slunce prochází mezi buky. Vyhni se víkendovým odpolednem.</p></section>
+        </div>
+
+        <aside class="place-aside">
+          <div class="dna-card">
+            <p class="eyebrow">DNA místa</p>
+            <svg class="radar-svg" viewBox="0 0 300 250" role="img" aria-label="DNA místa: Klid 96 %, Energie 84 %, Mystika 91 %, Krása 99 %, Léčivost 78 %">
+              <defs>
+                <radialGradient id="dnaFill" cx="50%" cy="46%" r="60%">
+                  <stop offset="0%" stop-color="#ffe9b0" stop-opacity=".9"/>
+                  <stop offset="58%" stop-color="#c9a14a" stop-opacity=".5"/>
+                  <stop offset="100%" stop-color="#7d5f22" stop-opacity=".28"/>
+                </radialGradient>
+                <filter id="dnaSoft" x="-45%" y="-45%" width="190%" height="190%"><feGaussianBlur stdDeviation="7"/></filter>
+                <filter id="dnaGlow" x="-45%" y="-45%" width="190%" height="190%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+              </defs>
+              <g class="radar-grid">
+                <polygon class="radar-ring" points="150,96 168.07,109.13 161.17,130.37 138.83,130.37 131.93,109.13"/>
+                <polygon class="radar-ring" points="150,77 186.14,103.26 172.34,145.74 127.66,145.74 113.86,103.26"/>
+                <polygon class="radar-ring" points="150,58 204.21,97.39 183.51,161.11 116.49,161.11 95.79,97.39"/>
+                <polygon class="radar-ring outer" points="150,39 222.28,91.52 194.67,176.48 105.33,176.48 77.72,91.52"/>
+                <line class="radar-axis" x1="150" y1="115" x2="150" y2="39"/>
+                <line class="radar-axis" x1="150" y1="115" x2="222.28" y2="91.52"/>
+                <line class="radar-axis" x1="150" y1="115" x2="194.67" y2="176.48"/>
+                <line class="radar-axis" x1="150" y1="115" x2="105.33" y2="176.48"/>
+                <line class="radar-axis" x1="150" y1="115" x2="77.72" y2="91.52"/>
+              </g>
+              <polygon class="radar-shadow" points="150,46.04 214.72,99.27 194.65,174.95 109.77,179.87 97.62,100.68" filter="url(#dnaSoft)"/>
+              <polygon class="radar-area" points="150,42.04 210.72,95.27 190.65,170.95 105.77,175.87 93.62,96.68"/>
+              <g filter="url(#dnaGlow)">
+                <circle class="radar-vertex" cx="150" cy="42.04" r="3"/><circle class="radar-vertex" cx="210.72" cy="95.27" r="3"/><circle class="radar-vertex" cx="190.65" cy="170.95" r="3"/><circle class="radar-vertex" cx="105.77" cy="175.87" r="3"/><circle class="radar-vertex" cx="93.62" cy="96.68" r="3"/>
+              </g>
+              <circle class="radar-heart" cx="150" cy="115" r="2.6"/>
+              <g>
+                <text class="radar-name" x="150" y="15" text-anchor="middle">Klid</text><text class="radar-value" x="150" y="29" text-anchor="middle">96 %</text>
+                <text class="radar-name" x="240" y="82" text-anchor="start">Energie</text><text class="radar-value" x="240" y="96" text-anchor="start">84 %</text>
+                <text class="radar-name" x="206" y="192" text-anchor="start">Mystika</text><text class="radar-value" x="206" y="206" text-anchor="start">91 %</text>
+                <text class="radar-name" x="94" y="192" text-anchor="end">Krása</text><text class="radar-value" x="94" y="206" text-anchor="end">99 %</text>
+                <text class="radar-name" x="60" y="82" text-anchor="end">Léčivost</text><text class="radar-value" x="60" y="96" text-anchor="end">78 %</text>
+              </g>
+            </svg>
+            <p class="dna-note">Průměr ze <b>128 zápisů</b> lidí, kteří tu skutečně stáli.</p>
+          </div>
+        </aside>
+      </div>
+
+      <section class="place-logs" id="zapisy">
+        <div class="section-heading"><div><p class="eyebrow">Svědectví z místa</p><h2>Zápisy</h2></div><button class="text-button" id="open-log-2">◎ Zapsat návštěvu</button></div>
+        <ul class="log-list">
+          <li class="log-item"><div class="log-head"><span class="log-nick">Poutnice_M</span><span class="log-badge">◎ ověřeno na místě</span><time>12. 5. 2026</time></div><p>Přišla jsem za rozbřesku, mlha ještě ležela v údolí. Seděla jsem u kamene skoro hodinu a ani jednou mě nenapadlo podívat se na telefon. To se mi nestalo roky.</p><p class="log-dna">Klid 100 · Energie 78 · Mystika 95 · Krása 100 · Léčivost 85</p></li>
+          <li class="log-item"><div class="log-head"><span class="log-nick">Jaromír_K</span><span class="log-badge">◎ ověřeno na místě</span><time>3. 5. 2026</time></div><p>Přišel jsem sem skeptický, přiznávám. Nic zázračného se nestalo. Ale je to nádherné místo a ticho tu opravdu je jiné než jinde v lese. Vrátím se.</p><p class="log-dna">Klid 92 · Energie 70 · Mystika 60 · Krása 98 · Léčivost 65</p></li>
+          <li class="log-item"><div class="log-head"><span class="log-nick">tichá_voda</span><span class="log-badge">◎ ověřeno na místě</span><time>28. 4. 2026</time></div><p>Byli jsme tu s dcerou. Ona si sedla do prohlubně v kameni a řekla, že „kámen dýchá". Nechala jsem ji tam být. Odcházely jsme obě jiné, než jsme přišly.</p><p class="log-dna">Klid 98 · Energie 88 · Mystika 100 · Krása 96 · Léčivost 90</p></li>
+        </ul>
+        <button class="text-button log-more">Zobrazit všech 128 zápisů</button>
+      </section>
+
+      <section class="place-comments" id="komentare">
+        <div class="section-heading"><div><p class="eyebrow">Vzpomínky a poznámky</p><h2>Komentáře</h2></div><button class="text-button" id="open-comment-2">✎ Přidat komentář</button></div>
+        <ul class="log-list">
+          <li class="log-item comment"><div class="log-head"><span class="log-nick">Lesní_duch</span><time>9. 5. 2026</time></div><p>Chodil jsem sem jako kluk s dědou, to bylo v osmdesátkách. Říkal, že se tomu kameni odjakživa říká Tisícový, protože prý „vydá za tisíc kostelů". Nikdy jsem nezjistil, jestli si to vymyslel.</p></li>
+          <li class="log-item comment"><div class="log-head"><span class="log-nick">mapař_Vojta</span><time>6. 5. 2026</time></div><p>Pozor, od loňska je zelená značka od hájovny přeznačená kvůli těžbě. Kdo jde podle staré mapy, dojde k oplocence. Odbočka je teď asi 200 m dřív.</p></li>
+        </ul>
+      </section>
+    </main>
+
+    <footer id="komunita"><img class="brand-logo brand-logo-sm" src="img/logo.png" alt="" /><strong>Atlas energetických míst</strong><p>Objevuj. Prožívej. Sdílej.</p></footer>
+
+    <div class="modal-backdrop" id="log-modal" aria-hidden="true"><section class="add-modal" role="dialog" aria-modal="true" aria-labelledby="log-title"><button class="modal-close" data-close="log-modal" aria-label="Zavřít">×</button><p class="eyebrow">Zápis z místa</p><h2 id="log-title">Byl jsi tady</h2><p>Zápis vzniká jen přímo na místě. Tvé vnímání pěti os pak spoluutváří DNA tohoto místa.</p>
+      <form id="log-form">
+        <p class="form-step">1 · Důkaz, že tu stojíš</p>
+        <div class="geo-capture" id="geo-capture"><button type="button" class="geo-button" id="geo-get">◎ Načíst mou polohu</button><p class="geo-status" id="geo-status" role="status">Poloha zatím nenačtena. Musíš stát přímo na místě.</p></div>
+        <p class="form-step">2 · Co jsi tu prožil</p>
+        <label>Tvůj zápis<small>Co se dělo, co jsi vnímal, co sis odnesl.</small><textarea required placeholder="Přišel jsem za rozbřesku…"></textarea></label>
+        <p class="form-step">3 · Jak jsi místo vnímal <span>tvoje hodnocení tvoří DNA</span></p>
+        <div class="dna-sliders" id="dna-sliders">
+          <label class="slider-row"><span>Klid</span><input type="range" min="0" max="100" step="5" value="70" data-axis="Klid" /><output>70</output></label>
+          <label class="slider-row"><span>Energie</span><input type="range" min="0" max="100" step="5" value="70" data-axis="Energie" /><output>70</output></label>
+          <label class="slider-row"><span>Mystika</span><input type="range" min="0" max="100" step="5" value="70" data-axis="Mystika" /><output>70</output></label>
+          <label class="slider-row"><span>Krása</span><input type="range" min="0" max="100" step="5" value="70" data-axis="Krása" /><output>70</output></label>
+          <label class="slider-row"><span>Léčivost</span><input type="range" min="0" max="100" step="5" value="70" data-axis="Léčivost" /><output>70</output></label>
+        </div>
+        <button class="button primary" type="submit">Uložit zápis</button>
+      </form></section></div>
+
+    <div class="modal-backdrop" id="comment-modal" aria-hidden="true"><section class="add-modal" role="dialog" aria-modal="true" aria-labelledby="comment-title"><button class="modal-close" data-close="comment-modal" aria-label="Zavřít">×</button><p class="eyebrow">Komentář</p><h2 id="comment-title">Poděl se o vzpomínku</h2><p>Komentář napíšeš odkudkoli — třeba na místo vzpomínáš z dřívějška nebo víš něco, co ostatním pomůže. Do DNA místa se nezapočítá; tu tvoří jen zápisy z místa.</p>
+      <form id="comment-form">
+        <label>Tvůj komentář<textarea required placeholder="Chodil jsem sem jako kluk…"></textarea></label>
+        <button class="button primary" type="submit">Odeslat</button>
+      </form></section></div>
+
+    <div class="toast" id="toast" role="status"></div>
+    <script src="misto.js?v=1"></script>
+  </body>
+</html>
