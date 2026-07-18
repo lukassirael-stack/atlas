@@ -63,10 +63,11 @@ function mapaInit(){
   atlasMap = L.map('atlas-map', {
     center: [49.75, 15.5],   // střed ČR
     zoom: 7,
-    zoomControl: true,
+    zoomControl: false,
     scrollWheelZoom: true,
     attributionControl: true
   });
+  L.control.zoom({ position: 'topright' }).addTo(atlasMap);
   // satelit — Esri World Imagery, zdarma bez klíče
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
     maxZoom: 19,
