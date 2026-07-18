@@ -374,3 +374,38 @@ textarea{height:78px}
 .link-button{border:0;background:none;padding:0;color:var(--gold-deep);font:400 12px 'Jost';text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .link-button:hover{color:var(--forest)}
 .profile.prihlasen{border-color:var(--gold);color:var(--gold-lume);background:rgba(201,161,74,.14)}
+
+/* ---------- dlaždice a karta z databáze ---------- */
+a.place-tile{text-decoration:none;color:inherit;display:block}
+.place-tile .tile-image{background-size:cover;background-position:center}
+.place-image.ma-foto span{display:none}
+.place-image.ma-foto{background-size:cover;background-position:center}
+.grid-prazdno{grid-column:1/-1;text-align:center;padding:40px 20px;color:var(--cream-soft);font-family:'Cormorant Garamond',serif;font-size:19px;line-height:1.5}
+
+/* ---------- profil místa: prázdné stavy ---------- */
+.log-prazdno{list-style:none;padding:22px;text-align:center;color:var(--cream-soft);font-family:'Cormorant Garamond',serif;font-size:17px;border:1px dashed var(--line);border-radius:14px}
+
+
+/* ---------- skutečná mapa (Leaflet, satelit) ---------- */
+#atlas-map{position:absolute;inset:0;z-index:1;background:#1a2a22}
+.map-shell{position:relative}
+.map-top{position:absolute;top:14px;left:14px;z-index:400;display:flex;align-items:center;gap:10px;background:rgba(11,20,15,.82);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:99px;padding:8px 14px;font-size:12px;color:var(--cream);pointer-events:auto}
+.map-top .live-dot{width:8px;height:8px;border-radius:50%;background:#7fd99a;box-shadow:0 0 0 0 rgba(127,217,154,.6);animation:zive 2s infinite}
+@keyframes zive{0%{box-shadow:0 0 0 0 rgba(127,217,154,.5)}70%{box-shadow:0 0 0 8px rgba(127,217,154,0)}100%{box-shadow:0 0 0 0 rgba(127,217,154,0)}}
+.map-top button{border:0;background:var(--gold);color:var(--forest);border-radius:99px;padding:5px 12px;font:500 12px 'Jost';cursor:pointer}
+.map-top button:hover{background:var(--gold-lume)}
+
+.atlas-znacka{background:none;border:0;cursor:pointer}
+.atlas-znacka span{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fff3d0,#c9a14a 70%);color:#3a2d10;font-size:16px;border:2px solid #fffaf0;box-shadow:0 3px 10px rgba(5,12,8,.6);transition:transform .15s}
+.atlas-znacka:hover span{transform:scale(1.18)}
+
+/* karta trvale v rohu mapy */
+.place-card{position:absolute;right:18px;bottom:18px;z-index:400;width:min(340px,calc(100% - 36px));margin:0;opacity:0;transform:translateY(12px);pointer-events:none;transition:.25s}
+.place-card.show{opacity:1;transform:none;pointer-events:auto}
+.card-close{position:absolute;right:12px;top:10px;z-index:2;width:26px;height:26px;border-radius:50%;border:0;background:rgba(11,20,15,.55);color:#fff;font-size:18px;line-height:1;cursor:pointer;display:grid;place-items:center}
+.card-close:hover{background:#a2452f}
+
+@media(max-width:560px){
+  .place-card{right:10px;left:10px;bottom:10px;width:auto}
+  .map-top{font-size:11px;padding:7px 11px}
+}
