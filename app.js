@@ -99,14 +99,63 @@ function formReset(){
   photos=[];renderPhotos();
   tagPicker.querySelectorAll('.on').forEach(chip=>chip.classList.remove('on'));
 }
-document.querySelector('#place-form')?.addEventListener('submit',event=>{
+async function nahrajFotky(mistoId){
+  const db=window.atlasDb, ucet=window.atlasUcet?.();
+  const cesty=[];
+  for(let index=0;index<photos.length;index++){
+    const blob=await (await fetch(photos[index])).blob();
+    const pripona=(blob.type.split('/')[1]||'jpg').replace('jpeg','jpg');
+    const cesta=`mista/${mistoId}/${Date.now()}-${index}.${pripona}`;
+    const {error}=await db.storage.from('atlas').upload(cesta,blob,{contentType:blob.type,upsert:false});
+    if(error){console.error('Fotka se nenahrála:',error);continue}
+    cesty.push({misto_id:mistoId,autor_id:ucet.id,cesta,poradi:index});
+  }
+  if(cesty.length)await db.from('atlas_fotky').insert(cesty);
+  return cesty.length;
+}
+
+document.querySelector('#place-form')?.addEventListener('submit',async event=>{
   event.preventDefault();
-  if(!geoFix){notify('Nejdřív načti svou polohu — místo lze zanést jen přímo na místě.');geoButton.focus();return}
+  if(!geoFix){notify('Nejdřív načti svou polohu — místo lze zanést jen přímo na místě.');geoButton?.focus();return}
   if(!photos.length){notify('Přidej aspoň jednu fotku — ať ostatní vidí, kam jdou.');return}
   if(!tagPicker.querySelector('.on')){notify('Vyber alespoň jeden štítek místa.');return}
-  const tags=[...tagPicker.querySelectorAll('.on')].map(chip=>chip.dataset.tag);
+  if(!window.vyzadujUcet||!window.vyzadujUcet())return;
+
+  const db=window.atlasDb, ucet=window.atlasUcet();
+  const odeslat=event.currentTarget.querySelector('button[type=submit]');
+  const puvodni=odeslat.textContent;
+  odeslat.disabled=true;odeslat.textContent='Ukládám…';
+
+  const stitky=[...tagPicker.querySelectorAll('.on')].map(chip=>chip.dataset.tag);
+  const hodnota=id=>{const el=document.querySelector(id);return el&&el.value.trim()?el.value.trim():null};
+
+  const {data:misto,error}=await db.from('atlas_mista').insert({
+    autor_id:ucet.id,
+    nazev:document.querySelector('#misto-nazev').value.trim(),
+    poloha:`SRID=4326;POINT(${geoFix.lng} ${geoFix.lat})`,
+    presnost_m:Math.round(geoFix.accuracy),
+    stitky,
+    stav:'ceka',
+    popis:hodnota('#misto-popis'),
+    pristup:hodnota('#misto-pristup'),
+    hloubka:hodnota('#misto-hloubka'),
+    prace_s_mistem:hodnota('#misto-prace'),
+    nejlepsi_cas:hodnota('#misto-cas')
+  }).select('id,slug,nazev').single();
+
+  if(error){
+    odeslat.disabled=false;odeslat.textContent=puvodni;
+    console.error(error);
+    notify('Místo se nepodařilo uložit: '+error.message);
+    return;
+  }
+
+  odeslat.textContent='Nahrávám fotky…';
+  const nahrano=await nahrajFotky(misto.id);
+  odeslat.disabled=false;odeslat.textContent=puvodni;
+
   closeModal();event.currentTarget.reset();formReset();
-  notify(`Děkujeme! Návrh místa (${tags.length===1?tags[0]:tags.length+' štítky'}) čeká na schválení.`);
+  notify(`Děkujeme! „${misto.nazev}" (${nahrano} ${nahrano===1?'fotka':'fotky'}) čeká na schválení.`);
 });
 const journeyFilter=document.querySelector('#journey-filter');
 const categoryPanel=document.querySelector('#category-panel');

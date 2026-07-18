@@ -106,15 +106,15 @@
         <div class="photo-grid" id="photo-grid" hidden></div>
 
         <p class="form-step">2 · Co to je</p>
-        <label>Název místa<input type="text" required placeholder="Např. Studánka pod Javorem" /></label>
-        <div class="tag-field"><p class="tag-label">Štítky místa <small>vyber až tři</small></p><div class="tag-picker" id="tag-picker"><button type="button" data-tag="🌿 Klid a regenerace">🌿 Klid a regenerace</button><button type="button" data-tag="⚡ Síla a energie">⚡ Síla a energie</button><button type="button" data-tag="❤️ Místo srdce">❤️ Místo srdce</button><button type="button" data-tag="🔥 Léčivá místa">🔥 Léčivá místa</button><button type="button" data-tag="💧 Léčivé prameny">💧 Léčivé prameny</button><button type="button" data-tag="🌳 Posvátné stromy">🌳 Posvátné stromy</button><button type="button" data-tag="🪨 Megality a posvátné skály">🪨 Megality a posvátné skály</button><button type="button" data-tag="🧘 Meditační místa">🧘 Meditační místa</button><button type="button" data-tag="✨ Portály">✨ Portály</button><button type="button" data-tag="🔮 Magická a rituální místa">🔮 Magická a rituální místa</button><button type="button" data-tag="🏛 Historická a posvátná místa">🏛 Historická a posvátná místa</button><button type="button" data-tag="🌙 Pohanská a keltská místa">🌙 Pohanská a keltská místa</button><button type="button" data-tag="👁 Kontaktní místa">👁 Kontaktní místa</button><button type="button" data-tag="🌑 Stínová místa">🌑 Stínová místa</button><button type="button" data-tag="🌅 Výhledy a krajinné scenérie">🌅 Výhledy a krajinné scenérie</button><button type="button" data-tag="🌀 Anomálie a záhady">🌀 Anomálie a záhady</button></div></div>
-        <label>Popis místa<small>Co to je, co tu uvidíš, kousek historie.</small><textarea required placeholder="Kamenná studánka pod třemi břízami, obezděná v 19. století…"></textarea></label>
+        <label>Název místa<input type="text" id="misto-nazev" required maxlength="120" placeholder="Např. Studánka pod Javorem" /></label>
+        <div class="tag-field"><p class="tag-label">Štítky místa <small>vyber až tři</small></p><div class="tag-picker" id="tag-picker"><button type="button" data-tag="klid" data-popis="🌿 Klid a regenerace">🌿 Klid a regenerace</button><button type="button" data-tag="energie" data-popis="⚡ Síla a energie">⚡ Síla a energie</button><button type="button" data-tag="srdce" data-popis="❤️ Místo srdce">❤️ Místo srdce</button><button type="button" data-tag="leciva" data-popis="🔥 Léčivá místa">🔥 Léčivá místa</button><button type="button" data-tag="prameny" data-popis="💧 Léčivé prameny">💧 Léčivé prameny</button><button type="button" data-tag="stromy" data-popis="🌳 Posvátné stromy">🌳 Posvátné stromy</button><button type="button" data-tag="megality" data-popis="🪨 Megality a posvátné skály">🪨 Megality a posvátné skály</button><button type="button" data-tag="meditace" data-popis="🧘 Meditační místa">🧘 Meditační místa</button><button type="button" data-tag="portaly" data-popis="✨ Portály">✨ Portály</button><button type="button" data-tag="magie" data-popis="🔮 Magická a rituální místa">🔮 Magická a rituální místa</button><button type="button" data-tag="historie" data-popis="🏛 Historická a posvátná místa">🏛 Historická a posvátná místa</button><button type="button" data-tag="pohanska" data-popis="🌙 Pohanská a keltská místa">🌙 Pohanská a keltská místa</button><button type="button" data-tag="kontakt" data-popis="👁 Kontaktní místa">👁 Kontaktní místa</button><button type="button" data-tag="stinova" data-popis="🌑 Stínová místa">🌑 Stínová místa</button><button type="button" data-tag="vyhledy" data-popis="🌅 Výhledy a krajinné scenérie">🌅 Výhledy a krajinné scenérie</button><button type="button" data-tag="anomalie" data-popis="🌀 Anomálie a záhady">🌀 Anomálie a záhady</button></div></div>
+        <label>Popis místa<small>Co to je, co tu uvidíš, kousek historie.</small><textarea id="misto-popis" required placeholder="Kamenná studánka pod třemi břízami, obezděná v 19. století…"></textarea></label>
 
         <p class="form-step">3 · Příběh <span>nepovinné — můžeš dopsat později</span></p>
-        <label>Jak se sem dostat<small>Odkud vyrazit, kde nechat auto, jak dlouho se jde.</small><textarea placeholder="Od kapličky po modré značce asi 20 minut, poslední úsek bez cesty…"></textarea></label>
-        <label>Hloubka místa<small>Co se tu dá vnímat, jaká je atmosféra, jaké legendy se váží.</small><textarea placeholder="Zvláštní ticho — i vítr jako by se tu zastavil. Místní říkají…"></textarea></label>
-        <label>Práce s místem<small>Meditace, rituál, tichý sed — jak k místu přistoupit.</small><textarea placeholder="Posaď se zády ke třem břízám, tři nádechy do klidu…"></textarea></label>
-        <label>Nejlepší čas<small>Denní doba, roční období, počasí.</small><input type="text" placeholder="Např. za rozbřesku, nejlépe na podzim" /></label>
+        <label>Jak se sem dostat<small>Odkud vyrazit, kde nechat auto, jak dlouho se jde.</small><textarea id="misto-pristup" placeholder="Od kapličky po modré značce asi 20 minut, poslední úsek bez cesty…"></textarea></label>
+        <label>Hloubka místa<small>Co se tu dá vnímat, jaká je atmosféra, jaké legendy se váží.</small><textarea id="misto-hloubka" placeholder="Zvláštní ticho — i vítr jako by se tu zastavil. Místní říkají…"></textarea></label>
+        <label>Práce s místem<small>Meditace, rituál, tichý sed — jak k místu přistoupit.</small><textarea id="misto-prace" placeholder="Posaď se zády ke třem břízám, tři nádechy do klidu…"></textarea></label>
+        <label>Nejlepší čas<small>Denní doba, roční období, počasí.</small><input type="text" id="misto-cas" maxlength="200" placeholder="Např. za rozbřesku, nejlépe na podzim" /></label>
 
         <button class="button primary" type="submit">Odeslat ke schválení →</button>
       </form></section></div>
@@ -122,7 +122,7 @@
     <div class="toast" id="toast" role="status"></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="header.js?v=2"></script>
-    <script src="auth.js?v=1"></script>
-    <script src="app.js?v=5"></script>
+    <script src="auth.js?v=2"></script>
+    <script src="app.js?v=6"></script>
   </body>
 </html>

@@ -102,6 +102,9 @@ function vyzadujUcet() {
   return true;
 }
 window.vyzadujUcet = vyzadujUcet;
+window.atlasDb = db;
+window.atlasUcet = () => ucet;
+window.atlasProfil = () => profil;
 
 /* ---------- start ---------- */
 vlozModaly();
