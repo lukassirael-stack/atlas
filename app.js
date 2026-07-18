@@ -5,14 +5,13 @@ let atlasVybrane = null;
 function kartaZobraz(m){
   atlasVybrane = m;
   document.querySelector('#place-name').textContent = m.nazev;
-  document.querySelector('.place-content .eyebrow').textContent = window.atlasSouradnice(m.lat, m.lng);
+  document.querySelector('#place-souradnice').textContent = window.atlasSouradnice(m.lat, m.lng);
   document.querySelector('#place-description').textContent = m.popis_kratky || '';
-  document.querySelector('.place-content .tags').innerHTML =
+  document.querySelector('#place-tags').innerHTML =
     (m.stitky||[]).map(k=>`<span>${window.atlasStitek(k,true)}</span>`).join('');
   const dnaEl = document.querySelector('#place-dna');
   const rys = window.atlasRys(m.dna);
   if (rys){
-    dnaEl.style.display='';
     dnaEl.querySelector('b').textContent = rys;
     dnaEl.querySelector('span').textContent = 'nejsilnější rys';
     dnaEl.querySelector('small').textContent = `${m.dna.zapisu} ${m.dna.zapisu===1?'zápis':m.dna.zapisu<5?'zápisy':'zápisů'}`;
@@ -21,12 +20,13 @@ function kartaZobraz(m){
     dnaEl.querySelector('span').textContent = 'buď první';
     dnaEl.querySelector('small').textContent = '';
   }
-  const obraz = document.querySelector('.place-image');
+  const obraz = document.querySelector('#place-image');
   const url = window.atlasFotoUrl(m.fotka);
   if (url){ obraz.style.backgroundImage=`url(${url})`; obraz.classList.add('ma-foto'); }
   else { obraz.style.backgroundImage=''; obraz.classList.remove('ma-foto'); }
-  const detail = document.querySelector('.detail-button');
+  const detail = document.querySelector('#place-detail');
   if (detail) detail.href = `/misto?m=${m.slug}`;
+  document.querySelector('#place-card')?.classList.add('show');
 }
 
 function dlazdiceVykresli(){
@@ -48,36 +48,70 @@ function dlazdiceVykresli(){
   }).join('');
 }
 
-function pinyVykresli(){
-  const shell = document.querySelector('.map-shell');
-  if (!shell) return;
-  shell.querySelectorAll('.map-pin').forEach(p=>p.remove());
-  if (!atlasMista.length) return;
-  // ČR přibližně: lat 48.5–51.1, lng 12.0–18.9 → do plochy mapy
-  const zoom = document.querySelector('.map-zoom');
-  atlasMista.forEach((m,i)=>{
-    const x = ((m.lng - 12.0) / (18.9 - 12.0)) * 100;
-    const y = ((51.1 - m.lat) / (51.1 - 48.5)) * 100;
-    const pin = document.createElement('button');
-    pin.className = 'map-pin';
-    pin.style.cssText = `left:${Math.max(6,Math.min(94,x))}%;top:${Math.max(10,Math.min(88,y))}%;--c:#e8d5a8`;
-    pin.textContent = '✦';
-    pin.dataset.slug = m.slug;
-    pin.setAttribute('aria-label', m.nazev);
-    pin.addEventListener('click', ()=>{ kartaZobraz(m); document.querySelector('#place-card')?.classList.add('show'); });
-    shell.insertBefore(pin, zoom);
+/* ==== Leaflet mapa (satelit) ==== */
+let atlasMap = null;
+let atlasZnacky = [];
+const znackaIkona = L.divIcon({
+  className: 'atlas-znacka',
+  html: '<span>✦</span>',
+  iconSize: [34,34],
+  iconAnchor: [17,17]
+});
+
+function mapaInit(){
+  if (atlasMap || !document.querySelector('#atlas-map')) return;
+  atlasMap = L.map('atlas-map', {
+    center: [49.75, 15.5],   // střed ČR
+    zoom: 7,
+    zoomControl: true,
+    scrollWheelZoom: true,
+    attributionControl: true
   });
+  // satelit — Esri World Imagery, zdarma bez klíče
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 19,
+    attribution: 'Esri, Maxar, Earthstar Geographics'
+  }).addTo(atlasMap);
+  // jemné popisky obcí a cest přes satelit
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 19, opacity: 0.9
+  }).addTo(atlasMap);
+}
+
+function znackyVykresli(){
+  if (!atlasMap) return;
+  atlasZnacky.forEach(z=>z.remove());
+  atlasZnacky = [];
+  const body = [];
+  atlasMista.forEach(m=>{
+    if (m.lat==null || m.lng==null) return;
+    const znacka = L.marker([m.lat, m.lng], {icon: znackaIkona, title: m.nazev}).addTo(atlasMap);
+    znacka.on('click', ()=>{ kartaZobraz(m); atlasMap.panTo([m.lat, m.lng]); });
+    atlasZnacky.push(znacka);
+    body.push([m.lat, m.lng]);
+  });
+  // srovnat pohled na všechna místa
+  if (body.length === 1){ atlasMap.setView(body[0], 12); }
+  else if (body.length > 1){ atlasMap.fitBounds(body, {padding:[50,50], maxZoom:12}); }
 }
 
 async function atlasStart(){
+  if (typeof window.atlasNactiMista !== 'function'){
+    setTimeout(atlasStart, 100);
+    return;
+  }
+  mapaInit();
   atlasMista = await window.atlasNactiMista();
   dlazdiceVykresli();
-  pinyVykresli();
+  znackyVykresli();
   if (atlasMista.length) kartaZobraz(atlasMista[0]);
 }
-// auth.js vytváří klienta a po inicializaci session vyšle 'atlas-auth-ready'
 if (window.atlasAuthReady) atlasStart();
 else window.addEventListener('atlas-auth-ready', atlasStart, {once:true});
+
+document.querySelector('#card-close')?.addEventListener('click',()=>{
+  document.querySelector('#place-card')?.classList.remove('show');
+});
 
 document.querySelectorAll('.filter-row button').forEach(button=>button.addEventListener('click',()=>{
   const all=document.querySelector('.filter-row button:first-child');
@@ -87,12 +121,17 @@ document.querySelectorAll('.filter-row button').forEach(button=>button.addEventL
 document.querySelector('#surprise')?.addEventListener('click',()=>{
   if(!atlasMista.length){notify('Zatím tu není žádné místo. Buď první!');return}
   const m=atlasMista[Math.floor(Math.random()*atlasMista.length)];
-  kartaZobraz(m);document.querySelector('#place-card')?.classList.add('show');
+  kartaZobraz(m);
+  if(atlasMap && m.lat!=null) atlasMap.setView([m.lat,m.lng],13);
   document.querySelector('#mapa')?.scrollIntoView({behavior:'smooth'});
 });
-document.querySelector('#locate')?.addEventListener('click',()=>notify('Ukazujeme inspirativní místa ve vašem okolí.'));
-document.querySelector('#zoom-in')?.addEventListener('click',()=>notify('Mapa přiblížena'));
-document.querySelector('#zoom-out')?.addEventListener('click',()=>notify('Mapa oddálena'));
+document.querySelector('#locate')?.addEventListener('click',()=>{
+  if(!navigator.geolocation){notify('Tvůj prohlížeč polohu nepodporuje.');return}
+  notify('Hledám tvou polohu…');
+  navigator.geolocation.getCurrentPosition(p=>{
+    if(atlasMap) atlasMap.setView([p.coords.latitude,p.coords.longitude],12);
+  },()=>notify('Polohu se nepodařilo načíst.'),{enableHighAccuracy:true,timeout:10000});
+});
 document.querySelector('#filter-toggle')?.addEventListener('click',()=>document.querySelector('#filters').scrollIntoView({behavior:'smooth',block:'center'}));
 const modal=document.querySelector('#place-modal');
 function openModal(){modal.classList.add('open');modal.setAttribute('aria-hidden','false');document.querySelector('#place-form input[type="text"]').focus()}
