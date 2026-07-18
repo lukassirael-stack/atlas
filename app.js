@@ -1,27 +1,95 @@
-const places = {
-  'Tisícový kámen': {region:'Moravskoslezský kraj · 49.7123 N, 18.4576 E', popis:'Balvanové útvary ukryté v lese. Místní říkají, že tu člověk znovu najde vlastní směr.', rys:'Krása 99 %', zapisy:128, stitky:['🪨 Megalit','🌿 Klid','✨ Portál']},
-  'Praděd': {region:'Jeseníky · 50.0833 N, 17.2333 E', popis:'Nejvyšší hora Moravy s výhledem, který dokáže utišit i rozproudit mysl.', rys:'Energie 92 %', zapisy:214, stitky:['🌅 Výhled','⚡ Energie','🏛 Historie']},
-  'Kaple sv. Huberta': {region:'Křivoklátsko · 50.0361 N, 13.8722 E', popis:'Tiché místo v lesích, kde čas plyne pomaleji a každý krok má svou váhu.', rys:'Klid 94 %', zapisy:87, stitky:['🏛 Historie','🌿 Klid','🧘 Meditace']},
-  'Studánka U tří bříz': {region:'Vysočina · 49.4500 N, 15.5833 E', popis:'Pramen pod třemi břízami, opředený příběhy poutníků a místních.', rys:'Léčivost 91 %', zapisy:63, stitky:['💧 Pramen','🔥 Léčivé','🌳 Stromy']},
-  'Pustevny': {region:'Beskydy · 49.4906 N, 18.2494 E', popis:'Horské sedlo s dřevěnými stavbami, mlhou a nezaměnitelnou atmosférou.', rys:'Mystika 88 %', zapisy:156, stitky:['🌙 Pohanské','🌅 Výhled','🔮 Magie']},
-  'Hora Radhošť': {region:'Beskydy · 49.4589 N, 18.2464 E', popis:'Hora legend, větru a dalekých obzorů.', rys:'Síla 95 %', zapisy:198, stitky:['⚡ Energie','🌙 Keltské','🌅 Výhled']}
-};
-document.querySelectorAll('.map-pin').forEach(pin=>pin.addEventListener('click',()=>{
-  const name=pin.dataset.place, place=places[name];
-  document.querySelector('#place-name').textContent=name;
-  document.querySelector('.place-content .eyebrow').textContent=place.region;
-  document.querySelector('#place-description').textContent=place.popis;
-  document.querySelector('.place-content .tags').innerHTML=place.stitky.map(tag=>`<span>${tag}</span>`).join('');
-  document.querySelector('#place-dna b').textContent=place.rys;
-  document.querySelector('#place-dna small').textContent=`${place.zapisy} zápisů`;
-  notify(`Zobrazeno: ${name}`);
-}));
+/* ==== ATLAS: místa z databáze ==== */
+let atlasMista = [];
+let atlasVybrane = null;
+
+function kartaZobraz(m){
+  atlasVybrane = m;
+  document.querySelector('#place-name').textContent = m.nazev;
+  document.querySelector('.place-content .eyebrow').textContent = window.atlasSouradnice(m.lat, m.lng);
+  document.querySelector('#place-description').textContent = m.popis_kratky || '';
+  document.querySelector('.place-content .tags').innerHTML =
+    (m.stitky||[]).map(k=>`<span>${window.atlasStitek(k,true)}</span>`).join('');
+  const dnaEl = document.querySelector('#place-dna');
+  const rys = window.atlasRys(m.dna);
+  if (rys){
+    dnaEl.style.display='';
+    dnaEl.querySelector('b').textContent = rys;
+    dnaEl.querySelector('span').textContent = 'nejsilnější rys';
+    dnaEl.querySelector('small').textContent = `${m.dna.zapisu} ${m.dna.zapisu===1?'zápis':m.dna.zapisu<5?'zápisy':'zápisů'}`;
+  } else {
+    dnaEl.querySelector('b').textContent = 'Zatím bez zápisů';
+    dnaEl.querySelector('span').textContent = 'buď první';
+    dnaEl.querySelector('small').textContent = '';
+  }
+  const obraz = document.querySelector('.place-image');
+  const url = window.atlasFotoUrl(m.fotka);
+  if (url){ obraz.style.backgroundImage=`url(${url})`; obraz.classList.add('ma-foto'); }
+  else { obraz.style.backgroundImage=''; obraz.classList.remove('ma-foto'); }
+  const detail = document.querySelector('.detail-button');
+  if (detail) detail.href = `/misto?m=${m.slug}`;
+}
+
+function dlazdiceVykresli(){
+  const grid = document.querySelector('.place-grid');
+  if (!grid) return;
+  if (!atlasMista.length){
+    grid.innerHTML = `<p class="grid-prazdno">Zatím tu není žádné zveřejněné místo. Buď první — zanes to svoje.</p>`;
+    return;
+  }
+  grid.innerHTML = atlasMista.slice(0,6).map(m=>{
+    const url = window.atlasFotoUrl(m.fotka);
+    const rys = window.atlasRys(m.dna);
+    const kraj = (m.stitky&&m.stitky[0]) ? window.atlasStitek(m.stitky[0]) : '';
+    const spodek = rys ? `<b>${rys}</b>` : '<b>Nové místo</b>';
+    return `<a class="place-tile" href="/misto?m=${m.slug}">
+      <div class="tile-image"${url?` style="background-image:url(${url})"`:''}></div>
+      <div class="tile-info"><span>${kraj}</span><h3>${m.nazev}</h3><p>${spodek}</p></div>
+    </a>`;
+  }).join('');
+}
+
+function pinyVykresli(){
+  const shell = document.querySelector('.map-shell');
+  if (!shell) return;
+  shell.querySelectorAll('.map-pin').forEach(p=>p.remove());
+  if (!atlasMista.length) return;
+  // ČR přibližně: lat 48.5–51.1, lng 12.0–18.9 → do plochy mapy
+  const zoom = document.querySelector('.map-zoom');
+  atlasMista.forEach((m,i)=>{
+    const x = ((m.lng - 12.0) / (18.9 - 12.0)) * 100;
+    const y = ((51.1 - m.lat) / (51.1 - 48.5)) * 100;
+    const pin = document.createElement('button');
+    pin.className = 'map-pin';
+    pin.style.cssText = `left:${Math.max(6,Math.min(94,x))}%;top:${Math.max(10,Math.min(88,y))}%;--c:#e8d5a8`;
+    pin.textContent = '✦';
+    pin.dataset.slug = m.slug;
+    pin.setAttribute('aria-label', m.nazev);
+    pin.addEventListener('click', ()=>{ kartaZobraz(m); document.querySelector('#place-card')?.classList.add('show'); });
+    shell.insertBefore(pin, zoom);
+  });
+}
+
+async function atlasStart(){
+  atlasMista = await window.atlasNactiMista();
+  dlazdiceVykresli();
+  pinyVykresli();
+  if (atlasMista.length) kartaZobraz(atlasMista[0]);
+}
+// auth.js vytváří klienta a po inicializaci session vyšle 'atlas-auth-ready'
+if (window.atlasAuthReady) atlasStart();
+else window.addEventListener('atlas-auth-ready', atlasStart, {once:true});
+
 document.querySelectorAll('.filter-row button').forEach(button=>button.addEventListener('click',()=>{
   const all=document.querySelector('.filter-row button:first-child');
   if(button===all){document.querySelectorAll('.filter-row button').forEach(item=>item.classList.remove('selected'));all.classList.add('selected')}else{all.classList.remove('selected');button.classList.toggle('selected')}
   const active=[...document.querySelectorAll('.filter-row .selected')].map(item=>item.textContent).join(', ');notify(`Aktivní filtr: ${active || 'žádný'}`);
 }));
-document.querySelector('#surprise')?.addEventListener('click',()=>{const names=Object.keys(places);document.querySelector(`.map-pin[data-place="${names[Math.floor(Math.random()*names.length)]}"]`).click()});
+document.querySelector('#surprise')?.addEventListener('click',()=>{
+  if(!atlasMista.length){notify('Zatím tu není žádné místo. Buď první!');return}
+  const m=atlasMista[Math.floor(Math.random()*atlasMista.length)];
+  kartaZobraz(m);document.querySelector('#place-card')?.classList.add('show');
+  document.querySelector('#mapa')?.scrollIntoView({behavior:'smooth'});
+});
 document.querySelector('#locate')?.addEventListener('click',()=>notify('Ukazujeme inspirativní místa ve vašem okolí.'));
 document.querySelector('#zoom-in')?.addEventListener('click',()=>notify('Mapa přiblížena'));
 document.querySelector('#zoom-out')?.addEventListener('click',()=>notify('Mapa oddálena'));

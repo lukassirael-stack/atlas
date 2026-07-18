@@ -209,4 +209,7 @@ db?.auth.onAuthStateChange(async (event, session) => {
   }
 });
 
-nactiSession();
+nactiSession().then(()=>{
+  window.atlasAuthReady = true;
+  window.dispatchEvent(new Event('atlas-auth-ready'));
+});
