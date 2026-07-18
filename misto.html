@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=6" />
+    <link rel="stylesheet" href="styles.css?v=7" />
   </head>
   <body>
     <header class="topbar">
@@ -26,13 +26,13 @@
 
     <main>
       <section class="place-hero">
-        <div class="place-hero-bg"></div><div class="place-hero-veil"></div>
+        <div class="place-hero-bg" id="place-hero-bg"></div><div class="place-hero-veil"></div>
         <div class="place-hero-copy">
           <a class="back-link" href="/#mapa">← Zpět na mapu</a>
-          <p class="eyebrow">Moravskoslezský kraj · 49.7123 N, 18.4576 E</p>
-          <h1>Tisícový kámen</h1>
-          <div class="tags"><span>🪨 Megality a posvátné skály</span><span>🌿 Klid a regenerace</span><span>✨ Portály</span></div>
-          <p class="place-meta"><b>128 zápisů</b> · nejsilnější rys <b>Krása 99 %</b> · přidal <a href="#">Poutnice_M</a>, květen 2026</p>
+          <p class="eyebrow" id="place-souradnice">Načítám…</p>
+          <h1 id="place-nazev">Načítám místo…</h1>
+          <div class="tags" id="place-tags"></div>
+          <p class="place-meta" id="place-meta"></p>
         </div>
       </section>
 
@@ -43,18 +43,12 @@
       </section>
 
       <div class="place-body">
-        <div class="place-text">
-          <section class="place-section"><p class="eyebrow">Popis místa</p><p>Skupina balvanů ukrytá v bukovém lese nad údolím. Největší z nich, zvaný Tisícový, nese na temeni mělkou mísovitou prohlubeň — podle geologů dílo eroze, podle místní tradice obětní miska. První písemná zmínka pochází z roku 1687, kdy sem chodívali poutníci před cestou do Frýdku.</p></section>
-          <section class="place-section"><p class="eyebrow">Jak se sem dostat</p><p>Od parkoviště u hájovny po zelené značce asi 25 minut mírným stoupáním. Poslední úsek odbočuje vpravo na nezpevněnou pěšinu — snadno se mine, hledej starý smrk s dvojitým kmenem. Vhodná pevná obuv, po dešti kluzko.</p></section>
-          <section class="place-section"><p class="eyebrow">Hloubka místa</p><p>Ticho, které tu je, není jen nepřítomnost zvuku. Lidé opakovaně popisují pocit, že se čas zpomalí a myšlenky se srovnají samy od sebe. Pověst říká, že kdo si k Tisícovému sedne se skutečnou otázkou, odchází s odpovědí — ne slovy, ale jistotou v těle.</p></section>
-          <section class="place-section"><p class="eyebrow">Práce s místem</p><p>Sedni si zády k největšímu balvanu, tváří k údolí. Tři pomalé nádechy do břicha, výdech delší než nádech. Nesnaž se nic hledat — jen poslouchej les. Až přijde ztišení, polož svou otázku a nech ji být. Doporučená doba: dvacet minut. Kámen se nedotýkej mokrýma rukama, mech je křehký.</p></section>
-          <section class="place-section"><p class="eyebrow">Nejlepší čas</p><p>Za rozbřesku, nejlépe koncem září, kdy mlha stoupá z údolí a slunce prochází mezi buky. Vyhni se víkendovým odpolednem.</p></section>
-        </div>
+        <div class="place-text" id="place-text"></div>
 
         <aside class="place-aside">
-          <div class="dna-card">
+          <div class="dna-card" id="dna-card">
             <p class="eyebrow">DNA místa</p>
-            <svg class="radar-svg" viewBox="0 0 300 250" role="img" aria-label="DNA místa: Klid 96 %, Energie 84 %, Mystika 91 %, Krása 99 %, Léčivost 78 %">
+            <svg class="radar-svg" id="radar-svg" viewBox="0 0 300 250" role="img" aria-label="DNA místa">
               <defs>
                 <radialGradient id="dnaFill" cx="50%" cy="46%" r="60%">
                   <stop offset="0%" stop-color="#ffe9b0" stop-opacity=".9"/>
@@ -75,41 +69,31 @@
                 <line class="radar-axis" x1="150" y1="115" x2="105.33" y2="176.48"/>
                 <line class="radar-axis" x1="150" y1="115" x2="77.72" y2="91.52"/>
               </g>
-              <polygon class="radar-shadow" points="150,46.04 214.72,99.27 194.65,174.95 109.77,179.87 97.62,100.68" filter="url(#dnaSoft)"/>
-              <polygon class="radar-area" points="150,42.04 210.72,95.27 190.65,170.95 105.77,175.87 93.62,96.68"/>
-              <g filter="url(#dnaGlow)">
-                <circle class="radar-vertex" cx="150" cy="42.04" r="3"/><circle class="radar-vertex" cx="210.72" cy="95.27" r="3"/><circle class="radar-vertex" cx="190.65" cy="170.95" r="3"/><circle class="radar-vertex" cx="105.77" cy="175.87" r="3"/><circle class="radar-vertex" cx="93.62" cy="96.68" r="3"/>
-              </g>
+              <polygon class="radar-shadow" id="radar-shadow" points="150,115 150,115 150,115 150,115 150,115" filter="url(#dnaSoft)"/>
+              <polygon class="radar-area" id="radar-area" points="150,115 150,115 150,115 150,115 150,115"/>
+              <g filter="url(#dnaGlow)" id="radar-vertices"></g>
               <circle class="radar-heart" cx="150" cy="115" r="2.6"/>
-              <g>
-                <text class="radar-name" x="150" y="15" text-anchor="middle">Klid</text><text class="radar-value" x="150" y="29" text-anchor="middle">96 %</text>
-                <text class="radar-name" x="240" y="82" text-anchor="start">Energie</text><text class="radar-value" x="240" y="96" text-anchor="start">84 %</text>
-                <text class="radar-name" x="206" y="192" text-anchor="start">Mystika</text><text class="radar-value" x="206" y="206" text-anchor="start">91 %</text>
-                <text class="radar-name" x="94" y="192" text-anchor="end">Krása</text><text class="radar-value" x="94" y="206" text-anchor="end">99 %</text>
-                <text class="radar-name" x="60" y="82" text-anchor="end">Léčivost</text><text class="radar-value" x="60" y="96" text-anchor="end">78 %</text>
+              <g id="radar-labels">
+                <text class="radar-name" x="150" y="15" text-anchor="middle">Klid</text><text class="radar-value" id="val-klid" x="150" y="29" text-anchor="middle">–</text>
+                <text class="radar-name" x="240" y="82" text-anchor="start">Energie</text><text class="radar-value" id="val-energie" x="240" y="96" text-anchor="start">–</text>
+                <text class="radar-name" x="206" y="192" text-anchor="start">Mystika</text><text class="radar-value" id="val-mystika" x="206" y="206" text-anchor="start">–</text>
+                <text class="radar-name" x="94" y="192" text-anchor="end">Krása</text><text class="radar-value" id="val-krasa" x="94" y="206" text-anchor="end">–</text>
+                <text class="radar-name" x="60" y="82" text-anchor="end">Léčivost</text><text class="radar-value" id="val-lecivost" x="60" y="96" text-anchor="end">–</text>
               </g>
             </svg>
-            <p class="dna-note">Průměr ze <b>128 zápisů</b> lidí, kteří tu skutečně stáli.</p>
+            <p class="dna-note" id="dna-note">Zatím bez zápisů — DNA se objeví, jakmile někdo zapíše návštěvu.</p>
           </div>
         </aside>
       </div>
 
       <section class="place-logs" id="zapisy">
         <div class="section-heading"><div><p class="eyebrow">Svědectví z místa</p><h2>Zápisy</h2></div><button class="text-button" id="open-log-2">◎ Zapsat návštěvu</button></div>
-        <ul class="log-list">
-          <li class="log-item"><div class="log-head"><span class="log-nick">Poutnice_M</span><span class="log-badge">◎ ověřeno na místě</span><time>12. 5. 2026</time></div><p>Přišla jsem za rozbřesku, mlha ještě ležela v údolí. Seděla jsem u kamene skoro hodinu a ani jednou mě nenapadlo podívat se na telefon. To se mi nestalo roky.</p><p class="log-dna">Klid 100 · Energie 78 · Mystika 95 · Krása 100 · Léčivost 85</p></li>
-          <li class="log-item"><div class="log-head"><span class="log-nick">Jaromír_K</span><span class="log-badge">◎ ověřeno na místě</span><time>3. 5. 2026</time></div><p>Přišel jsem sem skeptický, přiznávám. Nic zázračného se nestalo. Ale je to nádherné místo a ticho tu opravdu je jiné než jinde v lese. Vrátím se.</p><p class="log-dna">Klid 92 · Energie 70 · Mystika 60 · Krása 98 · Léčivost 65</p></li>
-          <li class="log-item"><div class="log-head"><span class="log-nick">tichá_voda</span><span class="log-badge">◎ ověřeno na místě</span><time>28. 4. 2026</time></div><p>Byli jsme tu s dcerou. Ona si sedla do prohlubně v kameni a řekla, že „kámen dýchá". Nechala jsem ji tam být. Odcházely jsme obě jiné, než jsme přišly.</p><p class="log-dna">Klid 98 · Energie 88 · Mystika 100 · Krása 96 · Léčivost 90</p></li>
-        </ul>
-        <button class="text-button log-more">Zobrazit všech 128 zápisů</button>
+        <ul class="log-list" id="log-list"></ul>
       </section>
 
       <section class="place-comments" id="komentare">
         <div class="section-heading"><div><p class="eyebrow">Vzpomínky a poznámky</p><h2>Komentáře</h2></div><button class="text-button" id="open-comment-2">✎ Přidat komentář</button></div>
-        <ul class="log-list">
-          <li class="log-item comment"><div class="log-head"><span class="log-nick">Lesní_duch</span><time>9. 5. 2026</time></div><p>Chodil jsem sem jako kluk s dědou, to bylo v osmdesátkách. Říkal, že se tomu kameni odjakživa říká Tisícový, protože prý „vydá za tisíc kostelů". Nikdy jsem nezjistil, jestli si to vymyslel.</p></li>
-          <li class="log-item comment"><div class="log-head"><span class="log-nick">mapař_Vojta</span><time>6. 5. 2026</time></div><p>Pozor, od loňska je zelená značka od hájovny přeznačená kvůli těžbě. Kdo jde podle staré mapy, dojde k oplocence. Odbočka je teď asi 200 m dřív.</p></li>
-        </ul>
+        <ul class="log-list" id="comment-list"></ul>
       </section>
     </main>
 
@@ -144,7 +128,8 @@
     <div class="toast" id="toast" role="status"></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="header.js?v=2"></script>
-    <script src="auth.js?v=1"></script>
-    <script src="misto.js?v=3"></script>
+    <script src="auth.js?v=2"></script>
+    <script src="data.js?v=1"></script>
+    <script src="misto.js?v=4"></script>
   </body>
 </html>

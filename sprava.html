@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="cs">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#16241d" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Správa míst — Atlas</title>
+    <link rel="icon" type="image/png" sizes="64x64" href="img/favicon-64.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css?v=8" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="Atlas energetických míst">
+        <img class="brand-logo" src="img/logo.png" alt="" /><span>Atlas <em>energetických</em> míst</span>
+      </a>
+      <nav aria-label="Hlavní navigace"><a href="/#mapa">Mapa</a><a href="/o-projektu">O projektu</a></nav>
+      <div class="header-actions"><button class="profile" aria-label="Přihlásit">Přihlásit</button><button class="menu-button" aria-label="Menu" aria-expanded="false" aria-controls="mobile-nav">☰</button></div>
+      <nav class="mobile-nav" id="mobile-nav" hidden aria-label="Mobilní navigace"><a href="/#mapa">Mapa</a><a href="/o-projektu">O projektu</a></nav>
+    </header>
+
+    <main class="sprava">
+      <div class="sprava-head">
+        <p class="eyebrow">Jen pro správce</p>
+        <h1>Správa míst</h1>
+        <div class="sprava-filtry" id="sprava-filtry" hidden>
+          <button data-stav="ceka" class="on">Čeká na schválení</button>
+          <button data-stav="zverejnene">Zveřejněná</button>
+          <button data-stav="zamitnute">Zamítnutá</button>
+          <button data-stav="">Vše</button>
+        </div>
+      </div>
+      <div id="sprava-obsah"><p class="sprava-stav">Ověřuji přístup…</p></div>
+    </main>
+
+    <!-- editační modál -->
+    <div class="modal-backdrop" id="edit-modal" aria-hidden="true"><section class="add-modal" role="dialog" aria-modal="true"><button class="modal-close" data-close="edit-modal" aria-label="Zavřít">×</button><p class="eyebrow">Úprava místa</p><h2 id="edit-nazev-h">Upravit</h2>
+      <form id="edit-form">
+        <input type="hidden" id="edit-id" />
+        <label>Název<input type="text" id="edit-nazev" required maxlength="120" /></label>
+        <label>Popis<textarea id="edit-popis"></textarea></label>
+        <label>Jak se sem dostat<textarea id="edit-pristup"></textarea></label>
+        <label>Hloubka místa<textarea id="edit-hloubka"></textarea></label>
+        <label>Práce s místem<textarea id="edit-prace"></textarea></label>
+        <label>Nejlepší čas<input type="text" id="edit-cas" maxlength="200" /></label>
+        <button class="button primary" type="submit">Uložit změny</button>
+      </form></section></div>
+
+    <div class="toast" id="toast" role="status"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="header.js?v=2"></script>
+    <script src="auth.js?v=2"></script>
+    <script src="data.js?v=1"></script>
+    <script src="sprava.js?v=1"></script>
+  </body>
+</html>
