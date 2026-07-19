@@ -459,3 +459,23 @@ a.place-tile{text-decoration:none;color:inherit;display:block}
   .sk-foto{min-height:180px}
   .sk-telo{padding:0 18px 18px}
 }
+
+/* ---------- stránka Objevuj (kompletní seznam) ---------- */
+.objevit{max-width:1180px;margin:auto;padding:40px clamp(22px,6vw,60px) 60px}
+.objevit-head{margin-bottom:26px}
+.objevit-head h1{margin:6px 0 4px;font:400 clamp(30px,4vw,46px) 'Cormorant Garamond',serif;color:var(--cream)}
+.objevit-pocet{color:var(--cream-soft);font-family:'Cormorant Garamond',serif;font-size:18px}
+.objevit .place-grid{margin-top:8px}
+.objevit-filtr{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 26px}
+.objevit-filtr button{border:1px solid var(--line);background:rgba(251,247,239,.05);color:var(--cream-soft);border-radius:99px;padding:8px 15px;font:500 12.5px 'Jost';cursor:pointer;transition:.2s}
+.objevit-filtr button:hover{border-color:var(--gold)}
+.objevit-filtr button.on{background:var(--gold);border-color:var(--gold);color:var(--forest)}
+.objevit-filtr .pocet-kraj{opacity:.6;font-size:11px;margin-left:5px}
+
+/* odkaz „zobrazit všechna místa" pod náhledem na homepage */
+.vsechna-odkaz{display:inline-flex;align-items:center;gap:8px;margin:24px auto 0;padding:11px 22px;border:1px solid var(--gold);border-radius:99px;color:var(--gold-lume);font:500 14px 'Jost';text-decoration:none;transition:.2s;width:fit-content}
+.vsechna-odkaz:hover{background:var(--gold);color:var(--forest)}
+.vsechna-odkaz span{transition:transform .2s}
+.vsechna-odkaz:hover span{transform:translateX(4px)}
+.discover{display:flex;flex-direction:column}
+.discover .vsechna-odkaz{align-self:center}
