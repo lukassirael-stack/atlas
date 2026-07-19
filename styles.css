@@ -486,3 +486,21 @@ a.place-tile{text-decoration:none;color:inherit;display:block}
 
 /* hamburger patří jen na mobil — na širokém displeji je plné menu */
 @media(min-width:901px){.menu-button{display:none}}
+
+/* ---------- jednotné fotky na šířku (3:2) + foto tlačítka ---------- */
+/* dlaždice: pevný poměr na šířku, text vždy dole */
+.place-tile{aspect-ratio:3/2;min-height:0}
+@media(max-width:900px){.place-tile{min-height:0}}
+a.place-tile{display:flex;align-items:flex-end}
+.place-tile .tile-info{width:100%;padding:16px 18px;z-index:1}
+/* karta na mapě: fotka na šířku */
+.place-image{aspect-ratio:3/2;height:auto}
+@media(max-width:560px){.place-image{height:auto}}
+
+/* dvě tlačítka pro fotku: vyfotit / z galerie */
+.photo-buttons{display:flex;gap:10px;margin-top:10px}
+.photo-btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--gold-deep);background:#fff;color:var(--forest);border-radius:99px;padding:9px 16px;font:500 13px 'Jost';cursor:pointer;transition:.2s}
+.photo-btn:hover{background:var(--gold);border-color:var(--gold)}
+
+/* manifest: posun ořezu, ať se brána nahoře neuřízne */
+.manifest-bg{background-position:center 32%}

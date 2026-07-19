@@ -155,17 +155,20 @@ geoButton?.addEventListener('click',()=>{
 });
 
 /* ---- fotka ze zápisu ---- */
-const logPhotoInput=document.querySelector('#log-photo');
+const logPhotoInputs=[document.querySelector('#log-photo-cam'),document.querySelector('#log-photo-gal')].filter(Boolean);
 const logPhotoPreview=document.querySelector('#log-photo-preview');
 const logPhotoText=document.querySelector('#log-photo-drop .photo-text');
-logPhotoInput?.addEventListener('change',()=>{
-  const file=logPhotoInput.files[0];
+let logPhotoFile=null;
+logPhotoInputs.forEach(input=>input.addEventListener('change',()=>{
+  const file=input.files[0];
   if(!file)return;
-  const reader=new FileReader();
-  reader.onload=()=>{logPhotoPreview.src=reader.result;logPhotoPreview.hidden=false;logPhotoText.textContent='Fotka připravena — klepni pro změnu'};
-  reader.readAsDataURL(file);
-});
-function logPhotoReset(){if(!logPhotoPreview)return;logPhotoPreview.hidden=true;logPhotoPreview.removeAttribute('src');logPhotoText.textContent='Přidej fotku z návštěvy'}
+  logPhotoFile=file;
+  logPhotoPreview.src=URL.createObjectURL(file);
+  logPhotoPreview.hidden=false;
+  if(logPhotoText) logPhotoText.textContent='Fotka připravena — klepni pro změnu';
+  input.value='';
+}));
+function logPhotoReset(){logPhotoFile=null;if(!logPhotoPreview)return;logPhotoPreview.hidden=true;logPhotoPreview.removeAttribute('src');if(logPhotoText)logPhotoText.textContent='Přidej fotku z návštěvy'}
 
 /* ---- posuvníky DNA ---- */
 document.querySelectorAll('.slider-row input[type=range]').forEach(slider=>{
@@ -196,9 +199,9 @@ document.querySelector('#log-form')?.addEventListener('submit',async event=>{
     krasa:hodnota('Krása'), lecivost:hodnota('Léčivost')
   };
 
-  if(logPhotoInput?.files?.length){
-    const blob=logPhotoInput.files[0];
-    const pripona=(blob.type.split('/')[1]||'jpg').replace('jpeg','jpg');
+  if(logPhotoFile){
+    let blob=logPhotoFile, pripona='jpg';
+    if(window.atlasZpracujFoto){ const z=await window.atlasZpracujFoto(logPhotoFile); blob=z.blob; pripona=z.pripona; }
     const cesta=`zapisy/${mistoData.id}/${Date.now()}.${pripona}`;
     const {error:fe}=await db.storage.from('atlas').upload(cesta,blob,{contentType:blob.type});
     if(!fe) zaznam.fotka=cesta;

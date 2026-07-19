@@ -171,37 +171,36 @@ tagPicker?.addEventListener('click',event=>{
   if(!chip.classList.contains('on')&&tagPicker.querySelectorAll('.on').length>=3){notify('Vyber nejvýš tři štítky — ať zůstane jasné, čím místo je.');return}
   chip.classList.toggle('on');
 });
-const photoInput=document.querySelector('#place-photo');
+const photoInputs=[document.querySelector('#place-photo-cam'),document.querySelector('#place-photo-gal')].filter(Boolean);
 const photoGrid=document.querySelector('#photo-grid');
 const photoText=document.querySelector('#photo-drop .photo-text');
 const MAX_PHOTOS=6;
-let photos=[];
+let photos=[];  // File objekty
 function renderPhotos(){
   if(!photoGrid)return;
   photoGrid.innerHTML='';
   photoGrid.hidden=!photos.length;
-  photos.forEach((photo,index)=>{
+  photos.forEach((file,index)=>{
     const figure=document.createElement('figure');
     figure.className='photo-thumb'+(index===0?' main':'');
-    const image=document.createElement('img');image.src=photo;image.alt='';
+    const image=document.createElement('img');image.src=URL.createObjectURL(file);image.alt='';
     const remove=document.createElement('button');remove.type='button';remove.textContent='×';remove.setAttribute('aria-label','Odebrat fotku');
     remove.addEventListener('click',()=>{photos.splice(index,1);renderPhotos()});
     figure.append(image,remove);photoGrid.appendChild(figure);
   });
-  photoText.textContent=photos.length?`${photos.length} z ${MAX_PHOTOS} fotek — klepni pro další`:'Přidej fotky místa';
+  if(photoText) photoText.textContent=photos.length?`${photos.length} z ${MAX_PHOTOS} fotek — přidej další`:'Přidej fotky místa';
 }
-photoInput?.addEventListener('change',()=>{
-  const files=[...photoInput.files];
+function pridejFotky(files){
   const room=MAX_PHOTOS-photos.length;
-  if(!room){notify(`Víc než ${MAX_PHOTOS} fotek zatím nepřijmeme.`);photoInput.value='';return}
+  if(!room){notify(`Víc než ${MAX_PHOTOS} fotek zatím nepřijmeme.`);return}
   if(files.length>room)notify(`Vejde se ještě ${room} — přidávám prvních ${room}.`);
-  files.slice(0,room).forEach(file=>{
-    const reader=new FileReader();
-    reader.onload=()=>{photos.push(reader.result);renderPhotos()};
-    reader.readAsDataURL(file);
-  });
-  photoInput.value='';
-});
+  files.slice(0,room).forEach(file=>photos.push(file));
+  renderPhotos();
+}
+photoInputs.forEach(input=>input.addEventListener('change',()=>{
+  pridejFotky([...input.files]);
+  input.value='';
+}));
 function formReset(){
   geoReset();
   photos=[];renderPhotos();
@@ -211,8 +210,8 @@ async function nahrajFotky(mistoId){
   const db=window.atlasDb, ucet=window.atlasUcet?.();
   const cesty=[];
   for(let index=0;index<photos.length;index++){
-    const blob=await (await fetch(photos[index])).blob();
-    const pripona=(blob.type.split('/')[1]||'jpg').replace('jpeg','jpg');
+    let blob=photos[index], pripona='jpg';
+    if(window.atlasZpracujFoto){ const z=await window.atlasZpracujFoto(photos[index]); blob=z.blob; pripona=z.pripona; }
     const cesta=`mista/${mistoId}/${Date.now()}-${index}.${pripona}`;
     const {error}=await db.storage.from('atlas').upload(cesta,blob,{contentType:blob.type,upsert:false});
     if(error){console.error('Fotka se nenahrála:',error);continue}

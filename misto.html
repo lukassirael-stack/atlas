@@ -15,7 +15,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=12" />
+    <link rel="stylesheet" href="styles.css?v=13" />
   </head>
   <body>
     <header class="topbar">
@@ -110,8 +110,11 @@
         <div class="geo-capture" id="geo-capture"><button type="button" class="geo-button" id="geo-get">◎ Načíst mou polohu</button><p class="geo-status" id="geo-status" role="status">Poloha zatím nenačtena. Musíš stát přímo na místě.</p></div>
         <p class="form-step">2 · Co jsi tu prožil</p>
         <label>Tvůj zápis<small>Co se dělo, co jsi vnímal, co sis odnesl.</small><textarea required placeholder="Přišel jsem za rozbřesku…"></textarea></label>
-        <label class="photo-drop" for="log-photo" id="log-photo-drop"><span class="photo-icon">⌾</span><span class="photo-text">Přidej fotku z návštěvy</span><small>Nepovinné — takhle to tu vypadalo, když jsi tu byl</small></label>
-        <input type="file" id="log-photo" accept="image/*" hidden />
+        <div class="photo-drop" id="log-photo-drop"><span class="photo-icon">⌾</span><span class="photo-text">Přidej fotku z návštěvy</span><small>Nepovinné — takhle to tu vypadalo</small>
+          <div class="photo-buttons"><label class="photo-btn" for="log-photo-cam">📷 Vyfotit</label><label class="photo-btn" for="log-photo-gal">🖼 Z galerie</label></div>
+        </div>
+        <input type="file" id="log-photo-cam" accept="image/*" capture="environment" hidden />
+        <input type="file" id="log-photo-gal" accept="image/*" hidden />
         <img class="photo-preview" id="log-photo-preview" alt="Náhled fotky ze zápisu" hidden />
         <p class="form-step">3 · Jak jsi místo vnímal <span>tvoje hodnocení tvoří DNA</span></p>
         <div class="dna-sliders" id="dna-sliders">
@@ -135,6 +138,7 @@
     <script src="header.js?v=3"></script>
     <script src="auth.js?v=2"></script>
     <script src="data.js?v=1"></script>
-    <script src="misto.js?v=4"></script>
+    <script src="foto.js?v=1"></script>
+    <script src="misto.js?v=5"></script>
   </body>
 </html>
