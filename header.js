@@ -16,3 +16,10 @@ document.addEventListener('keydown',event=>{
 mobileNav?.querySelectorAll('a').forEach(link=>link.addEventListener('click',()=>{
   mobileNav.hidden=true;menuButton.setAttribute('aria-expanded','false');menuButton.textContent='☰';
 }));
+
+/* PWA: registrace service workeru — aplikace jde nainstalovat na plochu */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(err => console.warn('SW se nepodařilo zaregistrovat:', err));
+  });
+}
