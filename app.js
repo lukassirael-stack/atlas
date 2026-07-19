@@ -279,3 +279,24 @@ document.querySelector('#panel-close')?.addEventListener('click',()=>toggleCateg
 categoryList?.addEventListener('click',event=>{const item=event.target.closest('button');if(item)item.classList.toggle('chosen')});
 document.querySelector('#clear-categories')?.addEventListener('click',()=>categoryList.querySelectorAll('.chosen').forEach(item=>item.classList.remove('chosen')));
 document.querySelector('#apply-categories')?.addEventListener('click',()=>{const selected=[...categoryList.querySelectorAll('.chosen')].map(item=>item.dataset.category);if(!selected.length){notify('Vyberte alespoň jednu kategorii.');return}journeyFilter.querySelector('strong').textContent=selected.length===1?selected[0]:`${selected.length} vybrané kategorie`;toggleCategories(false);document.querySelector('#mapa').scrollIntoView({behavior:'smooth',block:'start'});notify(`Mapa zobrazuje: ${selected.join(', ')}`)});
+
+/* ---- instalace aplikace na plochu (PWA) ---- */
+let _installPrompt=null;
+window.addEventListener('beforeinstallprompt',(e)=>{
+  e.preventDefault();
+  _installPrompt=e;
+  const akce=document.querySelector('.header-actions');
+  if(!akce||document.querySelector('#install-btn'))return;
+  const btn=document.createElement('button');
+  btn.id='install-btn';btn.type='button';btn.textContent='📲 Nainstalovat';
+  btn.style.cssText='display:inline-flex;align-items:center;gap:6px;border:1px solid #c9a14a;background:linear-gradient(135deg,#e8c56a,#c9a14a);color:#16241d;border-radius:99px;padding:8px 16px;font:600 13px Jost,sans-serif;cursor:pointer;margin-right:8px;white-space:nowrap';
+  btn.addEventListener('click',async()=>{
+    if(!_installPrompt)return;
+    _installPrompt.prompt();
+    const {outcome}=await _installPrompt.userChoice;
+    if(outcome==='accepted')btn.remove();
+    _installPrompt=null;
+  });
+  akce.insertBefore(btn,akce.firstChild);
+});
+window.addEventListener('appinstalled',()=>document.querySelector('#install-btn')?.remove());
