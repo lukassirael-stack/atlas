@@ -483,3 +483,6 @@ a.place-tile{text-decoration:none;color:inherit;display:block}
 /* řady filtru na stránce Objevuj */
 .filtr-rada{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px}
 .filtr-label{font:600 11px 'Jost';letter-spacing:.1em;text-transform:uppercase;color:var(--cream-soft);margin-right:4px}
+
+/* hamburger patří jen na mobil — na širokém displeji je plné menu */
+@media(min-width:901px){.menu-button{display:none}}
