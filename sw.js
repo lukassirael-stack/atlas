@@ -1,5 +1,5 @@
 /* Atlas energetických míst — service worker (offline shell + rychlé spuštění) */
-const CACHE = 'atlas-v2';
+const CACHE = 'atlas-v3';
 
 const SHELL = [
   '/', '/misto', '/o-projektu', '/sprava',
