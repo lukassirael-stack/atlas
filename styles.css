@@ -504,3 +504,28 @@ a.place-tile{display:flex;align-items:flex-end}
 
 /* manifest: posun ořezu, ať se brána nahoře neuřízne */
 .manifest-bg{background-position:center 32%}
+
+/* ---------- instalační tlačítko (PWA) + mobilní hlavička ---------- */
+.install-btn{display:inline-flex;align-items:center;gap:6px;border:1px solid #c9a14a;background:linear-gradient(135deg,#e8c56a,#c9a14a);color:#16241d;border-radius:99px;padding:8px 16px;font:600 13px 'Jost',sans-serif;cursor:pointer;margin-right:8px;white-space:nowrap;flex:0 0 auto}
+.install-btn:hover{filter:brightness(1.05)}
+.install-btn .ii{font-size:15px;line-height:1}
+
+/* pojistky proti vodorovnému přetečení hlavičky */
+html{overflow-x:hidden}
+.topbar{max-width:100%}
+.header-actions{min-width:0}
+.brand{min-width:0}
+
+@media(max-width:900px){
+  /* na mobilu z instalačního tlačítka jen ikona */
+  .install-btn{padding:8px 11px;margin-right:0}
+  .install-btn .il{display:none}
+  .header-actions{gap:8px}
+  /* nick nezabírá půl obrazovky */
+  .profile{max-width:38vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:8px 13px}
+}
+@media(max-width:400px){
+  .brand{font-size:11px;gap:7px}
+  .brand-logo{height:28px}
+  .profile{max-width:30vw}
+}

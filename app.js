@@ -288,8 +288,8 @@ window.addEventListener('beforeinstallprompt',(e)=>{
   const akce=document.querySelector('.header-actions');
   if(!akce||document.querySelector('#install-btn'))return;
   const btn=document.createElement('button');
-  btn.id='install-btn';btn.type='button';btn.textContent='📲 Nainstalovat';
-  btn.style.cssText='display:inline-flex;align-items:center;gap:6px;border:1px solid #c9a14a;background:linear-gradient(135deg,#e8c56a,#c9a14a);color:#16241d;border-radius:99px;padding:8px 16px;font:600 13px Jost,sans-serif;cursor:pointer;margin-right:8px;white-space:nowrap';
+  btn.id='install-btn';btn.type='button';btn.className='install-btn';
+  btn.innerHTML='<span class="ii">📲</span><span class="il">Nainstalovat</span>';
   btn.addEventListener('click',async()=>{
     if(!_installPrompt)return;
     _installPrompt.prompt();
