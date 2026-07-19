@@ -479,3 +479,7 @@ a.place-tile{text-decoration:none;color:inherit;display:block}
 .vsechna-odkaz:hover span{transform:translateX(4px)}
 .discover{display:flex;flex-direction:column}
 .discover .vsechna-odkaz{align-self:center}
+
+/* řady filtru na stránce Objevuj */
+.filtr-rada{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px}
+.filtr-label{font:600 11px 'Jost';letter-spacing:.1em;text-transform:uppercase;color:var(--cream-soft);margin-right:4px}

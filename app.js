@@ -237,6 +237,10 @@ document.querySelector('#place-form')?.addEventListener('submit',async event=>{
   const stitky=[...tagPicker.querySelectorAll('.on')].map(chip=>chip.dataset.tag);
   const hodnota=id=>{const el=document.querySelector(id);return el&&el.value.trim()?el.value.trim():null};
 
+  // určit kraj a zemi z GPS (v prohlížeči)
+  let uzemi={zeme:null,kraj:null};
+  try{ if(window.atlasUrciUzemi) uzemi=await window.atlasUrciUzemi(geoFix.lat, geoFix.lng); }catch(e){ console.warn('Území se nepodařilo určit:',e); }
+
   const {data:misto,error}=await db.from('atlas_mista').insert({
     autor_id:ucet.id,
     nazev:document.querySelector('#misto-nazev').value.trim(),
@@ -244,6 +248,8 @@ document.querySelector('#place-form')?.addEventListener('submit',async event=>{
     presnost_m:Math.round(geoFix.accuracy),
     stitky,
     stav:'ceka',
+    zeme:uzemi.zeme,
+    kraj:uzemi.kraj,
     popis:hodnota('#misto-popis'),
     pristup:hodnota('#misto-pristup'),
     hloubka:hodnota('#misto-hloubka'),
