@@ -14,7 +14,7 @@ function dlazdice(m){
   const misto = m.kraj || m.zeme || '';
   const horni = [stitek, misto].filter(Boolean).join(' · ');
   const spodek = rys ? `<b>${rys}</b>` : '<b>Nové místo</b>';
-  return `<a class="place-tile" href="/misto?m=${m.slug}">
+  return `<a class="place-tile" href="/misto?m=${m.slug}${m.fotka?`&f=${encodeURIComponent(m.fotka)}`:''}">
     <div class="tile-image"${url?` style="background-image:url(${url})"`:''}></div>
     <div class="tile-info"><span>${horni}</span><h3>${escHtml(m.nazev)}</h3><p>${spodek}</p></div>
   </a>`;

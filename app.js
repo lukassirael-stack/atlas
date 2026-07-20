@@ -25,7 +25,7 @@ function kartaZobraz(m){
   if (url){ obraz.style.backgroundImage=`url(${url})`; obraz.classList.add('ma-foto'); }
   else { obraz.style.backgroundImage=''; obraz.classList.remove('ma-foto'); }
   const detail = document.querySelector('#place-detail');
-  if (detail) detail.href = `/misto?m=${m.slug}`;
+  if (detail) detail.href = `/misto?m=${m.slug}${m.fotka?`&f=${encodeURIComponent(m.fotka)}`:''}`;
   document.querySelector('#place-card')?.classList.add('show');
 }
 
@@ -41,7 +41,7 @@ function dlazdiceVykresli(){
     const rys = window.atlasRys(m.dna);
     const kraj = (m.stitky&&m.stitky[0]) ? window.atlasStitek(m.stitky[0]) : '';
     const spodek = rys ? `<b>${rys}</b>` : '<b>Nové místo</b>';
-    return `<a class="place-tile" href="/misto?m=${m.slug}">
+    return `<a class="place-tile" href="/misto?m=${m.slug}${m.fotka?`&f=${encodeURIComponent(m.fotka)}`:''}">
       <div class="tile-image"${url?` style="background-image:url(${url})"`:''}></div>
       <div class="tile-info"><span>${kraj}</span><h3>${m.nazev}</h3><p>${spodek}</p></div>
     </a>`;

@@ -2,6 +2,15 @@
 
 const SLUG = new URLSearchParams(location.search).get('m');
 let mistoData = null;
+
+/* rychlé hero: cestu fotky předává odkaz z mapy/dlaždic (?f=...) — stahování začne okamžitě,
+   často už je obrázek v mezipaměti z náhledové karty; skutečná data ho pak případně tiše opraví */
+const FOTKA_Z_ODKAZU = new URLSearchParams(location.search).get('f');
+let heroCesta = null;
+if (FOTKA_Z_ODKAZU && /^[\w\-./]+$/.test(FOTKA_Z_ODKAZU)) {
+  heroCesta = FOTKA_Z_ODKAZU;
+  nastavHero(window.atlasFotoUrl(heroCesta));
+}
 const SEKCE = [
   ['popis','Popis místa'],
   ['pristup','Jak se sem dostat'],
@@ -46,6 +55,7 @@ async function nactiMisto(){
     document.querySelector('#place-souradnice').textContent = '';
     return;
   }
+  const fotkyPromise = db.rpc('atlas_misto_fotky', { p_slug: SLUG });
   const { data, error } = await db.rpc('atlas_misto_detail', { p_slug: SLUG });
   const m = data && data[0];
   if (error || !m){
@@ -95,7 +105,7 @@ async function nactiMisto(){
   if (m.zapisu) note.innerHTML = `Průměr z <b>${m.zapisu} ${m.zapisu===1?'zápisu':'zápisů'}</b> lidí, kteří tu skutečně stáli.`;
   else note.textContent = 'Zatím bez zápisů — DNA se objeví, jakmile někdo zapíše návštěvu.';
 
-  await nactiFotky(m.autor_id);
+  await nactiFotky(m.autor_id, fotkyPromise);
 
   nactiZapisy();
   nactiKomentare();
@@ -105,15 +115,17 @@ function nastavHero(url){
   const el = document.querySelector('#place-hero-bg');
   if (!el) return;
   if (!url){ el.classList.add('zjevena'); return; }
+  if (el.dataset.url === url) return;
+  el.dataset.url = url;
   const img = new Image();
   img.onload = ()=>{ el.style.backgroundImage = `url(${url})`; el.classList.add('zjevena'); };
   img.onerror = ()=>{ el.classList.add('zjevena'); };
   img.src = url;
 }
 
-async function nactiFotky(autorId){
+async function nactiFotky(autorId, hotovyDotaz){
   const db = window.atlasDb;
-  const { data: fotky } = await db.rpc('atlas_misto_fotky', { p_slug: SLUG });
+  const { data: fotky } = await (hotovyDotaz || db.rpc('atlas_misto_fotky', { p_slug: SLUG }));
   if (!fotky || !fotky.length){ nastavHero('img/brana-svit.jpg'); return; }
 
   // hlavní foto do hero — prolne se až po načtení (žádné probliknutí)

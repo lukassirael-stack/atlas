@@ -29,12 +29,10 @@ window.atlasStitek = (kod, kratky=false) => {
   return kratky ? `${s.emoji} ${s.nazev.split(' ')[0]}` : `${s.emoji} ${s.nazev}`;
 };
 
-/* veřejná URL fotky ze Storage */
+/* veřejná URL fotky ze Storage — čistá konkatenace, funguje hned (bez čekání na klienta) */
 window.atlasFotoUrl = (cesta) => {
   if (!cesta) return null;
-  const db = window.atlasDb;
-  if (!db) return null;
-  return db.storage.from('atlas').getPublicUrl(cesta).data.publicUrl;
+  return 'https://myybuesoourgpbouwwst.supabase.co/storage/v1/object/public/atlas/' + cesta;
 };
 
 /* pět os DNA → nejsilnější rys jako '{Osa} {hodnota} %' */
