@@ -802,3 +802,9 @@ html{overflow-x:clip}
 .pt-misto.ptm-ok span{color:#7fd99a}
 .pt-misto.ptm-ceka span{color:var(--gold-lume)}
 .pt-misto.ptm-ne span{color:#d98a8a}
+
+/* ---------- tlačítko Upravit u zápisu/komentáře ---------- */
+.edit-link{margin-top:8px;background:none;border:0;padding:2px 0;cursor:pointer;
+  color:var(--gold-deep);font:500 13px 'Jost',sans-serif;letter-spacing:.03em;
+  opacity:.72;transition:opacity .16s ease,color .16s ease}
+.edit-link:hover{opacity:1;color:var(--gold-lume)}

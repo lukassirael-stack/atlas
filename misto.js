@@ -148,33 +148,92 @@ async function nactiFotky(autorId){
 async function nactiZapisy(){
   const db=window.atlasDb, box=document.querySelector('#log-list');
   const { data } = await db.from('atlas_zapisy')
-    .select('text,klid,energie,mystika,krasa,lecivost,vytvoren,atlas_profily(nick)')
+    .select('id,autor_id,text,klid,energie,mystika,krasa,lecivost,vytvoren,atlas_profily(nick)')
     .eq('misto_id', mistoData.id).order('vytvoren',{ascending:false}).limit(50);
   if (!data || !data.length){
     box.innerHTML = `<li class="log-prazdno">Zatím tu nikdo nezapsal návštěvu. Až tu budeš stát, buď první.</li>`;
     return;
   }
+  const ucet=window.atlasUcet&&window.atlasUcet(), profil=window.atlasProfil&&window.atlasProfil();
   box.innerHTML = data.map(z=>{
     const nick = z.atlas_profily?.nick || 'poutník';
     const dna = `Klid ${z.klid} · Energie ${z.energie} · Mystika ${z.mystika} · Krása ${z.krasa} · Léčivost ${z.lecivost}`;
-    return `<li class="log-item"><div class="log-head"><span class="log-nick">${escHtml(nick)}</span><span class="log-badge">◎ ověřeno na místě</span><time>${fmtDatum(z.vytvoren)}</time></div><p>${escHtml(z.text)}</p><p class="log-dna">${dna}</p></li>`;
+    const smi = (profil&&profil.spravce) || (ucet&&ucet.id===z.autor_id);
+    const upr = smi ? `<button type="button" class="edit-link" data-edit-zapis="${z.id}">✎ Upravit</button>` : '';
+    return `<li class="log-item" data-zapis="${z.id}"><div class="log-head"><span class="log-nick">${escHtml(nick)}</span><span class="log-badge">◎ ověřeno na místě</span><time>${fmtDatum(z.vytvoren)}</time></div><p class="zapis-text">${escHtml(z.text)}</p><p class="log-dna">${dna}</p>${upr}</li>`;
   }).join('');
+  if(ucet||profil) box.querySelectorAll('[data-edit-zapis]').forEach(b=>{
+    const z=data.find(x=>x.id===b.dataset.editZapis);
+    b.addEventListener('click',()=>otevriEditZapis(z));
+  });
 }
 
 async function nactiKomentare(){
   const db=window.atlasDb, box=document.querySelector('#comment-list');
   const { data } = await db.from('atlas_komentare')
-    .select('text,vytvoren,atlas_profily(nick)')
+    .select('id,autor_id,text,vytvoren,atlas_profily(nick)')
     .eq('misto_id', mistoData.id).eq('stav','zverejneny').order('vytvoren',{ascending:false}).limit(50);
   if (!data || !data.length){
     box.innerHTML = `<li class="log-prazdno">Zatím bez komentářů.</li>`;
     return;
   }
+  const ucet=window.atlasUcet&&window.atlasUcet(), profil=window.atlasProfil&&window.atlasProfil();
   box.innerHTML = data.map(k=>{
     const nick = k.atlas_profily?.nick || 'poutník';
-    return `<li class="log-item comment"><div class="log-head"><span class="log-nick">${escHtml(nick)}</span><time>${fmtDatum(k.vytvoren)}</time></div><p>${escHtml(k.text)}</p></li>`;
+    const smi = (profil&&profil.spravce) || (ucet&&ucet.id===k.autor_id);
+    const upr = smi ? `<button type="button" class="edit-link" data-edit-koment="${k.id}">✎ Upravit</button>` : '';
+    return `<li class="log-item comment" data-koment="${k.id}"><div class="log-head"><span class="log-nick">${escHtml(nick)}</span><time>${fmtDatum(k.vytvoren)}</time></div><p class="koment-text">${escHtml(k.text)}</p>${upr}</li>`;
   }).join('');
+  if(ucet||profil) box.querySelectorAll('[data-edit-koment]').forEach(b=>{
+    const k=data.find(x=>x.id===b.dataset.editKoment);
+    b.addEventListener('click',()=>otevriEditKoment(k));
+  });
 }
+
+/* ---- editace zápisu (text + DNA) ---- */
+function otevriEditZapis(z){
+  const m=document.querySelector('#edit-log-modal'); if(!m) return;
+  m.querySelector('#edit-log-text').value=z.text;
+  m.querySelectorAll('#edit-log-dna input[type=range]').forEach(r=>{
+    r.value=z[r.dataset.k]; r.closest('.slider-row').querySelector('output').textContent=r.value;
+  });
+  m.dataset.id=z.id;
+  openModal('#edit-log-modal');
+}
+document.querySelector('#edit-log-dna')?.addEventListener('input',e=>{
+  if(e.target.type==='range') e.target.closest('.slider-row').querySelector('output').textContent=e.target.value;
+});
+document.querySelector('#edit-log-form')?.addEventListener('submit',async event=>{
+  event.preventDefault();
+  const m=document.querySelector('#edit-log-modal'), db=window.atlasDb;
+  const text=m.querySelector('#edit-log-text').value.trim();
+  if(!text){notify('Zápis nemůže být prázdný.');return}
+  const dna={}; m.querySelectorAll('#edit-log-dna input[type=range]').forEach(r=>{dna[r.dataset.k]=Number(r.value)});
+  const btn=event.currentTarget.querySelector('button[type=submit]'); btn.disabled=true; const p=btn.textContent; btn.textContent='Ukládám…';
+  const {error}=await db.from('atlas_zapisy').update({text,klid:dna.klid,energie:dna.energie,mystika:dna.mystika,krasa:dna.krasa,lecivost:dna.lecivost}).eq('id',m.dataset.id);
+  btn.disabled=false; btn.textContent=p;
+  if(error){notify('Úprava se nepodařila: '+error.message);return}
+  closeModal(m); notify('Zápis upraven 🌿'); nactiZapisy();
+}); 
+
+/* ---- editace komentáře (text) ---- */
+function otevriEditKoment(k){
+  const m=document.querySelector('#edit-comment-modal'); if(!m) return;
+  m.querySelector('#edit-comment-text').value=k.text;
+  m.dataset.id=k.id;
+  openModal('#edit-comment-modal');
+}
+document.querySelector('#edit-comment-form')?.addEventListener('submit',async event=>{
+  event.preventDefault();
+  const m=document.querySelector('#edit-comment-modal'), db=window.atlasDb;
+  const text=m.querySelector('#edit-comment-text').value.trim();
+  if(!text){notify('Komentář nemůže být prázdný.');return}
+  const btn=event.currentTarget.querySelector('button[type=submit]'); btn.disabled=true; const p=btn.textContent; btn.textContent='Ukládám…';
+  const {error}=await db.from('atlas_komentare').update({text}).eq('id',m.dataset.id);
+  btn.disabled=false; btn.textContent=p;
+  if(error){notify('Úprava se nepodařila: '+error.message);return}
+  closeModal(m); notify('Komentář upraven 🌿'); nactiKomentare();
+});
 
 /* ---- modály ---- */
 function openModal(id){const m=document.querySelector(id);if(!m)return;m.classList.add('open');m.setAttribute('aria-hidden','false');m.querySelector('textarea,input,button')?.focus()}

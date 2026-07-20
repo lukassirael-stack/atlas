@@ -29,7 +29,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=32" />
+    <link rel="stylesheet" href="styles.css?v=33" />
   </head>
   <body>
     <header class="topbar">
@@ -153,12 +153,30 @@
         <button class="button primary" type="submit">Odeslat</button>
       </form></section></div>
 
-    <div class="toast" id="toast" role="status"></div>
+    <div class="modal-backdrop" id="edit-log-modal" aria-hidden="true"><section class="add-modal" role="dialog" aria-modal="true" aria-labelledby="edit-log-title"><button class="modal-close" data-close="edit-log-modal" aria-label="Zavřít">×</button><p class="eyebrow">Úprava zápisu</p><h2 id="edit-log-title">Uprav svůj zápis</h2><p>Můžeš upravit text i své vnímání pěti os. Poloha a datum zůstávají zachovány.</p>
+      <form id="edit-log-form">
+        <label>Tvůj zápis<textarea id="edit-log-text" required></textarea></label>
+        <p class="form-step">Jak jsi místo vnímal <span>tvoje hodnocení tvoří DNA</span></p>
+        <div class="dna-sliders" id="edit-log-dna">
+          <label class="slider-row"><span>Klid</span><input type="range" min="0" max="100" step="5" value="70" data-k="klid" /><output>70</output></label>
+          <label class="slider-row"><span>Energie</span><input type="range" min="0" max="100" step="5" value="70" data-k="energie" /><output>70</output></label>
+          <label class="slider-row"><span>Mystika</span><input type="range" min="0" max="100" step="5" value="70" data-k="mystika" /><output>70</output></label>
+          <label class="slider-row"><span>Krása</span><input type="range" min="0" max="100" step="5" value="70" data-k="krasa" /><output>70</output></label>
+          <label class="slider-row"><span>Léčivost</span><input type="range" min="0" max="100" step="5" value="70" data-k="lecivost" /><output>70</output></label>
+        </div>
+        <button class="button primary" type="submit">Uložit změny</button>
+      </form></section></div>
+
+    <div class="modal-backdrop" id="edit-comment-modal" aria-hidden="true"><section class="add-modal" role="dialog" aria-modal="true" aria-labelledby="edit-comment-title"><button class="modal-close" data-close="edit-comment-modal" aria-label="Zavřít">×</button><p class="eyebrow">Úprava komentáře</p><h2 id="edit-comment-title">Uprav svůj komentář</h2>
+      <form id="edit-comment-form">
+        <label>Tvůj komentář<textarea id="edit-comment-text" required></textarea></label>
+        <button class="button primary" type="submit">Uložit změny</button>
+      </form></section></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="header.js?v=8"></script>
     <script src="auth.js?v=5"></script>
     <script src="data.js?v=2"></script>
     <script src="foto.js?v=1"></script>
-    <script src="misto.js?v=8"></script>
+    <script src="misto.js?v=9"></script>
   </body>
 </html>
