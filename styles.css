@@ -757,3 +757,32 @@ html{overflow-x:clip}
 .um-cesta:hover{background:rgba(201,161,74,.10)}
 .umc-nazev{color:var(--cream);font:500 15px 'Cormorant Garamond',serif}
 .umc-datum{color:var(--gold-lume);font-size:11px;letter-spacing:.03em;opacity:.85}
+
+/* ---------- navigace na místo (detail) ---------- */
+.place-navigace{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.nav-btn{display:inline-flex;align-items:center;gap:7px;padding:12px 20px;border-radius:99px;
+  font:500 15px 'Jost',sans-serif;text-decoration:none;cursor:pointer;border:1px solid var(--line);
+  background:rgba(251,247,239,.06);color:var(--cream);transition:background .18s ease,border-color .18s ease,transform .12s ease}
+.nav-btn:hover{background:rgba(201,161,74,.16);border-color:var(--gold)}
+.nav-btn:active{transform:scale(.97)}
+.nav-btn.nav-primary{background:linear-gradient(180deg,#f0d493,var(--gold) 60%,#b98f38);
+  color:var(--forest);border-color:var(--gold-deep);font-weight:600;
+  box-shadow:0 8px 22px rgba(201,161,74,.32)}
+.nav-btn.nav-primary:hover{filter:brightness(1.06);background:linear-gradient(180deg,#f0d493,var(--gold) 60%,#b98f38)}
+.nav-btn.nav-copy{padding:12px 16px}
+@media(max-width:560px){
+  .place-navigace{gap:8px}
+  .nav-btn{padding:11px 16px;font-size:14px}
+  .nav-btn.nav-primary{flex:1 1 100%;justify-content:center}
+}
+
+/* ---------- náhledová karta: navigace + detail ---------- */
+.card-actions{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.card-nav{display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  padding:12px 18px;border-radius:99px;font:600 15px 'Jost',sans-serif;text-decoration:none;
+  background:linear-gradient(180deg,#f0d493,var(--gold) 60%,#b98f38);color:var(--forest);
+  border:1px solid var(--gold-deep);box-shadow:0 8px 20px rgba(201,161,74,.3);
+  transition:filter .18s ease,transform .12s ease}
+.card-nav:hover{filter:brightness(1.06)}
+.card-nav:active{transform:scale(.97)}
+.card-actions .detail-button{margin-top:0}
