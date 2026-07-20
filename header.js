@@ -1,25 +1,39 @@
-/* společné pro všechny stránky: toast, mobilní menu, profil */
+/* společné pro všechny stránky: toast, mobilní menu, service worker */
 const toast = document.querySelector('#toast');
 function notify(message){if(!toast)return;toast.textContent=message;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2800)}
 
-const menuButton=document.querySelector('.menu-button');
-const mobileNav=document.querySelector('#mobile-nav');
-menuButton?.addEventListener('click',()=>{
-  const open=mobileNav.hidden;
-  mobileNav.hidden=!open;
-  menuButton.setAttribute('aria-expanded',String(open));
-  menuButton.textContent=open?'✕':'☰';
+/* ---- mobilní menu ---- */
+function zavriMenu(){
+  const nav=document.getElementById('mobile-nav');
+  if(!nav)return;
+  nav.hidden=true;
+  const b=document.querySelector('.menu-button');
+  if(b){b.setAttribute('aria-expanded','false');b.textContent='☰';}
+}
+/* delegace na celý dokument — funguje i po překreslení hlavičky, bez ohledu na časování */
+document.addEventListener('click',function(e){
+  const btn=e.target.closest('.menu-button');
+  if(btn){
+    e.preventDefault();
+    const nav=document.getElementById('mobile-nav');
+    if(nav){
+      const otevrit=nav.hidden;
+      nav.hidden=!otevrit;
+      btn.setAttribute('aria-expanded',String(otevrit));
+      btn.textContent=otevrit?'✕':'☰';
+    }
+    return;
+  }
+  if(e.target.closest('#mobile-nav a')) zavriMenu();
 });
-document.addEventListener('keydown',event=>{
-  if(event.key==='Escape'&&mobileNav&&!mobileNav.hidden){mobileNav.hidden=true;menuButton.setAttribute('aria-expanded','false');menuButton.textContent='☰'}
-});
-mobileNav?.querySelectorAll('a').forEach(link=>link.addEventListener('click',()=>{
-  mobileNav.hidden=true;menuButton.setAttribute('aria-expanded','false');menuButton.textContent='☰';
-}));
+document.addEventListener('keydown',function(e){ if(e.key==='Escape') zavriMenu(); });
 
-/* PWA: registrace service workeru — aplikace jde nainstalovat na plochu */
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(err => console.warn('SW se nepodařilo zaregistrovat:', err));
+/* pojistka: hamburger musí být klikatelný nad ostatními prvky hlavičky */
+(function(){ const b=document.querySelector('.menu-button'); if(b){ b.style.position='relative'; b.style.zIndex='1002'; } })();
+
+/* PWA: registrace service workeru */
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('SW se nepodařilo zaregistrovat:',err));
   });
 }
