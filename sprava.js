@@ -26,6 +26,7 @@ async function overPristup(){
     return;
   }
   filtry.hidden = false;
+  document.querySelector('#sprava-rezim').hidden = false;
   nactiMista();
 }
 
@@ -184,3 +185,47 @@ function escAttr(t){return (t||'').replace(/"/g,'&quot;')}
 /* ---- start ---- */
 if (window.atlasAuthReady) overPristup();
 else window.addEventListener('atlas-auth-ready', overPristup, {once:true});
+
+/* ==== Poutníci: přehled s e-maily (jen správce) ==== */
+const poutniciObsah = document.querySelector('#poutnici-obsah');
+let poutniciNacteni = false;
+
+function escSpr(t){const d=document.createElement('div');d.textContent=t??'';return d.innerHTML}
+
+async function nactiPoutnici(){
+  const db = window.atlasDb;
+  poutniciObsah.innerHTML = '<p class="sprava-stav">Načítám poutníky…</p>';
+  const { data, error } = await db.rpc('atlas_poutnici');
+  if(error){ poutniciObsah.innerHTML = `<p class="sprava-stav">Chyba: ${escSpr(error.message)}</p>`; return; }
+  if(!data || !data.length){ poutniciObsah.innerHTML = '<p class="sprava-stav">Zatím žádní poutníci.</p>'; return; }
+
+  poutniciObsah.innerHTML = `<p class="poutnici-souhrn">Celkem ${data.length} ${data.length===1?'poutník':(data.length<5?'poutníci':'poutníků')}</p>` +
+    data.map(p=>{
+      const mail = p.email ? `<a href="mailto:${escSpr(p.email)}" class="pt-mail">${escSpr(p.email)}</a>` : '<span class="pt-mail pt-none">e-mail skrytý</span>';
+      return `<article class="poutnik-karta">
+        <div class="pt-hlava">
+          <b>${escSpr(p.nick||'—')}</b>
+          ${p.spravce?'<span class="pt-odznak">správce</span>':''}
+        </div>
+        ${mail}
+        <div class="pt-meta">
+          <span title="Registrace">🌱 ${fmtDatum(p.vytvoren)}</span>
+          <span title="Naposledy přihlášen">👣 ${p.posledni_prihlaseni?fmtDatum(p.posledni_prihlaseni):'—'}</span>
+          <span title="Přidaná místa">📍 ${p.mist}</span>
+          <span title="Zápisy z cest">✎ ${p.zapisu}</span>
+        </div>
+      </article>`;
+    }).join('');
+}
+
+/* přepínač Místa / Poutníci */
+document.querySelector('#sprava-rezim')?.addEventListener('click', e=>{
+  const btn = e.target.closest('button[data-rezim]');
+  if(!btn) return;
+  document.querySelectorAll('#sprava-rezim button').forEach(b=>b.classList.toggle('on', b===btn));
+  const poutnici = btn.dataset.rezim === 'poutnici';
+  filtry.hidden = poutnici;
+  obsah.hidden = poutnici;
+  poutniciObsah.hidden = !poutnici;
+  if(poutnici && !poutniciNacteni){ poutniciNacteni = true; nactiPoutnici(); }
+});

@@ -689,3 +689,23 @@ html{overflow-x:clip}
   .puls-item b{font-size:32px}
   .puls-item span{font-size:11px}
 }
+
+/* ---------- Správa: přepínač režimu + poutníci ---------- */
+.sprava-rezim{display:flex;gap:8px;margin:0 0 14px}
+.sprava-rezim button{padding:9px 16px;border-radius:99px;border:1px solid var(--line);
+  background:transparent;color:var(--cream-soft);font:500 14px 'Jost',sans-serif;cursor:pointer;
+  transition:background .18s ease,color .18s ease,border-color .18s ease}
+.sprava-rezim button.on{background:var(--gold);color:var(--forest);border-color:var(--gold-deep)}
+.poutnici-souhrn{color:var(--gold-lume);font-size:13px;letter-spacing:.06em;text-transform:uppercase;margin:0 0 14px}
+.poutnik-karta{border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-bottom:12px;
+  background:rgba(251,247,239,.03)}
+.pt-hlava{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.pt-hlava b{font:500 20px 'Cormorant Garamond',serif;color:var(--cream)}
+.pt-odznak{font:600 10px 'Jost',sans-serif;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--forest);background:var(--gold);padding:3px 9px;border-radius:99px}
+.pt-mail{display:inline-block;color:var(--gold-lume);font-size:14.5px;text-decoration:none;
+  border-bottom:1px solid rgba(201,161,74,.3);margin-bottom:12px}
+.pt-mail:hover{border-bottom-color:var(--gold)}
+.pt-mail.pt-none{color:var(--cream-soft);border-bottom:0;font-style:italic}
+.pt-meta{display:flex;flex-wrap:wrap;gap:14px;color:var(--cream-soft);font-size:13px}
+#sprava-filtry[hidden],#sprava-obsah[hidden],#poutnici-obsah[hidden]{display:none}
