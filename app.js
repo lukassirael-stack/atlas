@@ -149,11 +149,20 @@ document.querySelectorAll('.filter-row button').forEach(button=>button.addEventL
   if(button===all){document.querySelectorAll('.filter-row button').forEach(item=>item.classList.remove('selected'));all.classList.add('selected')}else{all.classList.remove('selected');button.classList.toggle('selected')}
   const active=[...document.querySelectorAll('.filter-row .selected')].map(item=>item.textContent).join(', ');notify(`Aktivní filtr: ${active || 'žádný'}`);
 }));
+let posledniLos = null;
 document.querySelector('#surprise')?.addEventListener('click',()=>{
   if(!atlasMista.length){notify('Zatím tu není žádné místo. Buď první!');return}
-  const m=atlasMista[Math.floor(Math.random()*atlasMista.length)];
-  kartaZobraz(m);
-  if(atlasMap && m.lat!=null) atlasMap.setView([m.lat,m.lng],13);
+  let kandidati = atlasMista;
+  if (atlasMista.length > 1 && posledniLos) kandidati = atlasMista.filter(x=>x.slug!==posledniLos);
+  const m=kandidati[Math.floor(Math.random()*kandidati.length)];
+  posledniLos = m.slug;
+  notify(`✦ Atlas tě volá: ${m.nazev}`);
+  const karta=document.querySelector('#place-card');
+  karta?.classList.remove('show');
+  setTimeout(()=>{
+    kartaZobraz(m);
+    if(atlasMap && m.lat!=null) atlasMap.flyTo([m.lat,m.lng],13,{duration:.9});
+  },200);
   document.querySelector('#mapa')?.scrollIntoView({behavior:'smooth'});
 });
 function najdiPolohu(){
@@ -316,10 +325,32 @@ document.querySelector('#place-form')?.addEventListener('submit',async event=>{
 
   odeslat.textContent='Nahrávám fotky…';
   const nahrano=await nahrajFotky(misto.id);
+
+  // první zápis s DNA — jen když autor něco napsal (stojí přímo na místě, trigger projde)
+  let prvniZapis=false;
+  const zapisText=document.querySelector('#misto-zapis')?.value.trim();
+  if(zapisText){
+    const dna={};
+    document.querySelectorAll('#misto-dna input[type="range"]').forEach(r=>{dna[r.dataset.k]=Number(r.value)});
+    const {error:zErr}=await db.from('atlas_zapisy').insert({
+      misto_id:misto.id, autor_id:ucet.id, text:zapisText,
+      poloha:`SRID=4326;POINT(${geoFix.lng} ${geoFix.lat})`,
+      presnost_m:Math.round(geoFix.accuracy),
+      klid:dna.klid, energie:dna.energie, mystika:dna.mystika, krasa:dna.krasa, lecivost:dna.lecivost
+    });
+    if(zErr) console.warn('První zápis se nepodařil:', zErr);
+    else prvniZapis=true;
+  }
+
   odeslat.disabled=false;odeslat.textContent=puvodni;
 
   closeModal();event.currentTarget.reset();formReset();
-  notify(`Děkujeme! „${misto.nazev}" (${nahrano} ${nahrano===1?'fotka':'fotky'}) čeká na schválení.`);
+  document.querySelectorAll('#misto-dna .slider-row').forEach(radek=>{radek.querySelector('output').textContent=radek.querySelector('input').value});
+  notify(`Děkujeme! „${misto.nazev}" (${nahrano} ${nahrano===1?'fotka':'fotky'}${prvniZapis?' + tvůj první zápis':''}) čeká na schválení.`);
+});
+/* posuvníky DNA ve formuláři místa: živé číslo vedle osy */
+document.querySelector('#misto-dna')?.addEventListener('input',e=>{
+  if(e.target.type==='range') e.target.closest('.slider-row').querySelector('output').textContent=e.target.value;
 });
 const journeyFilter=document.querySelector('#journey-filter');
 const categoryPanel=document.querySelector('#category-panel');
