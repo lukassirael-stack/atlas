@@ -529,3 +529,11 @@ html{overflow-x:hidden}
   .brand-logo{height:28px}
   .profile{max-width:30vw}
 }
+
+/* ---------- hlavička nad mapou + oddělení karty místa ---------- */
+/* Leaflet dává svým vrstvám z-index až 800; hlavička a mobilní menu musí být nad nimi */
+.topbar{z-index:1000}
+.mobile-nav{z-index:1001}
+/* karta místa: jasně vystoupit ze satelitní mapy (rám + hlubší stín) */
+.place-card{border:1px solid rgba(255,255,255,.82);box-shadow:0 20px 48px rgba(5,12,8,.64)}
+.place-image{border-bottom:1px solid rgba(11,20,15,.10)}
