@@ -26,8 +26,6 @@ function kartaZobraz(m){
   else { obraz.style.backgroundImage=''; obraz.classList.remove('ma-foto'); }
   const detail = document.querySelector('#place-detail');
   if (detail) detail.href = `/misto?m=${m.slug}`;
-  const nav = document.querySelector('#place-nav');
-  if (nav && m.lat != null && m.lng != null) nav.href = `https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lng}`;
   document.querySelector('#place-card')?.classList.add('show');
 }
 

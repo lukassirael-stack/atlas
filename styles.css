@@ -775,14 +775,3 @@ html{overflow-x:clip}
   .nav-btn{padding:11px 16px;font-size:14px}
   .nav-btn.nav-primary{flex:1 1 100%;justify-content:center}
 }
-
-/* ---------- náhledová karta: navigace + detail ---------- */
-.card-actions{display:flex;flex-direction:column;gap:8px;margin-top:14px}
-.card-nav{display:inline-flex;align-items:center;justify-content:center;gap:7px;
-  padding:12px 18px;border-radius:99px;font:600 15px 'Jost',sans-serif;text-decoration:none;
-  background:linear-gradient(180deg,#f0d493,var(--gold) 60%,#b98f38);color:var(--forest);
-  border:1px solid var(--gold-deep);box-shadow:0 8px 20px rgba(201,161,74,.3);
-  transition:filter .18s ease,transform .12s ease}
-.card-nav:hover{filter:brightness(1.06)}
-.card-nav:active{transform:scale(.97)}
-.card-actions .detail-button{margin-top:0}
