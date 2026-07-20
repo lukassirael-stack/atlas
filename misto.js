@@ -95,14 +95,54 @@ async function nactiMisto(){
   if (m.zapisu) note.innerHTML = `Průměr z <b>${m.zapisu} ${m.zapisu===1?'zápisu':'zápisů'}</b> lidí, kteří tu skutečně stáli.`;
   else note.textContent = 'Zatím bez zápisů — DNA se objeví, jakmile někdo zapíše návštěvu.';
 
-  const { data: fotky } = await db.rpc('atlas_misto_fotky', { p_slug: SLUG });
-  if (fotky && fotky.length){
-    const url = window.atlasFotoUrl(fotky[0].cesta);
-    if (url) document.querySelector('#place-hero-bg').style.backgroundImage = `url(${url})`;
-  }
+  await nactiFotky(m.autor_id);
 
   nactiZapisy();
   nactiKomentare();
+}
+
+async function nactiFotky(autorId){
+  const db = window.atlasDb;
+  const { data: fotky } = await db.rpc('atlas_misto_fotky', { p_slug: SLUG });
+  if (!fotky || !fotky.length) return;
+
+  // hlavní foto do hero
+  const hlavniUrl = window.atlasFotoUrl(fotky[0].cesta);
+  if (hlavniUrl) document.querySelector('#place-hero-bg').style.backgroundImage = `url(${hlavniUrl})`;
+
+  // smí přeřazovat? autor místa nebo správce
+  const ucet = window.atlasUcet && window.atlasUcet();
+  const profil = window.atlasProfil && window.atlasProfil();
+  const smiRadit = !!(profil && profil.spravce) || !!(ucet && autorId && ucet.id === autorId);
+
+  // galerie zobraz jen když je víc fotek, nebo když smí správce/autor spravovat
+  const grid = document.querySelector('#galerie-grid');
+  const sekce = document.querySelector('#place-galerie');
+  if (!grid || !sekce) return;
+  if (fotky.length < 2 && !smiRadit) return;
+
+  sekce.hidden = false;
+  grid.innerHTML = fotky.map((f,i)=>{
+    const url = window.atlasFotoUrl(f.cesta) || '';
+    const hlavni = i===0;
+    return `<figure class="galerie-item${hlavni?' je-hlavni':''}">
+      <img src="${url}" alt="Fotka místa" loading="lazy" />
+      ${hlavni ? '<span class="foto-odznak">Hlavní</span>' : ''}
+      ${(smiRadit && !hlavni) ? `<button type="button" class="foto-hlavni-btn" data-id="${f.id}">Nastavit jako hlavní</button>` : ''}
+    </figure>`;
+  }).join('');
+
+  if (smiRadit) {
+    grid.querySelectorAll('.foto-hlavni-btn').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        btn.disabled = true; btn.textContent = 'Měním…';
+        const { error } = await db.rpc('atlas_foto_hlavni', { p_foto_id: btn.dataset.id });
+        if (error) { btn.disabled=false; btn.textContent='Nastavit jako hlavní'; notify('Nepodařilo se: '+error.message); return; }
+        notify('Hlavní fotka změněna 🌿');
+        await nactiFotky(autorId);
+      });
+    });
+  }
 }
 
 async function nactiZapisy(){

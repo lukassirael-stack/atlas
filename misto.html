@@ -29,7 +29,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=30" />
+    <link rel="stylesheet" href="styles.css?v=32" />
   </head>
   <body>
     <header class="topbar">
@@ -60,6 +60,11 @@
         <button class="button primary" id="open-log">◎ Zapsat návštěvu</button>
         <button class="button quiet" id="open-comment">✎ Přidat komentář</button>
         <p class="actions-note">Zápis lze pořídit jen přímo na místě — utváří DNA. Komentář napíšeš odkudkoli.</p>
+      </section>
+
+      <section class="place-galerie" id="place-galerie" hidden>
+        <p class="eyebrow">Fotky místa</p>
+        <div class="galerie-grid" id="galerie-grid"></div>
       </section>
 
       <div class="place-body">
@@ -154,6 +159,6 @@
     <script src="auth.js?v=5"></script>
     <script src="data.js?v=2"></script>
     <script src="foto.js?v=1"></script>
-    <script src="misto.js?v=7"></script>
+    <script src="misto.js?v=8"></script>
   </body>
 </html>

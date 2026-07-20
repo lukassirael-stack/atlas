@@ -214,6 +214,11 @@ async function nactiPoutnici(){
           <span title="Přidaná místa">📍 ${p.mist}</span>
           <span title="Zápisy z cest">✎ ${p.zapisu}</span>
         </div>
+        ${(p.mista&&p.mista.length)?`<div class="pt-mista">${p.mista.map(mi=>{
+          const znak = mi.stav==='zverejnene'?'✓':mi.stav==='ceka'?'⏳':'✕';
+          const tridaStav = mi.stav==='zverejnene'?'ptm-ok':mi.stav==='ceka'?'ptm-ceka':'ptm-ne';
+          return `<a class="pt-misto ${tridaStav}" href="/misto?m=${encodeURIComponent(mi.slug)}" title="${mi.stav}"><span>${znak}</span> ${escSpr(mi.nazev)}</a>`;
+        }).join('')}</div>`:''}
       </article>`;
     }).join('');
 }
