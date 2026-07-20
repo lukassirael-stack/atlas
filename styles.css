@@ -709,3 +709,27 @@ html{overflow-x:clip}
 .pt-mail.pt-none{color:var(--cream-soft);border-bottom:0;font-style:italic}
 .pt-meta{display:flex;flex-wrap:wrap;gap:14px;color:var(--cream-soft);font-size:13px}
 #sprava-filtry[hidden],#sprava-obsah[hidden],#poutnici-obsah[hidden]{display:none}
+
+/* ---------- účtové menu v hlavičce ---------- */
+.ucet-menu{position:fixed;top:82px;right:16px;z-index:2100;width:min(272px,calc(100vw - 24px));
+  background:linear-gradient(180deg,rgba(20,33,27,.98),rgba(16,27,22,.98));
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border:1px solid var(--line);border-radius:18px;box-shadow:0 26px 60px rgba(5,12,8,.62);
+  padding:8px;animation:navDolu .22s ease}
+.ucet-menu[hidden]{display:none}
+.um-hlava{padding:12px 14px 12px}
+.um-eyebrow{display:block;font:500 11px 'Cinzel',serif;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--gold-lume);margin-bottom:3px}
+.um-hlava b{font:500 21px 'Cormorant Garamond',serif;color:var(--cream)}
+.um-akce{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:13px 14px;border-radius:12px;color:var(--cream);text-decoration:none;
+  font:500 17px 'Cormorant Garamond',serif;border-top:1px solid rgba(201,161,74,.18);
+  transition:background .18s ease,color .18s ease}
+.um-akce:hover{background:rgba(201,161,74,.1);color:var(--gold-lume)}
+.um-akce span{color:var(--gold);font-size:18px}
+.um-odhlasit{display:block;width:100%;text-align:left;padding:13px 14px;border:0;
+  border-top:1px solid rgba(201,161,74,.18);background:transparent;color:var(--cream-soft);
+  font:500 14px 'Jost',sans-serif;cursor:pointer;border-radius:0 0 12px 12px;
+  transition:background .18s ease,color .18s ease}
+.um-odhlasit:hover{background:rgba(217,104,63,.12);color:#e8917a}
+@media(max-width:700px){.ucet-menu{top:70px;right:10px}}
