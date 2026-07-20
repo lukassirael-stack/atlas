@@ -150,6 +150,7 @@ document.querySelector('#surprise')?.addEventListener('click',()=>{
 });
 function najdiPolohu(){
   if(!navigator.geolocation){ notify('Tvůj prohlížeč polohu nepodporuje.'); return; }
+  document.querySelector('#place-card')?.classList.remove('show'); // náhled místa pryč, ať nezakrývá polohu
   notify('Hledám tvou polohu…');
   if(locateBtn) locateBtn.classList.add('hledam');
   navigator.geolocation.getCurrentPosition(function(p){
