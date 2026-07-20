@@ -8,6 +8,8 @@ const ATLAS_STITKY = {
   prameny:  {emoji:'💧', nazev:'Léčivé prameny'},
   stromy:   {emoji:'🌳', nazev:'Posvátné stromy'},
   megality: {emoji:'🪨', nazev:'Megality a posvátné skály'},
+  hory:     {emoji:'⛰️', nazev:'Hory a posvátné vrcholy'},
+  mohyly:   {emoji:'🔺', nazev:'Pyramidy a mohyly'},
   meditace: {emoji:'🧘', nazev:'Meditační místa'},
   portaly:  {emoji:'✨', nazev:'Portály'},
   magie:    {emoji:'🔮', nazev:'Magická a rituální místa'},
