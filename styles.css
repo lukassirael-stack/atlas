@@ -176,7 +176,7 @@ footer p{margin-left:auto;color:var(--cream-soft);font-family:'Cormorant Garamon
 }
 
 /* ---------- modál a formulář přidání místa ---------- */
-.modal-backdrop{visibility:hidden;opacity:0;position:fixed;z-index:50;inset:0;background:rgba(5,12,8,.7);backdrop-filter:blur(4px);display:grid;place-items:center;padding:18px;transition:.2s}
+.modal-backdrop{visibility:hidden;opacity:0;position:fixed;z-index:2500;inset:0;background:rgba(5,12,8,.7);backdrop-filter:blur(4px);display:grid;place-items:center;padding:18px;transition:.2s}
 .modal-backdrop.open{visibility:visible;opacity:1}
 .add-modal{width:min(580px,100%);max-height:92vh;overflow:auto;position:relative;background:var(--paper-lift);color:var(--forest);border-radius:20px;padding:32px;box-shadow:0 22px 80px rgba(0,0,0,.55)}
 .add-modal h2{font:400 30px 'Cormorant Garamond',serif;margin:0 0 6px;color:var(--forest)}
@@ -653,4 +653,39 @@ html{overflow-x:clip}
 @media(max-width:700px){
   .bell{width:38px;height:38px;font-size:16px}
   .bell-panel{top:70px;right:10px;left:10px;width:auto}
+}
+
+/* ---------- kotvy: neschovávat začátek sekce pod hlavičkou ---------- */
+[id]{scroll-margin-top:92px}
+@media(max-width:900px){[id]{scroll-margin-top:76px}}
+
+/* ---------- Komunita: živý puls ---------- */
+.community{padding:74px clamp(22px,6vw,88px) 84px;border-top:1px solid var(--line-soft);
+  background:radial-gradient(120% 70% at 50% 0%,rgba(201,161,74,.05),transparent 70%)}
+.puls-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:26px 0 30px}
+.puls-item{border:1px solid var(--line);border-radius:18px;padding:22px 14px;text-align:center;
+  background:rgba(251,247,239,.03)}
+.puls-item b{display:block;font:500 44px 'Cormorant Garamond',serif;color:var(--gold-lume);line-height:1.05}
+.puls-item span{display:block;margin-top:6px;color:var(--cream-soft);font-size:13px;letter-spacing:.04em}
+.puls-feed{display:grid;gap:12px}
+.puls-nacitam{color:var(--cream-soft);font-size:14px;text-align:center;padding:8px 0}
+.puls-vyzva{border:1px solid var(--line);border-radius:18px;padding:26px 22px;text-align:center;
+  background:rgba(251,247,239,.03)}
+.puls-vyzva p{margin:0 0 10px;color:var(--cream-soft);font-size:15px;line-height:1.6;max-width:560px;margin-left:auto;margin-right:auto}
+.puls-vyzva p b{color:var(--gold-lume);font:500 21px 'Cormorant Garamond',serif}
+.puls-vyzva .button{margin-top:8px;display:inline-block}
+.puls-zapis{display:block;border:1px solid var(--line);border-radius:16px;padding:16px 18px;
+  background:rgba(251,247,239,.03);text-decoration:none;transition:border-color .18s ease,background .18s ease}
+.puls-zapis:hover{border-color:var(--gold);background:rgba(201,161,74,.07)}
+.pz-hlava{margin:0 0 6px;color:var(--gold-lume);font-size:13.5px;letter-spacing:.03em}
+.pz-hlava b{font-weight:600}
+.pz-hlava span{opacity:.7;margin:0 4px}
+.pz-text{margin:0 0 8px;color:var(--cream);font:400 17px 'Cormorant Garamond',serif;font-style:italic;line-height:1.5}
+.pz-kdy{margin:0;color:var(--cream-soft);font-size:11.5px;letter-spacing:.04em}
+@media(max-width:700px){
+  .community{padding:54px 18px 64px}
+  .puls-grid{gap:9px}
+  .puls-item{padding:16px 8px;border-radius:14px}
+  .puls-item b{font-size:32px}
+  .puls-item span{font-size:11px}
 }

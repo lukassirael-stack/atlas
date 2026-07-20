@@ -343,3 +343,53 @@ window.addEventListener('beforeinstallprompt',(e)=>{
   akce.insertBefore(btn,akce.firstChild);
 });
 window.addEventListener('appinstalled',()=>document.querySelector('#install-btn')?.remove());
+
+/* ==== Komunita: živý puls Atlasu ==== */
+function sklon(n, tvary){ // tvary: ['místo','místa','míst']
+  if(n===1) return tvary[0];
+  if(n>=2 && n<=4) return tvary[1];
+  return tvary[2];
+}
+function pulsKdy(iso){
+  const d=new Date(iso), teď=new Date();
+  const dnu=Math.floor((teď-d)/86400000);
+  if(dnu<=0) return 'dnes';
+  if(dnu===1) return 'včera';
+  if(dnu<7) return `před ${dnu} dny`;
+  return `${d.getDate()}. ${d.getMonth()+1}. ${d.getFullYear()}`;
+}
+async function nactiPuls(){
+  const feed=document.querySelector('#puls-feed');
+  if(!feed) return;
+  const db=window.atlasDb;
+  let p=null;
+  try{
+    if(db){ const r=await db.rpc('atlas_komunita_puls'); if(!r.error) p=r.data; }
+  }catch(_){}
+  if(!p){ feed.innerHTML='<p class="puls-nacitam">Puls se teď nepodařilo nahmatat — zkus to prosím za chvíli.</p>'; return; }
+
+  const esc=t=>{const d=document.createElement('div');d.textContent=t||'';return d.innerHTML};
+  document.querySelector('#puls-mista').textContent=p.mista;
+  document.querySelector('#puls-mista-l').textContent=sklon(p.mista,['místo na mapě','místa na mapě','míst na mapě']);
+  document.querySelector('#puls-zapisy').textContent=p.zapisy;
+  document.querySelector('#puls-zapisy-l').textContent=sklon(p.zapisy,['zápis z cest','zápisy z cest','zápisů z cest']);
+  document.querySelector('#puls-poutnici').textContent=p.poutnici;
+  document.querySelector('#puls-poutnici-l').textContent=sklon(p.poutnici,['poutník','poutníci','poutníků']);
+
+  if(!p.posledni || !p.posledni.length){
+    feed.innerHTML=`<div class="puls-vyzva">
+      <p><b>Zatím tu vládne ticho před úsvitem.</b></p>
+      <p>Buď první, kdo do Atlasu vloží svůj hlas — navštiv místo, procíť ho a zanech zápis. Každé svědectví utváří DNA místa a rozeznívá mapu pro ostatní.</p>
+      <a class="button primary" href="#mapa">Otevřít mapu ✦</a>
+    </div>`;
+    return;
+  }
+  feed.innerHTML=p.posledni.map(z=>`
+    <a class="puls-zapis" href="/misto?m=${encodeURIComponent(z.slug)}">
+      <p class="pz-hlava"><b>${esc(z.nick||'poutník')}</b> <span>✦</span> ${esc(z.misto)}</p>
+      <p class="pz-text">„${esc(z.uryvek)}${z.zkraceno?'…':''}"</p>
+      <p class="pz-kdy">${pulsKdy(z.vytvoreno)}</p>
+    </a>`).join('');
+}
+if(window.atlasAuthReady) nactiPuls();
+window.addEventListener('atlas-auth-ready', nactiPuls);
