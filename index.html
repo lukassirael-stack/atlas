@@ -146,6 +146,15 @@
         <label>Práce s místem<small>Meditace, rituál, tichý sed — jak k místu přistoupit.</small><textarea id="misto-prace" placeholder="Posaď se zády ke třem břízám, tři nádechy do klidu…"></textarea></label>
         <label>Nejlepší čas<small>Denní doba, roční období, počasí.</small><input type="text" id="misto-cas" maxlength="200" placeholder="Např. za rozbřesku, nejlépe na podzim" /></label>
 
+        <p class="form-step">4 · Tvé první naladění <span>nepovinné — utvoří DNA místa</span></p>
+        <label>Co tu právě prožíváš<small>Stojíš na místě — vyplň a vznikne první zápis, který místu dá DNA hned od zrodu.</small><textarea id="misto-zapis" placeholder="Stojím tady a cítím…"></textarea></label>
+        <div class="dna-sliders" id="misto-dna">
+          <label class="slider-row"><span>Klid</span><input type="range" min="0" max="100" step="5" value="70" data-k="klid" /><output>70</output></label>
+          <label class="slider-row"><span>Energie</span><input type="range" min="0" max="100" step="5" value="70" data-k="energie" /><output>70</output></label>
+          <label class="slider-row"><span>Mystika</span><input type="range" min="0" max="100" step="5" value="70" data-k="mystika" /><output>70</output></label>
+          <label class="slider-row"><span>Krása</span><input type="range" min="0" max="100" step="5" value="70" data-k="krasa" /><output>70</output></label>
+          <label class="slider-row"><span>Léčivost</span><input type="range" min="0" max="100" step="5" value="70" data-k="lecivost" /><output>70</output></label>
+        </div>
         <button class="button primary" type="submit">Odeslat ke schválení →</button>
       </form></section></div>
 
@@ -157,6 +166,6 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="geo.js?v=1"></script>
     <script src="foto.js?v=1"></script>
-    <script src="app.js?v=18"></script>
+    <script src="app.js?v=19"></script>
   </body>
 </html>
