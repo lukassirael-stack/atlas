@@ -3,6 +3,14 @@ const toast = document.querySelector('#toast');
 function notify(message){if(!toast)return;toast.textContent=message;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2800)}
 
 /* ---- mobilní menu ---- */
+/* menu přesunout VEN z hlavičky přímo do <body>:
+   topbar má backdrop-filter, který připnutým potomkům mění vztažný bod
+   a na mobilech způsobuje chyby vykreslování — mimo hlavičku je menu nezávislé */
+(function(){
+  const nav=document.getElementById('mobile-nav');
+  if(nav && nav.parentElement !== document.body) document.body.appendChild(nav);
+})();
+
 function zavriMenu(){
   const nav=document.getElementById('mobile-nav');
   if(!nav)return;
@@ -10,7 +18,7 @@ function zavriMenu(){
   const b=document.querySelector('.menu-button');
   if(b){b.setAttribute('aria-expanded','false');b.textContent='☰';}
 }
-/* delegace na celý dokument — funguje i po překreslení hlavičky, bez ohledu na časování */
+/* delegace na celý dokument — funguje bez ohledu na překreslení hlavičky */
 document.addEventListener('click',function(e){
   const btn=e.target.closest('.menu-button');
   if(btn){
@@ -27,9 +35,6 @@ document.addEventListener('click',function(e){
   if(e.target.closest('#mobile-nav a')) zavriMenu();
 });
 document.addEventListener('keydown',function(e){ if(e.key==='Escape') zavriMenu(); });
-
-/* pojistka: hamburger musí být klikatelný nad ostatními prvky hlavičky */
-(function(){ const b=document.querySelector('.menu-button'); if(b){ b.style.position='relative'; b.style.zIndex='1002'; } })();
 
 /* PWA: registrace service workeru */
 if('serviceWorker' in navigator){

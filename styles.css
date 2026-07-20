@@ -547,3 +547,7 @@ html{overflow-x:hidden}
   #place-card .place-content{padding:15px 17px 17px}
   #place-card #place-description{display:none}
 }
+
+/* ---------- mobilní menu: žije mimo hlavičku (header.js ho přesouvá do body) ---------- */
+.mobile-nav{position:fixed;top:62px;left:0;right:0;bottom:auto;z-index:2000;
+  max-height:calc(100vh - 62px);overflow:auto}
