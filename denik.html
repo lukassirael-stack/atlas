@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="cs">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#16241d" />
+    <meta name="robots" content="noindex" />
+    <title>Můj deník — Atlas energetických míst</title>
+    <link rel="icon" type="image/png" sizes="64x64" href="img/favicon-64.png" />
+    <link rel="apple-touch-icon" href="img/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Atlas míst" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css?v=15" />
+    <style>
+      .denik{max-width:760px;margin:0 auto;padding:44px clamp(18px,5vw,40px) 90px}
+      .denik-head{margin-bottom:28px}
+      .denik-head h1{font:500 clamp(34px,7vw,46px) 'Cormorant Garamond',serif;color:var(--cream);margin:.1em 0 .15em}
+      .denik-head p.uvod{color:var(--cream-soft);font:400 16px 'Jost';line-height:1.55;max-width:52ch}
+
+      /* výzva k přihlášení */
+      .denik-login{background:var(--paper-lift);color:var(--forest);border-radius:20px;padding:38px 30px;text-align:center;box-shadow:0 18px 44px rgba(5,12,8,.4)}
+      .denik-login h2{font:600 24px 'Cormorant Garamond',serif;margin:0 0 8px}
+      .denik-login p{font:400 15px 'Jost';color:#5a5340;margin:0 0 20px}
+
+      /* formulář nového zápisu */
+      .denik-form{background:var(--paper-lift);color:var(--forest);border-radius:20px;padding:24px;box-shadow:0 16px 38px rgba(5,12,8,.34);margin-bottom:30px}
+      .denik-form label{display:block;font:600 12px 'Jost';letter-spacing:.06em;text-transform:uppercase;color:var(--gold-deep);margin:0 0 6px}
+      .denik-form input,.denik-form textarea{margin-bottom:14px}
+      .denik-form textarea{min-height:120px;resize:vertical;line-height:1.5}
+      .denik-form .radek{display:flex;justify-content:flex-end;gap:10px}
+      .denik-btn{border:0;border-radius:99px;background:linear-gradient(180deg,#f0d493,var(--gold) 55%,#b98f38);color:var(--forest);padding:12px 26px;font:600 14px 'Jost';cursor:pointer;transition:.2s}
+      .denik-btn:hover{filter:brightness(1.05)}
+      .denik-btn.ghost{background:transparent;border:1px solid var(--line);color:var(--cream-soft)}
+      .denik-btn.ghost:hover{filter:none;border-color:var(--gold);color:var(--cream)}
+
+      /* seznam zápisů */
+      .denik-pocet{color:var(--cream-soft);font:500 13px 'Jost';letter-spacing:.04em;margin:0 0 14px}
+      .denik-list{display:grid;gap:16px}
+      .denik-zapis{background:var(--paper-lift);color:var(--forest);border-radius:16px;padding:22px 24px;box-shadow:0 10px 26px rgba(5,12,8,.28)}
+      .denik-zapis time{display:block;color:var(--gold-deep);font:500 12px 'Jost';letter-spacing:.05em;margin-bottom:6px}
+      .denik-zapis h3{font:600 20px 'Cormorant Garamond',serif;margin:0 0 8px}
+      .denik-zapis .telo{font:400 15px 'Jost';line-height:1.62;white-space:pre-wrap;color:#40382a}
+      .denik-zapis .akce{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+      .denik-zapis .akce button{border:1px solid var(--line);background:#fff;color:var(--forest);border-radius:99px;padding:7px 15px;font:500 12px 'Jost';cursor:pointer;transition:.2s}
+      .denik-zapis .akce button:hover{border-color:var(--gold-deep)}
+      .denik-zapis .akce .smazat:hover{border-color:#b5442d;color:#b5442d}
+      .denik-zapis.edit .telo,.denik-zapis.edit h3,.denik-zapis.edit time{display:none}
+      .denik-zapis.edit .akce.hlavni{display:none}
+      .denik-edit{display:none}
+      .denik-zapis.edit .denik-edit{display:block}
+      .denik-edit input,.denik-edit textarea{margin-bottom:12px}
+      .denik-edit textarea{min-height:110px;resize:vertical;line-height:1.5}
+      .denik-prazdno{text-align:center;color:var(--cream-soft);font:400 16px 'Jost';padding:30px 0;font-style:italic}
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="Atlas energetických míst">
+        <img class="brand-logo" src="img/logo.png" alt="" /><span>Atlas <em>energetických</em> míst</span>
+      </a>
+      <nav aria-label="Hlavní navigace">
+        <a href="/#mapa">Mapa</a><a href="/objevit">Objevuj</a><a class="active" href="/denik">Deník</a><a href="/o-projektu">O projektu</a><a href="/#komunita">Komunita</a>
+      </nav>
+      <div class="header-actions"><a class="add-cta" href="/#pridat">⊕<span>Přidat místo</span></a><button class="profile" aria-label="Přihlásit se">Přihlásit</button><button class="menu-button" aria-label="Menu" aria-expanded="false" aria-controls="mobile-nav">☰</button></div>
+      <nav class="mobile-nav" id="mobile-nav" hidden aria-label="Mobilní navigace"><a href="/#mapa">Mapa</a><a href="/objevit">Objevuj</a><a href="/denik">Deník</a><a href="/#pridat">Přidat místo</a><a href="/o-projektu">O projektu</a><a href="/#komunita">Komunita</a></nav>
+    </header>
+
+    <main class="denik">
+      <div class="denik-head">
+        <p class="eyebrow">Jen pro tebe</p>
+        <h1>Můj deník</h1>
+        <p class="uvod">Tiché místo pro tvé vlastní zápisky. Co jsi cítil, kam se chceš vrátit, co ti místo řeklo. Vidíš to jen ty — nikam se to nesdílí.</p>
+      </div>
+
+      <!-- nepřihlášený -->
+      <div class="denik-login" id="denik-login" hidden>
+        <h2>Deník je jen tvůj</h2>
+        <p>Přihlas se, aby si tě deník pamatoval a nikdo jiný do něj neviděl.</p>
+        <button class="denik-btn" id="denik-prihlasit">Přihlásit se</button>
+      </div>
+
+      <!-- přihlášený -->
+      <div id="denik-app" hidden>
+        <form class="denik-form" id="denik-form">
+          <label for="denik-nadpis">Nadpis <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#9a8f70">— nepovinné</span></label>
+          <input type="text" id="denik-nadpis" maxlength="120" placeholder="Např. Úplněk u studánky" />
+          <label for="denik-text">Zápis</label>
+          <textarea id="denik-text" placeholder="Napiš, co máš na srdci…"></textarea>
+          <div class="radek">
+            <button type="submit" class="denik-btn">Zapsat</button>
+          </div>
+        </form>
+
+        <p class="denik-pocet" id="denik-pocet"></p>
+        <div class="denik-list" id="denik-list"></div>
+      </div>
+    </main>
+
+    <footer id="komunita"><img class="brand-logo brand-logo-sm" src="img/logo.png" alt="" /><strong>Atlas energetických míst</strong><p>Objevuj. Prožívej. Sdílej.</p></footer>
+
+    <div class="toast" id="toast" role="status"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="header.js?v=3"></script>
+    <script src="auth.js?v=2"></script>
+    <script src="data.js?v=1"></script>
+    <script src="denik.js?v=1"></script>
+  </body>
+</html>
