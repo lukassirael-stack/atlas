@@ -551,3 +551,32 @@ html{overflow-x:hidden}
 /* ---------- mobilní menu: žije mimo hlavičku (header.js ho přesouvá do body) ---------- */
 .mobile-nav{position:fixed;top:62px;left:0;right:0;bottom:auto;z-index:2000;
   max-height:calc(100vh - 62px);overflow:auto}
+
+/* ---------- mobilní menu: vzhled ---------- */
+.mobile-nav{background:linear-gradient(180deg,rgba(20,33,27,.97),rgba(16,27,22,.97));
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--line);border-radius:0 0 22px 22px;
+  box-shadow:0 26px 60px rgba(5,12,8,.62);
+  padding:12px 16px 20px;gap:2px;
+  animation:navDolu .26s cubic-bezier(.22,.61,.36,1)}
+.mobile-nav a{display:flex;align-items:center;justify-content:space-between;
+  color:var(--cream);text-decoration:none;border:0;border-radius:13px;
+  padding:14px 14px;font:500 20px 'Cormorant Garamond',serif;letter-spacing:.015em;
+  transition:background .18s ease,color .18s ease,padding-left .18s ease}
+.mobile-nav a::after{content:'›';color:var(--gold);opacity:0;font-size:20px;
+  transform:translateX(-4px);transition:opacity .18s ease,transform .18s ease}
+.mobile-nav a:hover,.mobile-nav a:active{background:rgba(201,161,74,.10);
+  color:var(--gold-lume);padding-left:20px}
+.mobile-nav a:hover::after,.mobile-nav a:active::after{opacity:.85;transform:none}
+.mobile-nav a.aktivni{color:var(--gold-lume);background:rgba(201,161,74,.08)}
+.mobile-nav a.aktivni::before{content:'✦';color:var(--gold-lume);font-size:12px;
+  margin-right:9px;margin-left:-3px}
+.mobile-nav a.aktivni::after{opacity:.85;transform:none}
+
+.nav-overlay{position:fixed;inset:62px 0 0 0;z-index:1998;
+  background:rgba(6,13,9,.5);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+  animation:navFade .26s ease}
+.nav-overlay[hidden]{display:none}
+
+@keyframes navDolu{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+@keyframes navFade{from{opacity:0}to{opacity:1}}

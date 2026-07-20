@@ -3,33 +3,46 @@ const toast = document.querySelector('#toast');
 function notify(message){if(!toast)return;toast.textContent=message;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2800)}
 
 /* ---- mobilní menu ---- */
-/* menu přesunout VEN z hlavičky přímo do <body>:
+/* menu i překryv přesunout VEN z hlavičky přímo do <body>:
    topbar má backdrop-filter, který připnutým potomkům mění vztažný bod
-   a na mobilech způsobuje chyby vykreslování — mimo hlavičku je menu nezávislé */
+   a na mobilech způsobuje chyby vykreslování — mimo hlavičku jsou nezávislé */
 (function(){
   const nav=document.getElementById('mobile-nav');
-  if(nav && nav.parentElement !== document.body) document.body.appendChild(nav);
+  if(!nav) return;
+  if(nav.parentElement !== document.body) document.body.appendChild(nav);
+  if(!document.querySelector('.nav-overlay')){
+    const ov=document.createElement('div');
+    ov.className='nav-overlay';
+    ov.hidden=true;
+    ov.addEventListener('click', zavriMenu);
+    document.body.appendChild(ov);
+  }
+  /* zvýraznit položku aktuální stránky (funguje s .html i bez) */
+  const norm=s=>(s.replace(/\/+$/,'').replace(/\.html$/,'')||'/');
+  const cesta=norm(location.pathname);
+  nav.querySelectorAll('a').forEach(a=>{
+    const href=a.getAttribute('href')||'';
+    if(href.startsWith('/') && norm(href)===cesta) a.classList.add('aktivni');
+  });
 })();
 
-function zavriMenu(){
+function nastavMenu(otevrit){
   const nav=document.getElementById('mobile-nav');
-  if(!nav)return;
-  nav.hidden=true;
+  const ov=document.querySelector('.nav-overlay');
   const b=document.querySelector('.menu-button');
-  if(b){b.setAttribute('aria-expanded','false');b.textContent='☰';}
+  if(nav) nav.hidden=!otevrit;
+  if(ov) ov.hidden=!otevrit;
+  if(b){b.setAttribute('aria-expanded',String(otevrit));b.textContent=otevrit?'✕':'☰';}
 }
+function zavriMenu(){ nastavMenu(false); }
+
 /* delegace na celý dokument — funguje bez ohledu na překreslení hlavičky */
 document.addEventListener('click',function(e){
   const btn=e.target.closest('.menu-button');
   if(btn){
     e.preventDefault();
     const nav=document.getElementById('mobile-nav');
-    if(nav){
-      const otevrit=nav.hidden;
-      nav.hidden=!otevrit;
-      btn.setAttribute('aria-expanded',String(otevrit));
-      btn.textContent=otevrit?'✕':'☰';
-    }
+    nastavMenu(nav ? nav.hidden : true);
     return;
   }
   if(e.target.closest('#mobile-nav a')) zavriMenu();
