@@ -101,14 +101,23 @@ async function nactiMisto(){
   nactiKomentare();
 }
 
+function nastavHero(url){
+  const el = document.querySelector('#place-hero-bg');
+  if (!el) return;
+  if (!url){ el.classList.add('zjevena'); return; }
+  const img = new Image();
+  img.onload = ()=>{ el.style.backgroundImage = `url(${url})`; el.classList.add('zjevena'); };
+  img.onerror = ()=>{ el.classList.add('zjevena'); };
+  img.src = url;
+}
+
 async function nactiFotky(autorId){
   const db = window.atlasDb;
   const { data: fotky } = await db.rpc('atlas_misto_fotky', { p_slug: SLUG });
-  if (!fotky || !fotky.length) return;
+  if (!fotky || !fotky.length){ nastavHero('img/brana-svit.jpg'); return; }
 
-  // hlavní foto do hero
-  const hlavniUrl = window.atlasFotoUrl(fotky[0].cesta);
-  if (hlavniUrl) document.querySelector('#place-hero-bg').style.backgroundImage = `url(${hlavniUrl})`;
+  // hlavní foto do hero — prolne se až po načtení (žádné probliknutí)
+  nastavHero(window.atlasFotoUrl(fotky[0].cesta));
 
   // smí přeřazovat? autor místa nebo správce
   const ucet = window.atlasUcet && window.atlasUcet();
