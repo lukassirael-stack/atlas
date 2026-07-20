@@ -733,3 +733,8 @@ html{overflow-x:clip}
   transition:background .18s ease,color .18s ease}
 .um-odhlasit:hover{background:rgba(217,104,63,.12);color:#e8917a}
 @media(max-width:700px){.ucet-menu{top:70px;right:10px}}
+
+/* ---------- desktop: karta místa vlevo, ať se nekříží s ovládáním mapy vpravo ---------- */
+@media(min-width:901px){
+  .place-card{left:18px;right:auto}
+}
