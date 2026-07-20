@@ -51,6 +51,8 @@ function dlazdiceVykresli(){
 /* ==== Leaflet mapa (satelit) ==== */
 let atlasMap = null;
 let atlasZnacky = [];
+let mojePoloha = null;
+let locateBtn = null;
 const znackaIkona = L.divIcon({
   className: 'atlas-znacka',
   html: '<span>✦</span>',
@@ -68,6 +70,26 @@ function mapaInit(){
     attributionControl: true
   });
   L.control.zoom({ position: 'topright' }).addTo(atlasMap);
+  // kruhové tlačítko "Najít mě" hned pod ovládáním zoomu
+  // (jako Leaflet control → správná vrstva, nekoliduje se zoomem a klik se neztrácí)
+  const NajitControl = L.Control.extend({
+    options: { position: 'topright' },
+    onAdd: function(){
+      const wrap = L.DomUtil.create('div', 'leaflet-bar locate-bar');
+      const btn = L.DomUtil.create('a', 'locate-fab', wrap);
+      btn.href = '#';
+      btn.innerHTML = '◎';
+      btn.title = 'Najít mou polohu';
+      btn.setAttribute('role','button');
+      btn.setAttribute('aria-label','Najít mou polohu');
+      locateBtn = btn;
+      L.DomEvent.disableClickPropagation(wrap);
+      L.DomEvent.on(btn, 'click', L.DomEvent.stop);
+      L.DomEvent.on(btn, 'click', najdiPolohu);
+      return wrap;
+    }
+  });
+  atlasMap.addControl(new NajitControl());
   // satelit — Esri World Imagery, zdarma bez klíče
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
     maxZoom: 19,
@@ -126,13 +148,33 @@ document.querySelector('#surprise')?.addEventListener('click',()=>{
   if(atlasMap && m.lat!=null) atlasMap.setView([m.lat,m.lng],13);
   document.querySelector('#mapa')?.scrollIntoView({behavior:'smooth'});
 });
-document.querySelector('#locate')?.addEventListener('click',()=>{
-  if(!navigator.geolocation){notify('Tvůj prohlížeč polohu nepodporuje.');return}
+function najdiPolohu(){
+  if(!navigator.geolocation){ notify('Tvůj prohlížeč polohu nepodporuje.'); return; }
   notify('Hledám tvou polohu…');
-  navigator.geolocation.getCurrentPosition(p=>{
-    if(atlasMap) atlasMap.setView([p.coords.latitude,p.coords.longitude],12);
-  },()=>notify('Polohu se nepodařilo načíst.'),{enableHighAccuracy:true,timeout:10000});
-});
+  if(locateBtn) locateBtn.classList.add('hledam');
+  navigator.geolocation.getCurrentPosition(function(p){
+    if(locateBtn) locateBtn.classList.remove('hledam');
+    const ll = [p.coords.latitude, p.coords.longitude];
+    if(atlasMap){
+      atlasMap.flyTo(ll, 13, { duration: 1.1 });
+      if(mojePoloha){ mojePoloha.setLatLng(ll); }
+      else {
+        mojePoloha = L.circleMarker(ll, {
+          radius: 8, weight: 3, color: '#ffffff',
+          fillColor: '#7fd99a', fillOpacity: .95
+        }).addTo(atlasMap);
+        mojePoloha.bindPopup('Tady jsi ty 🌿');
+      }
+    }
+    notify('Jsi tady 🌿');
+  }, function(err){
+    if(locateBtn) locateBtn.classList.remove('hledam');
+    let m = 'Polohu se nepodařilo načíst.';
+    if(err && err.code === 1) m = 'Přístup k poloze je zakázaný — povol ho v nastavení prohlížeče.';
+    else if(err && err.code === 3) m = 'Hledání polohy trvá moc dlouho. Zkus to prosím znovu.';
+    notify(m);
+  }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
+}
 document.querySelector('#filter-toggle')?.addEventListener('click',()=>document.querySelector('#filters').scrollIntoView({behavior:'smooth',block:'center'}));
 const modal=document.querySelector('#place-modal');
 function openModal(){modal.classList.add('open');modal.setAttribute('aria-hidden','false');document.querySelector('#place-form input[type="text"]').focus()}
