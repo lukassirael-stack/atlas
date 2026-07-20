@@ -68,6 +68,23 @@ async function nactiMisto(){
   if (m.autor_nick) metaCasti.push(`přidal ${escHtml(m.autor_nick)}`);
   document.querySelector('#place-meta').innerHTML = metaCasti.join(' · ');
 
+  // navigace: předání souřadnic do mapové aplikace v telefonu
+  const nav = document.querySelector('#place-navigace');
+  if (nav && m.lat != null && m.lng != null) {
+    const g = `https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lng}`;
+    const mapy = `https://mapy.cz/zakladni?source=coor&id=${m.lng},${m.lat}&x=${m.lng}&y=${m.lat}&z=16`;
+    nav.innerHTML =
+      `<a class="nav-btn nav-primary" href="${g}" target="_blank" rel="noopener">🧭 Naviguj mě sem</a>` +
+      `<a class="nav-btn" href="${mapy}" target="_blank" rel="noopener">🗺 Mapy.cz</a>` +
+      `<button type="button" class="nav-btn nav-copy" data-gps="${m.lat}, ${m.lng}">⎘ GPS</button>`;
+    nav.querySelector('.nav-copy')?.addEventListener('click', async (e) => {
+      try {
+        await navigator.clipboard.writeText(e.currentTarget.dataset.gps);
+        notify('Souřadnice zkopírovány 🌿');
+      } catch (_) { notify('Kopírování se nepodařilo.'); }
+    });
+  }
+
   const textEl = document.querySelector('#place-text');
   textEl.innerHTML = SEKCE.filter(([k])=>m[k]&&m[k].trim()).map(([k,nadpis])=>
     `<section class="place-section"><p class="eyebrow">${nadpis}</p><p>${escHtml(m[k])}</p></section>`
