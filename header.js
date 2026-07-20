@@ -49,6 +49,68 @@ document.addEventListener('click',function(e){
 });
 document.addEventListener('keydown',function(e){ if(e.key==='Escape') zavriMenu(); });
 
+/* ---- zvoneček: vzkazy od správce (na všech stránkách, pro přihlášené) ---- */
+function zpravyInit(){
+  const db = window.atlasDb;
+  const ucet = window.atlasUcet && window.atlasUcet();
+  const actions = document.querySelector('.header-actions');
+  if(!db || !ucet || !actions) return;
+  if(actions.querySelector('.bell')) return; // už vloženo
+
+  const bell = document.createElement('button');
+  bell.className = 'bell';
+  bell.type = 'button';
+  bell.setAttribute('aria-label','Vzkazy od správce');
+  bell.setAttribute('aria-expanded','false');
+  bell.innerHTML = '🔔<span class="bell-badge" hidden></span>';
+  actions.insertBefore(bell, actions.querySelector('.profile') || actions.firstChild);
+
+  const panel = document.createElement('div');
+  panel.className = 'bell-panel';
+  panel.hidden = true;
+  document.body.appendChild(panel);
+
+  async function nacti(){
+    let data = [];
+    try { const r = await db.rpc('atlas_moje_zpravy'); if(r.error) throw r.error; data = r.data || []; }
+    catch(e){ return; }
+    const neprec = data.filter(z=>!z.precteno).length;
+    const badge = bell.querySelector('.bell-badge');
+    if(neprec>0){ badge.textContent = neprec>9?'9+':String(neprec); badge.hidden=false; bell.classList.add('ma-nove'); }
+    else { badge.hidden=true; bell.classList.remove('ma-nove'); }
+    if(!data.length){
+      panel.innerHTML = '<div class="bell-head">Vzkazy od správce</div><div class="bell-prazdno">Zatím žádné vzkazy 🌿</div>';
+    } else {
+      panel.innerHTML = '<div class="bell-head">Vzkazy od správce</div>' + data.map(z=>
+        `<div class="bell-zprava${z.precteno?'':' nova'}">`+
+          `<p class="bell-text">${zEsc(z.text)}</p>`+
+          `<p class="bell-meta">${z.misto_nazev?('k místu '+zEsc(z.misto_nazev)+' · '):''}${zKdy(z.vytvoreno)}</p>`+
+        `</div>`).join('');
+    }
+  }
+  nacti();
+
+  bell.addEventListener('click', async function(e){
+    e.preventDefault();
+    const otevrit = panel.hidden;
+    panel.hidden = !otevrit;
+    bell.setAttribute('aria-expanded', String(otevrit));
+    if(otevrit){
+      const badge = bell.querySelector('.bell-badge');
+      badge.hidden = true; bell.classList.remove('ma-nove');
+      try { await db.from('atlas_zpravy').update({precteno:true}).eq('precteno',false); } catch(_){}
+    }
+  });
+  document.addEventListener('click', function(e){
+    if(!panel.hidden && !e.target.closest('.bell-panel') && !e.target.closest('.bell')) panel.hidden = true;
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') panel.hidden = true; });
+}
+function zEsc(t){const d=document.createElement('div');d.textContent=t||'';return d.innerHTML}
+function zKdy(iso){if(!iso)return'';const d=new Date(iso);return `${d.getDate()}. ${d.getMonth()+1}. ${d.getFullYear()}`}
+if(window.atlasAuthReady) zpravyInit();
+window.addEventListener('atlas-auth-ready', zpravyInit);
+
 /* PWA: registrace service workeru */
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{

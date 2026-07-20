@@ -60,6 +60,7 @@ function kartaMista(m){
   } else if(m.stav==='zamitnute'){
     akce += `<button class="btn-schvalit" data-id="${m.id}">✓ Přece schválit</button>`;
   }
+  akce += `<button class="btn-vzkaz" data-id="${m.id}" data-nazev="${escAttr(m.nazev)}">✉ Vzkaz autorovi</button>`;
   akce += `<button class="btn-edit" data-id="${m.id}">✎ Upravit</button>`;
   akce += `<button class="btn-smazat" data-id="${m.id}" data-nazev="${escAttr(m.nazev)}">🗑 Smazat</button>`;
 
@@ -114,6 +115,17 @@ function navazAkce(data){
     const {error}=await db.from('atlas_mista').delete().eq('id',b.dataset.id);
     if(error){notify('Chyba: '+error.message);b.disabled=false;return}
     notify('Místo smazáno.');nactiMista();
+  }));
+
+  document.querySelectorAll('.btn-vzkaz').forEach(b=>b.addEventListener('click',async()=>{
+    const text=prompt(`Vzkaz autorovi místa „${b.dataset.nazev}" (uvidí ho u sebe ve zvonečku):`,'');
+    if(text===null)return;
+    if(!text.trim()){notify('Vzkaz je prázdný.');return}
+    b.disabled=true;
+    const {error}=await db.rpc('atlas_posli_vzkaz',{p_misto_id:b.dataset.id,p_text:text.trim()});
+    b.disabled=false;
+    if(error){notify('Chyba: '+error.message);return}
+    notify('Vzkaz odeslán autorovi. ✉');
   }));
 
   document.querySelectorAll('.btn-edit').forEach(b=>b.addEventListener('click',()=>otevriEdit(mapaData[b.dataset.id])));
