@@ -738,3 +738,22 @@ html{overflow-x:clip}
 @media(min-width:901px){
   .place-card{left:18px;right:auto}
 }
+
+/* ---------- mapa: navštívené místo (mám u něj zápis) ---------- */
+.atlas-znacka.navstiveno span{
+  background:radial-gradient(circle at 40% 35%,#2f5a44,#1f3129 72%);
+  color:#ecd08a;font-size:17px;border-color:#c9a14a;
+  box-shadow:0 3px 10px rgba(5,12,8,.6),0 0 12px rgba(201,161,74,.55)}
+
+/* ---------- účtové menu: Moje cesty ---------- */
+.um-cesty{padding:10px 4px 6px;border-top:1px solid var(--line-soft)}
+.um-cesty > .um-eyebrow{display:block;padding:0 10px 8px;color:var(--gold-lume);
+  font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+.um-cesty-seznam{display:grid;gap:2px;max-height:230px;overflow:auto}
+.um-cesty-nacitam,.um-cesty-prazdno{color:var(--cream-soft);font-size:13px;
+  padding:4px 10px 8px;line-height:1.5;margin:0}
+.um-cesta{display:flex;flex-direction:column;gap:2px;padding:9px 10px;border-radius:10px;
+  text-decoration:none;transition:background .16s ease}
+.um-cesta:hover{background:rgba(201,161,74,.10)}
+.umc-nazev{color:var(--cream);font:500 15px 'Cormorant Garamond',serif}
+.umc-datum{color:var(--gold-lume);font-size:11px;letter-spacing:.03em;opacity:.85}

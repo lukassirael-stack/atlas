@@ -81,7 +81,7 @@ function vykresliStav() {
 
 async function nactiProfil() {
   if (!db || !ucet) { profil = null; return; }
-  const { data } = await db.from('atlas_profily').select('id,nick').eq('id', ucet.id).maybeSingle();
+  const { data } = await db.from('atlas_profily').select('id,nick,spravce').eq('id', ucet.id).maybeSingle();
   profil = data || null;
 }
 
@@ -117,12 +117,68 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') document.querySelectorAll('#auth-modal.open, #nick-modal.open').forEach(zavri);
 });
 
-/* tlačítko v hlavičce */
+/* tlačítko v hlavičce → účtové menu */
+function escHtmlAuth(t){const d=document.createElement('div');d.textContent=t||'';return d.innerHTML;}
+function vlozUctoveMenu(){
+  if(document.querySelector('#ucet-menu')) return;
+  const p=document.createElement('div');
+  p.className='ucet-menu'; p.id='ucet-menu'; p.hidden=true;
+  document.body.appendChild(p);
+  document.addEventListener('click',e=>{
+    if(!p.hidden && !e.target.closest('#ucet-menu') && !e.target.closest('.profile')) p.hidden=true;
+  });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape') p.hidden=true; });
+}
+function vykresliUctoveMenu(){
+  const p=document.querySelector('#ucet-menu');
+  if(!p || !profil) return;
+  const sprava = profil.spravce
+    ? `<a class="um-akce" href="/sprava">🗺 Správa Atlasu <span>›</span></a>` : '';
+  p.innerHTML =
+    `<div class="um-hlava"><span class="um-eyebrow">Přihlášen jako</span><b>${escHtmlAuth(profil.nick)}</b></div>`+
+    `<div class="um-cesty"><span class="um-eyebrow">🧭 Moje cesty</span>`+
+      `<div id="um-cesty-seznam" class="um-cesty-seznam"><p class="um-cesty-nacitam">Načítám…</p></div></div>`+
+    sprava+
+    `<button type="button" class="um-odhlasit" id="um-odhlasit">Odhlásit se</button>`;
+  p.querySelector('#um-odhlasit')?.addEventListener('click',()=>{ p.hidden=true; odhlas(); });
+  nactiMojeCesty();
+}
+
+function datumAuth(iso){
+  if(!iso) return '';
+  const d=new Date(iso);
+  return `${d.getDate()}. ${d.getMonth()+1}. ${d.getFullYear()}`;
+}
+
+async function nactiMojeCesty(){
+  const box=document.querySelector('#um-cesty-seznam');
+  if(!box || !db) return;
+  try{
+    const { data, error } = await db.rpc('atlas_moje_navstevy');
+    if(error) throw error;
+    if(!data || !data.length){
+      box.innerHTML = '<p class="um-cesty-prazdno">Zatím nikde zápis nemáš. Vydej se na cestu a zanech svou stopu. 🌿</p>';
+      return;
+    }
+    box.innerHTML = data.map(m=>
+      `<a class="um-cesta" href="/misto?m=${encodeURIComponent(m.slug)}">`+
+        `<span class="umc-nazev">★ ${escHtmlAuth(m.nazev)}</span>`+
+        `<span class="umc-datum">${datumAuth(m.naposledy)}${m.pocet>1?` · ${m.pocet}×`:''}</span>`+
+      `</a>`).join('');
+  }catch(_){
+    box.innerHTML = '<p class="um-cesty-prazdno">Cesty se teď nepodařilo načíst.</p>';
+  }
+}
+vlozUctoveMenu();
+
 document.querySelector('.profile')?.addEventListener('click', () => {
   if (!db) { notify('Přihlášení připravujeme.'); return; }
   if (!ucet) { otevri('#auth-modal'); return; }
   if (!profil) { otevri('#nick-modal'); return; }
-  if (confirm(`Přihlášen jako ${profil.nick}. Odhlásit se?`)) odhlas();
+  const p=document.querySelector('#ucet-menu');
+  const otevrit=p.hidden;
+  if(otevrit) vykresliUctoveMenu();
+  p.hidden=!otevrit;
 });
 
 async function odhlas() {

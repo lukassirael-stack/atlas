@@ -53,9 +53,16 @@ let atlasMap = null;
 let atlasZnacky = [];
 let mojePoloha = null;
 let locateBtn = null;
+let mojeNavstevy = new Set();   // misto_id míst, která mám navštívená (mám u nich zápis)
 const znackaIkona = L.divIcon({
   className: 'atlas-znacka',
   html: '<span>✦</span>',
+  iconSize: [34,34],
+  iconAnchor: [17,17]
+});
+const navstivenaIkona = L.divIcon({
+  className: 'atlas-znacka navstiveno',
+  html: '<span>★</span>',
   iconSize: [34,34],
   iconAnchor: [17,17]
 });
@@ -108,7 +115,8 @@ function znackyVykresli(){
   const body = [];
   atlasMista.forEach(m=>{
     if (m.lat==null || m.lng==null) return;
-    const znacka = L.marker([m.lat, m.lng], {icon: znackaIkona, title: m.nazev}).addTo(atlasMap);
+    const ikona = mojeNavstevy.has(m.id) ? navstivenaIkona : znackaIkona;
+    const znacka = L.marker([m.lat, m.lng], {icon: ikona, title: m.nazev}).addTo(atlasMap);
     znacka.on('click', ()=>{ kartaZobraz(m); atlasMap.panTo([m.lat, m.lng]); });
     atlasZnacky.push(znacka);
     body.push([m.lat, m.lng]);
@@ -393,3 +401,17 @@ async function nactiPuls(){
 }
 if(window.atlasAuthReady) nactiPuls();
 window.addEventListener('atlas-auth-ready', nactiPuls);
+
+/* ==== navštívená místa: odlišit značkou na mapě ==== */
+async function nactiNavstevy(){
+  const db = window.atlasDb, ucet = window.atlasUcet?.();
+  if(!db || !ucet){ mojeNavstevy = new Set(); return; }
+  try{
+    const { data, error } = await db.rpc('atlas_moje_navstevy');
+    if(error) return;
+    mojeNavstevy = new Set((data||[]).map(r=>r.misto_id));
+    if(atlasMap && atlasMista && atlasMista.length) znackyVykresli();
+  }catch(_){}
+}
+if(window.atlasAuthReady) nactiNavstevy();
+window.addEventListener('atlas-auth-ready', nactiNavstevy);
