@@ -537,3 +537,13 @@ html{overflow-x:hidden}
 /* karta místa: jasně vystoupit ze satelitní mapy (rám + hlubší stín) */
 .place-card{border:1px solid rgba(255,255,255,.82);box-shadow:0 20px 48px rgba(5,12,8,.64)}
 .place-image{border-bottom:1px solid rgba(11,20,15,.10)}
+
+/* ---------- hamburger neprůstřelně + kompaktní karta na mobilu ---------- */
+/* mobilní menu připnuté k obrazovce, nad vším (i nad Leaflet mapou) */
+.mobile-nav{position:fixed;top:62px;z-index:9999}
+/* karta místa na malém displeji: menší fotka, těsněji — ať nezakryje celou mapu */
+@media(max-width:560px){
+  #place-card .place-image{aspect-ratio:auto;height:120px}
+  #place-card .place-content{padding:15px 17px 17px}
+  #place-card #place-description{display:none}
+}
