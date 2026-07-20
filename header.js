@@ -17,6 +17,16 @@ function notify(message){if(!toast)return;toast.textContent=message;toast.classL
     ov.addEventListener('click', zavriMenu);
     document.body.appendChild(ov);
   }
+  /* symbol každé položky v jemném zlatém kroužku */
+  const iko={'Mapa':'◎','Objevuj':'✦','Deník':'✎','Přidat místo':'⊕','O projektu':'❖','Komunita':'☾'};
+  nav.querySelectorAll('a').forEach(a=>{
+    if(a.querySelector('.mn-ico')) return;
+    const t=a.textContent.trim();
+    const s=document.createElement('span');
+    s.className='mn-ico';
+    s.textContent=iko[t]||'✦';
+    a.prepend(s);
+  });
   /* zvýraznit položku aktuální stránky (funguje s .html i bez) */
   const norm=s=>(s.replace(/\/+$/,'').replace(/\.html$/,'')||'/');
   const cesta=norm(location.pathname);
