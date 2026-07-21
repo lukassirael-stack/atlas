@@ -193,6 +193,54 @@ document.querySelector('#odhlasit-nick')?.addEventListener('click', async () => 
 });
 
 /* poslání magic linku */
+let odeslanoNa = null;   // e-mail, na který odešel poslední odkaz
+let znovuTimer = null;
+
+/* přepnout modál mezi formulářem a stavem „odesláno" */
+function autForm(zobrazit) {
+  const label = document.querySelector('#auth-form label');
+  const send = document.querySelector('#auth-send');
+  const status = document.querySelector('#auth-status');
+  if (label) label.hidden = !zobrazit;
+  if (send) send.hidden = !zobrazit;
+  if (zobrazit && status) { status.className = 'auth-status'; status.textContent = ''; status.style.textAlign = ''; }
+}
+
+function zobrazOdeslano(email) {
+  odeslanoNa = email;
+  autForm(false);
+  const status = document.querySelector('#auth-status');
+  if (!status) return;
+  status.className = 'auth-status ok';
+  status.style.textAlign = 'center';
+  status.innerHTML =
+    '<span style="display:block;font-size:2rem;line-height:1;margin:.4rem 0 .6rem">✉️</span>' +
+    '<b style="display:block;font-size:1.05rem;margin-bottom:.4rem">Odkaz je na cestě</b>' +
+    '<span>Poslali jsme ho na </span><b>' + escHtmlAuth(email) + '</b><span>.</span><br>' +
+    '<span>Otevři si schránku a klikni na něj. Tuhle stránku můžeš klidně zavřít.</span><br>' +
+    '<button type="button" class="link-button" id="auth-znovu" disabled style="margin-top:.7rem">Poslat znovu <span id="auth-cd">(60 s)</span></button>';
+  let zbyva = 60;
+  clearInterval(znovuTimer);
+  znovuTimer = setInterval(() => {
+    zbyva--;
+    const cd = document.querySelector('#auth-cd');
+    const btn = document.querySelector('#auth-znovu');
+    if (!cd || !btn) { clearInterval(znovuTimer); return; }
+    if (zbyva <= 0) { clearInterval(znovuTimer); cd.textContent = ''; btn.disabled = false; }
+    else cd.textContent = '(' + zbyva + ' s)';
+  }, 1000);
+}
+
+/* „Poslat znovu" vrátí formulář s předvyplněným e-mailem (jde ho i změnit) */
+document.querySelector('#auth-status')?.addEventListener('click', e => {
+  if (!e.target.closest('#auth-znovu')) return;
+  clearInterval(znovuTimer);
+  autForm(true);
+  const input = document.querySelector('#auth-email');
+  if (input && odeslanoNa) input.value = odeslanoNa;
+  input?.focus();
+});
+
 document.querySelector('#auth-form')?.addEventListener('submit', async event => {
   event.preventDefault();
   const email = document.querySelector('#auth-email').value.trim();
@@ -211,8 +259,7 @@ document.querySelector('#auth-form')?.addEventListener('submit', async event => 
     status.textContent = 'Odkaz se nepodařilo poslat: ' + error.message;
     return;
   }
-  status.className = 'auth-status ok';
-  status.innerHTML = `Odkaz letí na <b>${email}</b>.<br>Otevři si schránku a klikni na něj. Tuhle stránku můžeš zavřít.`;
+  zobrazOdeslano(email);
 });
 
 /* volba nicku */
@@ -259,6 +306,8 @@ db?.auth.onAuthStateChange(async (event, session) => {
   await nactiProfil();
   vykresliStav();
   if (event === 'SIGNED_IN') {
+    clearInterval(znovuTimer);
+    autForm(true);
     zavri(document.querySelector('#auth-modal'));
     if (!profil) otevri('#nick-modal');
     else notify(`Přihlášen jako ${profil.nick}.`);
