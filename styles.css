@@ -816,3 +816,22 @@ html{overflow-x:clip}
 .footer-legal a:hover{border-bottom-color:var(--gold)}
 .about-section p a,.about-cta p a{color:var(--gold-lume);text-decoration:none;border-bottom:1px solid rgba(201,161,74,.35)}
 .about-section p a:hover,.about-cta p a:hover{border-bottom-color:var(--gold)}
+
+/* ---------- domů: cesta dvou rolí (nahrazuje feature-grid) ---------- */
+.cesty-uvod{max-width:620px;margin:0 0 26px;color:var(--cream-soft);font-size:16px;line-height:1.7}
+.cesty-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.cesta{border:1px solid var(--line);border-radius:20px;padding:26px 24px;background:rgba(251,247,239,.03);position:relative}
+.cesta-tvurce{background:linear-gradient(180deg,rgba(201,161,74,.06),rgba(251,247,239,.02))}
+.cesta-role{font:600 12px 'Jost',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--gold-deep);margin:0 0 6px}
+.cesta h3{font:500 26px 'Cormorant Garamond',serif;color:var(--gold-lume);margin:0 0 18px}
+.cesta-kroky{list-style:none;counter-reset:krok;margin:0;padding:0;display:grid;gap:14px}
+.cesta-kroky li{counter-increment:krok;position:relative;padding-left:42px;color:var(--cream-soft);font-size:14.5px;line-height:1.6}
+.cesta-kroky li::before{content:counter(krok);position:absolute;left:0;top:-2px;width:28px;height:28px;
+  display:grid;place-items:center;border-radius:50%;border:1px solid rgba(201,161,74,.4);
+  background:rgba(201,161,74,.08);color:var(--gold-lume);font:500 14px 'Cormorant Garamond',serif}
+.cesta-kroky li b{color:var(--cream);font-weight:600}
+@media(max-width:760px){
+  .cesty-grid{grid-template-columns:1fr;gap:14px}
+  .cesta{padding:22px 20px}
+  .cesta h3{font-size:23px;margin-bottom:14px}
+}
