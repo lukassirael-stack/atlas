@@ -7,7 +7,7 @@ let mistoData = null;
    často už je obrázek v mezipaměti z náhledové karty; skutečná data ho pak případně tiše opraví */
 const FOTKA_Z_ODKAZU = new URLSearchParams(location.search).get('f');
 let heroCesta = null;
-if (FOTKA_Z_ODKAZU && /^[\w\-./]+$/.test(FOTKA_Z_ODKAZU)) {
+if (FOTKA_Z_ODKAZU && /^[\w\-./]+$/.test(FOTKA_Z_ODKAZU) && window.atlasFotoUrl) {
   heroCesta = FOTKA_Z_ODKAZU;
   nastavHero(window.atlasFotoUrl(heroCesta));
 }
@@ -118,8 +118,8 @@ function nastavHero(url){
   if (el.dataset.url === url) return;
   el.dataset.url = url;
   const img = new Image();
-  img.onload = ()=>{ el.style.backgroundImage = `url(${url})`; el.classList.add('zjevena'); };
-  img.onerror = ()=>{ el.classList.add('zjevena'); };
+  img.onload = ()=>{ if(el.dataset.url!==url) return; el.style.backgroundImage = `url(${url})`; el.classList.add('zjevena'); };
+  img.onerror = ()=>{ if(el.dataset.url!==url) return; el.classList.add('zjevena'); };
   img.src = url;
 }
 
@@ -168,229 +168,15 @@ async function nactiFotky(autorId, hotovyDotaz){
 
 async function nactiZapisy(){
   const db=window.atlasDb, box=document.querySelector('#log-list');
-  const { data } = await db.from('atlas_zapisy')
+  const { data, error } = await db.from('atlas_zapisy')
     .select('id,autor_id,text,klid,energie,mystika,krasa,lecivost,vytvoren,atlas_profily(nick)')
     .eq('misto_id', mistoData.id).order('vytvoren',{ascending:false}).limit(50);
+  if (error){
+    box.innerHTML = `<li class="log-prazdno">Zápisy se nepodařilo načíst. Zkus obnovit stránku.</li>`;
+    return;
+  }
   if (!data || !data.length){
     box.innerHTML = `<li class="log-prazdno">Zatím tu nikdo nezapsal návštěvu. Až tu budeš stát, buď první.</li>`;
     return;
   }
-  const ucet=window.atlasUcet&&window.atlasUcet(), profil=window.atlasProfil&&window.atlasProfil();
-  box.innerHTML = data.map(z=>{
-    const nick = z.atlas_profily?.nick || 'poutník';
-    const dna = `Klid ${z.klid} · Energie ${z.energie} · Mystika ${z.mystika} · Krása ${z.krasa} · Léčivost ${z.lecivost}`;
-    const smi = (profil&&profil.spravce) || (ucet&&ucet.id===z.autor_id);
-    const upr = smi ? `<button type="button" class="edit-link" data-edit-zapis="${z.id}">✎ Upravit</button>` : '';
-    return `<li class="log-item" data-zapis="${z.id}"><div class="log-head"><span class="log-nick">${escHtml(nick)}</span><span class="log-badge">◎ ověřeno na místě</span><time>${fmtDatum(z.vytvoren)}</time></div><p class="zapis-text">${escHtml(z.text)}</p><p class="log-dna">${dna}</p>${upr}</li>`;
-  }).join('');
-  if(ucet||profil) box.querySelectorAll('[data-edit-zapis]').forEach(b=>{
-    const z=data.find(x=>x.id===b.dataset.editZapis);
-    b.addEventListener('click',()=>otevriEditZapis(z));
-  });
-}
-
-async function nactiKomentare(){
-  const db=window.atlasDb, box=document.querySelector('#comment-list');
-  const { data } = await db.from('atlas_komentare')
-    .select('id,autor_id,text,vytvoren,atlas_profily(nick)')
-    .eq('misto_id', mistoData.id).eq('stav','zverejneny').order('vytvoren',{ascending:false}).limit(50);
-  if (!data || !data.length){
-    box.innerHTML = `<li class="log-prazdno">Zatím bez komentářů.</li>`;
-    return;
-  }
-  const ucet=window.atlasUcet&&window.atlasUcet(), profil=window.atlasProfil&&window.atlasProfil();
-  box.innerHTML = data.map(k=>{
-    const nick = k.atlas_profily?.nick || 'poutník';
-    const smi = (profil&&profil.spravce) || (ucet&&ucet.id===k.autor_id);
-    const upr = smi ? `<button type="button" class="edit-link" data-edit-koment="${k.id}">✎ Upravit</button>` : '';
-    return `<li class="log-item comment" data-koment="${k.id}"><div class="log-head"><span class="log-nick">${escHtml(nick)}</span><time>${fmtDatum(k.vytvoren)}</time></div><p class="koment-text">${escHtml(k.text)}</p>${upr}</li>`;
-  }).join('');
-  if(ucet||profil) box.querySelectorAll('[data-edit-koment]').forEach(b=>{
-    const k=data.find(x=>x.id===b.dataset.editKoment);
-    b.addEventListener('click',()=>otevriEditKoment(k));
-  });
-}
-
-/* ---- editace zápisu (text + DNA) ---- */
-function otevriEditZapis(z){
-  const m=document.querySelector('#edit-log-modal'); if(!m) return;
-  m.querySelector('#edit-log-text').value=z.text;
-  m.querySelectorAll('#edit-log-dna input[type=range]').forEach(r=>{
-    r.value=z[r.dataset.k]; r.closest('.slider-row').querySelector('output').textContent=r.value;
-  });
-  m.dataset.id=z.id;
-  openModal('#edit-log-modal');
-}
-document.querySelector('#edit-log-dna')?.addEventListener('input',e=>{
-  if(e.target.type==='range') e.target.closest('.slider-row').querySelector('output').textContent=e.target.value;
-});
-document.querySelector('#edit-log-form')?.addEventListener('submit',async event=>{
-  event.preventDefault();
-  const m=document.querySelector('#edit-log-modal'), db=window.atlasDb;
-  const text=m.querySelector('#edit-log-text').value.trim();
-  if(!text){notify('Zápis nemůže být prázdný.');return}
-  const dna={}; m.querySelectorAll('#edit-log-dna input[type=range]').forEach(r=>{dna[r.dataset.k]=Number(r.value)});
-  const btn=event.currentTarget.querySelector('button[type=submit]'); btn.disabled=true; const p=btn.textContent; btn.textContent='Ukládám…';
-  const {error}=await db.from('atlas_zapisy').update({text,klid:dna.klid,energie:dna.energie,mystika:dna.mystika,krasa:dna.krasa,lecivost:dna.lecivost}).eq('id',m.dataset.id);
-  btn.disabled=false; btn.textContent=p;
-  if(error){notify('Úprava se nepodařila: '+error.message);return}
-  closeModal(m); notify('Zápis upraven 🌿'); nactiZapisy();
-}); 
-
-/* ---- editace komentáře (text) ---- */
-function otevriEditKoment(k){
-  const m=document.querySelector('#edit-comment-modal'); if(!m) return;
-  m.querySelector('#edit-comment-text').value=k.text;
-  m.dataset.id=k.id;
-  openModal('#edit-comment-modal');
-}
-document.querySelector('#edit-comment-form')?.addEventListener('submit',async event=>{
-  event.preventDefault();
-  const m=document.querySelector('#edit-comment-modal'), db=window.atlasDb;
-  const text=m.querySelector('#edit-comment-text').value.trim();
-  if(!text){notify('Komentář nemůže být prázdný.');return}
-  const btn=event.currentTarget.querySelector('button[type=submit]'); btn.disabled=true; const p=btn.textContent; btn.textContent='Ukládám…';
-  const {error}=await db.from('atlas_komentare').update({text}).eq('id',m.dataset.id);
-  btn.disabled=false; btn.textContent=p;
-  if(error){notify('Úprava se nepodařila: '+error.message);return}
-  closeModal(m); notify('Komentář upraven 🌿'); nactiKomentare();
-});
-
-/* ---- modály ---- */
-function openModal(id){const m=document.querySelector(id);if(!m)return;m.classList.add('open');m.setAttribute('aria-hidden','false');m.querySelector('textarea,input,button')?.focus()}
-function closeModal(m){if(!m)return;m.classList.remove('open');m.setAttribute('aria-hidden','true')}
-function otevriSUctem(id){if(window.vyzadujUcet&&!window.vyzadujUcet())return;openModal(id)}
-document.querySelector('#open-log')?.addEventListener('click',()=>otevriSUctem('#log-modal'));
-document.querySelector('#open-log-2')?.addEventListener('click',()=>otevriSUctem('#log-modal'));
-document.querySelector('#open-comment')?.addEventListener('click',()=>otevriSUctem('#comment-modal'));
-document.querySelector('#open-comment-2')?.addEventListener('click',()=>otevriSUctem('#comment-modal'));
-document.querySelectorAll('.modal-close').forEach(button=>button.addEventListener('click',()=>closeModal(document.querySelector('#'+button.dataset.close))));
-document.querySelectorAll('.modal-backdrop').forEach(backdrop=>backdrop.addEventListener('click',event=>{if(event.target===backdrop)closeModal(backdrop)}));
-document.addEventListener('keydown',event=>{if(event.key==='Escape')document.querySelectorAll('.modal-backdrop.open').forEach(closeModal)});
-
-/* ---- poloha ---- */
-const geoCapture=document.querySelector('#geo-capture');
-const geoButton=document.querySelector('#geo-get');
-const geoStatus=document.querySelector('#geo-status');
-let geoFix=null;
-function geoChybaText(err){
-  if(/FBAN|FBAV|FB_IAB|Instagram/i.test(navigator.userAgent))
-    return 'Prohlížeč uvnitř aplikace (Facebook, Instagram…) polohu neumí. Otevři Atlas přes menu ⋮ v běžném prohlížeči — bez polohy zápis pořídit nelze.';
-  if(err&&err.code===1)
-    return 'Přístup k poloze je zablokovaný. Klepni na ikonu vedle adresy → Oprávnění → Poloha → Povolit a stránku obnov. Bez polohy zápis pořídit nelze.';
-  if(err&&err.code===3)
-    return 'Hledání polohy trvá moc dlouho. Zkus to prosím znovu.';
-  return 'Polohu se nepodařilo načíst. Máš v telefonu zapnutou polohu (GPS)? Jsi venku, pod otevřeným nebem?';
-}
-function geoReset(){geoFix=null;geoCapture?.classList.remove('ready');if(!geoStatus)return;geoStatus.className='geo-status';geoStatus.textContent='Poloha zatím nenačtena. Musíš stát přímo na místě.';geoButton.textContent='◎ Načíst mou polohu';geoButton.disabled=false}
-geoButton?.addEventListener('click',()=>{
-  if(!navigator.geolocation){geoStatus.className='geo-status err';geoStatus.textContent='Tvůj prohlížeč polohu nepodporuje.';return}
-  geoStatus.className='geo-status';geoStatus.textContent='Hledám tvou polohu…';geoButton.disabled=true;
-  navigator.geolocation.getCurrentPosition(position=>{
-    const{latitude,longitude,accuracy}=position.coords;
-    geoFix={lat:latitude,lng:longitude,accuracy};
-    geoCapture.classList.add('ready');
-    geoStatus.className='geo-status ok';
-    geoStatus.innerHTML=`<b>${latitude.toFixed(5)} N, ${longitude.toFixed(5)} E</b><br>přesnost ±${Math.round(accuracy)} m`;
-    geoButton.textContent='◎ Načíst znovu';geoButton.disabled=false;
-  },error=>{
-    geoStatus.className='geo-status err';
-    geoStatus.textContent=geoChybaText(error);
-    geoButton.disabled=false;
-  },{enableHighAccuracy:true,timeout:12000,maximumAge:0});
-});
-
-/* ---- fotka ze zápisu ---- */
-const logPhotoInputs=[document.querySelector('#log-photo-cam'),document.querySelector('#log-photo-gal')].filter(Boolean);
-const logPhotoPreview=document.querySelector('#log-photo-preview');
-const logPhotoText=document.querySelector('#log-photo-drop .photo-text');
-let logPhotoFile=null;
-logPhotoInputs.forEach(input=>input.addEventListener('change',()=>{
-  const file=input.files[0];
-  if(!file)return;
-  logPhotoFile=file;
-  logPhotoPreview.src=URL.createObjectURL(file);
-  logPhotoPreview.hidden=false;
-  if(logPhotoText) logPhotoText.textContent='Fotka připravena — klepni pro změnu';
-  input.value='';
-}));
-function logPhotoReset(){logPhotoFile=null;if(!logPhotoPreview)return;logPhotoPreview.hidden=true;logPhotoPreview.removeAttribute('src');if(logPhotoText)logPhotoText.textContent='Přidej fotku z návštěvy'}
-
-/* ---- posuvníky DNA ---- */
-document.querySelectorAll('.slider-row input[type=range]').forEach(slider=>{
-  const out=slider.parentElement.querySelector('output');
-  const sync=()=>{out.textContent=slider.value};
-  slider.addEventListener('input',sync);sync();
-});
-
-/* ---- odeslání zápisu ---- */
-document.querySelector('#log-form')?.addEventListener('submit',async event=>{
-  event.preventDefault();
-  if(!geoFix){notify('Nejdřív načti svou polohu — zápis vzniká jen na místě.');geoButton?.focus();return}
-  if(!window.vyzadujUcet||!window.vyzadujUcet())return;
-  if(!mistoData){notify('Místo se ještě nenačetlo, zkus to za okamžik.');return}
-
-  const db=window.atlasDb, ucet=window.atlasUcet();
-  const odeslat=event.currentTarget.querySelector('button[type=submit]');
-  const puvodni=odeslat.textContent; odeslat.disabled=true; odeslat.textContent='Ukládám…';
-
-  const hodnota=axis=>Number(document.querySelector(`.slider-row input[data-axis="${axis}"]`).value);
-  const zaznam={
-    misto_id:mistoData.id,
-    autor_id:ucet.id,
-    text:event.currentTarget.querySelector('textarea').value.trim(),
-    poloha:`SRID=4326;POINT(${geoFix.lng} ${geoFix.lat})`,
-    presnost_m:Math.round(geoFix.accuracy),
-    klid:hodnota('Klid'), energie:hodnota('Energie'), mystika:hodnota('Mystika'),
-    krasa:hodnota('Krása'), lecivost:hodnota('Léčivost')
-  };
-
-  if(logPhotoFile){
-    let blob=logPhotoFile, pripona='jpg';
-    if(window.atlasZpracujFoto){ const z=await window.atlasZpracujFoto(logPhotoFile); blob=z.blob; pripona=z.pripona; }
-    const cesta=`zapisy/${mistoData.id}/${Date.now()}.${pripona}`;
-    const {error:fe}=await db.storage.from('atlas').upload(cesta,blob,{contentType:blob.type});
-    if(!fe) zaznam.fotka=cesta;
-  }
-
-  const {error}=await db.from('atlas_zapisy').insert(zaznam);
-  odeslat.disabled=false; odeslat.textContent=puvodni;
-
-  if(error){
-    console.error(error);
-    notify(error.message.includes('m od místa') ? error.message
-      : (error.code==='23505' ? 'Z tohoto místa už dnes zápis máš. Přijď zas jindy.'
-      : 'Zápis se nepodařilo uložit: '+error.message));
-    return;
-  }
-  closeModal(document.querySelector('#log-modal'));
-  event.currentTarget.reset(); geoReset(); logPhotoReset();
-  document.querySelectorAll('.slider-row input[type=range]').forEach(s=>s.dispatchEvent(new Event('input')));
-  notify('Zápis uložen. Tvé vnímání vstoupilo do DNA místa.');
-  nactiMisto();
-});
-
-/* ---- odeslání komentáře ---- */
-document.querySelector('#comment-form')?.addEventListener('submit',async event=>{
-  event.preventDefault();
-  if(!window.vyzadujUcet||!window.vyzadujUcet())return;
-  if(!mistoData){notify('Místo se ještě nenačetlo, zkus to za okamžik.');return}
-
-  const db=window.atlasDb, ucet=window.atlasUcet();
-  const odeslat=event.currentTarget.querySelector('button[type=submit]');
-  odeslat.disabled=true;
-  const {error}=await db.from('atlas_komentare').insert({
-    misto_id:mistoData.id, autor_id:ucet.id,
-    text:event.currentTarget.querySelector('textarea').value.trim()
-  });
-  odeslat.disabled=false;
-  if(error){console.error(error);notify('Komentář se nepodařilo uložit: '+error.message);return}
-  closeModal(document.querySelector('#comment-modal'));
-  event.currentTarget.reset();
-  notify('Děkujeme! Komentář je zveřejněn.');
-  nactiKomentare();
-});
-
-/* ---- start ---- */
-if (window.atlasAuthReady) nactiMisto();
-else window.addEventListener('atlas-auth-ready', nactiMisto, {once:true});
+  const ucet=window.atlasUcet&&window.atlasUcet(), profil=window.atlasProfil&&window.
