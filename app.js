@@ -207,6 +207,15 @@ const geoCapture=document.querySelector('#geo-capture');
 const geoButton=document.querySelector('#geo-get');
 const geoStatus=document.querySelector('#geo-status');
 let geoFix=null;
+function geoChybaText(err){
+  if(/FBAN|FBAV|FB_IAB|Instagram/i.test(navigator.userAgent))
+    return 'Prohlížeč uvnitř aplikace (Facebook, Instagram…) polohu neumí. Otevři Atlas přes menu ⋮ v běžném prohlížeči — bez polohy místo zanést nelze.';
+  if(err&&err.code===1)
+    return 'Přístup k poloze je zablokovaný. Klepni na ikonu vedle adresy → Oprávnění → Poloha → Povolit a stránku obnov. Bez polohy místo zanést nelze.';
+  if(err&&err.code===3)
+    return 'Hledání polohy trvá moc dlouho. Zkus to prosím znovu.';
+  return 'Polohu se nepodařilo načíst. Máš v telefonu zapnutou polohu (GPS)? Jsi venku, pod otevřeným nebem?';
+}
 function geoReset(){geoFix=null;geoCapture.classList.remove('ready');geoStatus.className='geo-status';geoStatus.textContent='Poloha zatím nenačtena. Musíš stát přímo na místě.';geoButton.textContent='◎ Načíst mou polohu';geoButton.disabled=false}
 geoButton?.addEventListener('click',()=>{
   if(!navigator.geolocation){geoStatus.className='geo-status err';geoStatus.textContent='Tvůj prohlížeč polohu nepodporuje.';return}
@@ -220,7 +229,7 @@ geoButton?.addEventListener('click',()=>{
     geoButton.textContent='◎ Načíst znovu';geoButton.disabled=false;
   },error=>{
     geoStatus.className='geo-status err';
-    geoStatus.textContent=error.code===1?'Přístup k poloze jsi zamítl. Bez ní místo zanést nelze.':'Polohu se nepodařilo načíst. Jsi venku, pod otevřeným nebem?';
+    geoStatus.textContent=geoChybaText(error);
     geoButton.disabled=false;
   },{enableHighAccuracy:true,timeout:12000,maximumAge:0});
 });
@@ -238,6 +247,7 @@ const MAX_PHOTOS=6;
 let photos=[];  // File objekty
 function renderPhotos(){
   if(!photoGrid)return;
+  photoGrid.querySelectorAll('img').forEach(i=>{if(i.src&&i.src.startsWith('blob:'))URL.revokeObjectURL(i.src)});
   photoGrid.innerHTML='';
   photoGrid.hidden=!photos.length;
   photos.forEach((file,index)=>{
@@ -283,13 +293,16 @@ async function nahrajFotky(mistoId){
 
 document.querySelector('#place-form')?.addEventListener('submit',async event=>{
   event.preventDefault();
+  const form=event.currentTarget;
   if(!geoFix){notify('Nejdřív načti svou polohu — místo lze zanést jen přímo na místě.');geoButton?.focus();return}
   if(!photos.length){notify('Přidej aspoň jednu fotku — ať ostatní vidí, kam jdou.');return}
   if(!tagPicker.querySelector('.on')){notify('Vyber alespoň jeden štítek místa.');return}
+  const nazev=document.querySelector('#misto-nazev').value.trim();
+  if(!nazev){notify('Dej místu jméno.');return}
   if(!window.vyzadujUcet||!window.vyzadujUcet())return;
 
   const db=window.atlasDb, ucet=window.atlasUcet();
-  const odeslat=event.currentTarget.querySelector('button[type=submit]');
+  const odeslat=form.querySelector('button[type=submit]');
   const puvodni=odeslat.textContent;
   odeslat.disabled=true;odeslat.textContent='Ukládám…';
 
@@ -302,7 +315,7 @@ document.querySelector('#place-form')?.addEventListener('submit',async event=>{
 
   const {data:misto,error}=await db.from('atlas_mista').insert({
     autor_id:ucet.id,
-    nazev:document.querySelector('#misto-nazev').value.trim(),
+    nazev:nazev,
     poloha:`SRID=4326;POINT(${geoFix.lng} ${geoFix.lat})`,
     presnost_m:Math.round(geoFix.accuracy),
     stitky,
@@ -344,9 +357,9 @@ document.querySelector('#place-form')?.addEventListener('submit',async event=>{
 
   odeslat.disabled=false;odeslat.textContent=puvodni;
 
-  closeModal();event.currentTarget.reset();formReset();
+  closeModal();form.reset();formReset();
   document.querySelectorAll('#misto-dna .slider-row').forEach(radek=>{radek.querySelector('output').textContent=radek.querySelector('input').value});
-  notify(`Děkujeme! „${misto.nazev}" (${nahrano} ${nahrano===1?'fotka':'fotky'}${prvniZapis?' + tvůj první zápis':''}) čeká na schválení.`);
+  notify(`Děkujeme! „${misto.nazev}" (${nahrano} ${sklon(nahrano,['fotka','fotky','fotek'])}${prvniZapis?' + tvůj první zápis':''}) čeká na schválení.`);
 });
 /* posuvníky DNA ve formuláři místa: živé číslo vedle osy */
 document.querySelector('#misto-dna')?.addEventListener('input',e=>{
