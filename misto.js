@@ -273,6 +273,15 @@ const geoCapture=document.querySelector('#geo-capture');
 const geoButton=document.querySelector('#geo-get');
 const geoStatus=document.querySelector('#geo-status');
 let geoFix=null;
+function geoChybaText(err){
+  if(/FBAN|FBAV|FB_IAB|Instagram/i.test(navigator.userAgent))
+    return 'Prohlížeč uvnitř aplikace (Facebook, Instagram…) polohu neumí. Otevři Atlas přes menu ⋮ v běžném prohlížeči — bez polohy zápis pořídit nelze.';
+  if(err&&err.code===1)
+    return 'Přístup k poloze je zablokovaný. Klepni na ikonu vedle adresy → Oprávnění → Poloha → Povolit a stránku obnov. Bez polohy zápis pořídit nelze.';
+  if(err&&err.code===3)
+    return 'Hledání polohy trvá moc dlouho. Zkus to prosím znovu.';
+  return 'Polohu se nepodařilo načíst. Máš v telefonu zapnutou polohu (GPS)? Jsi venku, pod otevřeným nebem?';
+}
 function geoReset(){geoFix=null;geoCapture?.classList.remove('ready');if(!geoStatus)return;geoStatus.className='geo-status';geoStatus.textContent='Poloha zatím nenačtena. Musíš stát přímo na místě.';geoButton.textContent='◎ Načíst mou polohu';geoButton.disabled=false}
 geoButton?.addEventListener('click',()=>{
   if(!navigator.geolocation){geoStatus.className='geo-status err';geoStatus.textContent='Tvůj prohlížeč polohu nepodporuje.';return}
@@ -286,7 +295,7 @@ geoButton?.addEventListener('click',()=>{
     geoButton.textContent='◎ Načíst znovu';geoButton.disabled=false;
   },error=>{
     geoStatus.className='geo-status err';
-    geoStatus.textContent=error.code===1?'Přístup k poloze jsi zamítl. Bez ní zápis pořídit nelze.':'Polohu se nepodařilo načíst. Jsi venku, pod otevřeným nebem?';
+    geoStatus.textContent=geoChybaText(error);
     geoButton.disabled=false;
   },{enableHighAccuracy:true,timeout:12000,maximumAge:0});
 });
