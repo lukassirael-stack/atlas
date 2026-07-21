@@ -1,10 +1,11 @@
 /* Atlas energetických míst — service worker (offline shell + rychlé spuštění) */
-const CACHE = 'atlas-v3';
+const CACHE = 'atlas-v4';
 
 const SHELL = [
-  '/', '/misto', '/o-projektu', '/sprava',
+  '/', '/misto', '/o-projektu', '/sprava', '/objevit', '/denik',
   '/styles.css', '/header.js', '/auth.js', '/data.js',
-  '/app.js', '/misto.js', '/sprava.js',
+  '/app.js', '/misto.js', '/sprava.js', '/objevit.js', '/denik.js',
+  '/foto.js', '/geo.js',
   '/img/logo.png', '/img/icon-192.png', '/img/icon-512.png',
   '/img/hero-brana.jpg', '/img/brana-svit.jpg',
   '/manifest.webmanifest'

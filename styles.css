@@ -541,7 +541,7 @@ html{overflow-x:clip}
 
 /* ---------- hamburger neprůstřelně + kompaktní karta na mobilu ---------- */
 /* mobilní menu připnuté k obrazovce, nad vším (i nad Leaflet mapou) */
-.mobile-nav{position:fixed;top:62px;z-index:9999}
+.mobile-nav{position:fixed;top:62px;z-index:2000}
 /* karta místa na malém displeji: menší fotka, těsněji — ať nezakryje celou mapu */
 @media(max-width:560px){
   #place-card .place-image{aspect-ratio:auto;height:120px}
