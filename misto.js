@@ -244,7 +244,7 @@ document.querySelector('#edit-log-form')?.addEventListener('submit',async event=
   if(error){notify('Úprava se nepodařila: '+error.message);return}
   if(!upraveno||!upraveno.length){notify('Úprava se neuložila — nemáš k ní oprávnění, nebo vypršelo přihlášení.');return}
   closeModal(m); notify('Zápis upraven 🌿'); nactiZapisy();
-}); 
+});
 
 /* ---- editace komentáře (text) ---- */
 function otevriEditKoment(k){
@@ -337,14 +337,15 @@ document.querySelectorAll('.slider-row input[type=range]').forEach(slider=>{
 /* ---- odeslání zápisu ---- */
 document.querySelector('#log-form')?.addEventListener('submit',async event=>{
   event.preventDefault();
+  const form=event.currentTarget;
   if(!geoFix){notify('Nejdřív načti svou polohu — zápis vzniká jen na místě.');geoButton?.focus();return}
   if(!window.vyzadujUcet||!window.vyzadujUcet())return;
   if(!mistoData){notify('Místo se ještě nenačetlo, zkus to za okamžik.');return}
-  const textZapisu=event.currentTarget.querySelector('textarea').value.trim();
+  const textZapisu=form.querySelector('textarea').value.trim();
   if(!textZapisu){notify('Zápis nemůže být prázdný.');return}
 
   const db=window.atlasDb, ucet=window.atlasUcet();
-  const odeslat=event.currentTarget.querySelector('button[type=submit]');
+  const odeslat=form.querySelector('button[type=submit]');
   const puvodni=odeslat.textContent; odeslat.disabled=true; odeslat.textContent='Ukládám…';
 
   const hodnota=axis=>Number(document.querySelector(`.slider-row input[data-axis="${axis}"]`).value);
@@ -379,7 +380,7 @@ document.querySelector('#log-form')?.addEventListener('submit',async event=>{
     return;
   }
   closeModal(document.querySelector('#log-modal'));
-  event.currentTarget.reset(); geoReset(); logPhotoReset();
+  form.reset(); geoReset(); logPhotoReset();
   document.querySelectorAll('.slider-row input[type=range]').forEach(s=>s.dispatchEvent(new Event('input')));
   notify('Zápis uložen. Tvé vnímání vstoupilo do DNA místa.');
   nactiMisto();
@@ -388,13 +389,14 @@ document.querySelector('#log-form')?.addEventListener('submit',async event=>{
 /* ---- odeslání komentáře ---- */
 document.querySelector('#comment-form')?.addEventListener('submit',async event=>{
   event.preventDefault();
+  const form=event.currentTarget;
   if(!window.vyzadujUcet||!window.vyzadujUcet())return;
   if(!mistoData){notify('Místo se ještě nenačetlo, zkus to za okamžik.');return}
-  const textKomentare=event.currentTarget.querySelector('textarea').value.trim();
+  const textKomentare=form.querySelector('textarea').value.trim();
   if(!textKomentare){notify('Komentář nemůže být prázdný.');return}
 
   const db=window.atlasDb, ucet=window.atlasUcet();
-  const odeslat=event.currentTarget.querySelector('button[type=submit]');
+  const odeslat=form.querySelector('button[type=submit]');
   odeslat.disabled=true;
   const {error}=await db.from('atlas_komentare').insert({
     misto_id:mistoData.id, autor_id:ucet.id,
@@ -403,7 +405,7 @@ document.querySelector('#comment-form')?.addEventListener('submit',async event=>
   odeslat.disabled=false;
   if(error){console.error(error);notify('Komentář se nepodařilo uložit: '+error.message);return}
   closeModal(document.querySelector('#comment-modal'));
-  event.currentTarget.reset();
+  form.reset();
   notify('Děkujeme! Komentář je zveřejněn.');
   nactiKomentare();
 });
