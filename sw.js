@@ -2,7 +2,7 @@
 const CACHE = 'atlas-v4';
 
 const SHELL = [
-  '/', '/misto', '/o-projektu', '/sprava', '/objevit', '/denik',
+  '/', '/misto', '/o-projektu', '/sprava', '/objevit', '/denik', '/podminky',
   '/styles.css', '/header.js', '/auth.js', '/data.js',
   '/app.js', '/misto.js', '/sprava.js', '/objevit.js', '/denik.js',
   '/foto.js', '/geo.js',

@@ -809,3 +809,10 @@ html{overflow-x:clip}
   color:var(--gold-deep);font:500 13px 'Jost',sans-serif;letter-spacing:.03em;
   opacity:.72;transition:opacity .16s ease,color .16s ease}
 .edit-link:hover{opacity:1;color:var(--gold-lume)}
+
+/* ---------- patička: doložka ---------- */
+.footer-legal{margin-top:10px;font-size:12px;color:var(--cream-soft);opacity:.75;letter-spacing:.03em}
+.footer-legal a{color:var(--gold-lume);text-decoration:none;border-bottom:1px solid rgba(201,161,74,.35)}
+.footer-legal a:hover{border-bottom-color:var(--gold)}
+.about-section p a,.about-cta p a{color:var(--gold-lume);text-decoration:none;border-bottom:1px solid rgba(201,161,74,.35)}
+.about-section p a:hover,.about-cta p a:hover{border-bottom-color:var(--gold)}
