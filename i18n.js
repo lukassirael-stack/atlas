@@ -545,16 +545,38 @@
   const LANGS = ['cs', 'en'];
 
   /* ---- stav jazyka ------------------------------------------------------- */
+  /* pořadí: 1) ?lang v adrese  2) uložená volba  3) jazyk prohlížeče (jen poprvé)  4) čeština */
   function initialLang() {
     const q = new URLSearchParams(location.search).get('lang');
     if (q && LANGS.includes(q)) { try { localStorage.setItem('atlas_lang', q); } catch (e) {} return q; }
     let saved = null;
     try { saved = localStorage.getItem('atlas_lang'); } catch (e) {}
     if (saved && LANGS.includes(saved)) return saved;
+    /* první návštěva: nečeský/neslovenský prohlížeč → angličtina + jednorázové oznámení */
+    const nav = (navigator.languages && navigator.languages[0]) || navigator.language || '';
+    if (nav && !/^(cs|sk)/i.test(nav)) {
+      try {
+        localStorage.setItem('atlas_lang', 'en');
+        localStorage.setItem('atlas_lang_auto', '1');
+      } catch (e) {}
+      return 'en';
+    }
     return 'cs'; /* výchozí na této doméně; anglický brand si později nastaví 'en' */
   }
   let lang = initialLang();
   window.atlasLang = lang;
+
+  /* jednorázové oznámení o automatickém přepnutí (toast z header.js) */
+  function oznamAutoJazyk() {
+    let flag = null;
+    try { flag = localStorage.getItem('atlas_lang_auto'); } catch (e) {}
+    if (flag !== '1') return;
+    try { localStorage.setItem('atlas_lang_auto', 'done'); } catch (e) {}
+    setTimeout(function () {
+      if (typeof notify === 'function')
+        notify('Switched to English — change it anytime with CS·EN under the logo.');
+    }, 900);
+  }
 
   /* normalizace textu pro klíč: nbsp→mezera, sjednocení bílých znaků, trim */
   function norm(s) { return s.replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim(); }
@@ -702,14 +724,26 @@
   window.atlasSetLang = setLang;
 
   /* ---- přepínač v hlavičce ---------------------------------------------- */
+  /* cizinec = prohlížeč nehlásí češtinu ani slovenštinu */
+  function jeCizinec() {
+    const nav = (navigator.languages && navigator.languages[0]) || navigator.language || '';
+    return !!nav && !/^(cs|sk)/i.test(nav);
+  }
   function syncSwitch() {
     document.querySelectorAll('.lang-switch [data-l]').forEach(function (b) {
       b.classList.toggle('on', b.getAttribute('data-l') === lang);
     });
+    /* přepínač vidí jen ten, koho se týká: cizí prohlížeč, nebo kdokoli v angličtině */
+    const sw = document.querySelector('.lang-switch');
+    if (sw) sw.style.display = (lang === 'en' || jeCizinec()) ? '' : 'none';
+    /* patičkový odkaz nabízí vždy ten druhý jazyk */
+    const foot = document.querySelector('.lang-foot');
+    if (foot) foot.textContent = lang === 'en' ? 'Česky' : 'English';
   }
   function buildSwitch() {
+    if (document.querySelector('.lang-switch')) return;
+    const brand = document.querySelector('.brand');
     const host = document.querySelector('.header-actions');
-    if (!host || host.querySelector('.lang-switch')) return;
     const wrap = document.createElement('div');
     wrap.className = 'lang-switch';
     wrap.setAttribute('role', 'group');
@@ -722,9 +756,24 @@
       b.addEventListener('click', function () { setLang(l); });
       wrap.appendChild(b);
     });
-    /* vložit před tlačítko menu (☰), ať je vidět i na mobilu */
-    const menuBtn = host.querySelector('.menu-button');
-    if (menuBtn) host.insertBefore(wrap, menuBtn); else host.appendChild(wrap);
+    /* domovské místo je pod logem (.brand); když by chybělo, spadne zpět do lišty */
+    if (brand) {
+      brand.classList.add('brand-lang');
+      brand.appendChild(wrap);
+    } else if (host) {
+      const menuBtn = host.querySelector('.menu-button');
+      if (menuBtn) host.insertBefore(wrap, menuBtn); else host.appendChild(wrap);
+    }
+    /* trvalá cesta k jazyku v patičce (pro každého, i když přepínač není vidět) */
+    const legal = document.querySelector('.footer-legal');
+    if (legal && !legal.querySelector('.lang-foot')) {
+      legal.appendChild(document.createTextNode(' · '));
+      const fb = document.createElement('button');
+      fb.type = 'button';
+      fb.className = 'lang-foot';
+      fb.addEventListener('click', function () { setLang(lang === 'en' ? 'cs' : 'en'); });
+      legal.appendChild(fb);
+    }
     syncSwitch();
   }
 
@@ -733,17 +782,32 @@
     const css = document.createElement('style');
     css.id = 'lang-switch-style';
     css.textContent =
-      '.lang-switch{display:inline-flex;gap:2px;padding:3px;border-radius:99px;' +
-      'border:1px solid rgba(201,161,74,.45);background:rgba(22,36,29,.35);' +
-      'align-items:center;line-height:1;flex:none}' +
+      /* logo se přepínačem stane vztažným bodem, aby pás visel pod ním */
+      '.brand-lang{position:relative;margin-bottom:2px}' +
+      /* dvojtlačítko CS·EN — o třetinu menší než původní */
+      '.lang-switch{display:inline-flex;gap:1px;padding:2px;border-radius:99px;' +
+      'border:1px solid rgba(201,161,74,.45);background:rgba(22,36,29,.5);' +
+      'align-items:center;line-height:1;flex:none;' +
+      'backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}' +
       '.lang-switch button{border:0;background:transparent;cursor:pointer;' +
-      'font:600 11px/1 "Jost",system-ui,sans-serif;letter-spacing:.06em;' +
-      'color:var(--cream-soft,#d9d3c2);padding:5px 8px;border-radius:99px;' +
-      'transition:.18s;min-width:26px}' +
+      'font:600 8px/1 "Jost",system-ui,sans-serif;letter-spacing:.05em;' +
+      'color:var(--cream-soft,#d9d3c2);padding:3px 5px;border-radius:99px;' +
+      'transition:.18s;min-width:17px}' +
       '.lang-switch button:hover{color:var(--cream,#fbf7ef)}' +
       '.lang-switch button.on{background:linear-gradient(180deg,#f0d493,#c9a14a 60%,#b98f38);' +
       'color:#16241d}' +
-      '@media(max-width:560px){.lang-switch{padding:2px}.lang-switch button{padding:5px 6px;min-width:24px}}';
+      /* posazené níž pod logo, mimo linku hlavičky */
+      '.brand-lang .lang-switch{position:absolute;left:0;top:calc(100% + 16px);z-index:5}' +
+      /* jazykový odkaz v patičce — decentní, ladí s „Podmínky užití" */
+      '.lang-foot{border:0;background:none;cursor:pointer;padding:0;' +
+      'font:inherit;color:inherit;text-decoration:underline;text-underline-offset:2px}' +
+      '.lang-foot:hover{color:var(--gold,#c9a14a)}' +
+      /* účet: rozumný strop + elipsa, ať se dlouhý nick nepřekusuje zbytečně brzy */
+      '.header-actions .profile{max-width:9.5rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' +
+      '@media(max-width:560px){' +
+        '.brand-lang .lang-switch{top:calc(100% + 12px)}' +
+        '.header-actions .profile{max-width:6.5rem}' +
+      '}';
     document.head.appendChild(css);
   }
 
@@ -753,6 +817,7 @@
     buildSwitch();
     startObserver();
     if (lang === 'en') apply(); else syncSwitch();
+    oznamAutoJazyk();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
