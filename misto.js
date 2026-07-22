@@ -441,25 +441,39 @@ document.querySelectorAll('.slider-row input[type=range]').forEach(slider=>{
 async function pridejFotky(input, autorId, stavajici){
   const db=window.atlasDb, ucet=window.atlasUcet&&window.atlasUcet();
   const soubory=[...input.files].slice(0,6);
+  const dlazdice=input.closest('.galerie-add');
   input.value='';
   if(!soubory.length||!ucet||!mistoData)return;
   if((stavajici?.length||0)+soubory.length>12){notify('Galerie má strop 12 fotek.');return}
   if(!navigator.onLine){notify('Jsi mimo signál — fotky do galerie nahraj, až se připojíš.');return}
-  notify('Nahrávám fotky…');
+
+  /* dlaždice se promění v ukazatel průběhu, ať je vidět, že se něco děje */
+  if(dlazdice){
+    dlazdice.style.pointerEvents='none';
+    dlazdice.innerHTML='<span>Nahrávám…</span>&nbsp;<b class="up-cit">0/'+soubory.length+'</b>';
+  }
+  const citac=n=>{const b=dlazdice&&dlazdice.querySelector('.up-cit');if(b)b.textContent=n+'/'+soubory.length};
+
   let maxPoradi=0;(stavajici||[]).forEach(f=>{if(f.poradi>maxPoradi)maxPoradi=f.poradi});
   const radky=[];
   for(let i=0;i<soubory.length;i++){
+    citac(i+1);
     let blob=soubory[i], pripona='jpg';
     if(window.atlasZpracujFoto){const z=await window.atlasZpracujFoto(soubory[i]);blob=z.blob;pripona=z.pripona}
     const cesta=`mista/${mistoData.id}/${Date.now()}-${i}.${pripona}`;
     const {error:fe}=await db.storage.from('atlas').upload(cesta,blob,{contentType:blob.type||'image/jpeg',upsert:false});
     if(!fe)radky.push({misto_id:mistoData.id,autor_id:ucet.id,cesta,poradi:++maxPoradi});
   }
-  if(!radky.length){notify('Fotky se nepodařilo nahrát. Zkontroluj připojení a zkus to znovu.');return}
+  if(!radky.length){
+    notify('Fotky se nepodařilo nahrát. Zkontroluj připojení a zkus to znovu.');
+    await nactiFotky(autorId);   /* překreslí galerii a vrátí dlaždici do původního stavu */
+    return;
+  }
   const {error}=await db.from('atlas_fotky').insert(radky);
   if(error){
     radky.forEach(r=>db.storage.from('atlas').remove([r.cesta]));
     notify('Fotky se nepodařilo uložit: '+error.message);
+    await nactiFotky(autorId);
     return;
   }
   notify(radky.length===1?'Fotka přidána 🌿':'Fotky přidány 🌿');
