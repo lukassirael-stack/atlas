@@ -303,13 +303,12 @@ document.querySelector('#place-form')?.addEventListener('submit',async event=>{
 
   const db=window.atlasDb, ucet=window.atlasUcet();
 
-  /* pojistka: naladil osy, ale nenapsal prožitek → naladění by se tiše zahodilo */
+  /* první naladění je součást zrodu místa — bez pár slov prožitku místo neodejde */
   const zapisText=document.querySelector('#misto-zapis')?.value.trim();
-  const osyNaladene=[...document.querySelectorAll('#misto-dna input[type="range"]')].some(r=>Number(r.value)!==70);
-  if(!zapisText && osyNaladene){
-    const dotaz=(window.t?window.t('Naladil jsi osy, ale bez pár slov prožitku se první zápis neuloží a místo zůstane bez DNA. Doplníš větu? (Zrušit = odeslat bez zápisu)')
-      :'Naladil jsi osy, ale bez pár slov prožitku se první zápis neuloží a místo zůstane bez DNA. Doplníš větu? (Zrušit = odeslat bez zápisu)');
-    if(confirm(dotaz)){ document.querySelector('#misto-zapis')?.focus(); return; }
+  if(!zapisText){
+    notify('Napiš pár slov o tom, co tu prožíváš — každé místo se rodí se svým prvním zápisem.');
+    document.querySelector('#misto-zapis')?.focus();
+    return;
   }
 
   const odeslat=form.querySelector('button[type=submit]');
