@@ -59,7 +59,7 @@ document.addEventListener('click',function(e){
 });
 document.addEventListener('keydown',function(e){ if(e.key==='Escape') zavriMenu(); });
 
-/* ---- zvoneček: vzkazy od správce (na všech stránkách, pro přihlášené) ---- */
+/* ---- zvoneček: vzkazy od správce + (pro správce) místa čekající na schválení ---- */
 function zpravyInit(){
   const db = window.atlasDb;
   const ucet = window.atlasUcet && window.atlasUcet();
@@ -80,18 +80,41 @@ function zpravyInit(){
   panel.hidden = true;
   document.body.appendChild(panel);
 
+  let posledniCeka = 0;   // kolik míst čeká na schválení (jen pro správce)
+
+  function aktualizujBadge(n){
+    const badge = bell.querySelector('.bell-badge');
+    if(n>0){ badge.textContent = n>9?'9+':String(n); badge.hidden=false; bell.classList.add('ma-nove'); }
+    else { badge.hidden=true; bell.classList.remove('ma-nove'); }
+  }
+
   async function nacti(){
     let data = [];
     try { const r = await db.rpc('atlas_moje_zpravy'); if(r.error) throw r.error; data = r.data || []; }
     catch(e){ return; }
+
+    /* správce: kolik míst čeká na schválení */
+    let ceka = 0;
+    const profil = window.atlasProfil && window.atlasProfil();
+    if(profil && profil.spravce){
+      try { const c = await db.rpc('atlas_ceka_pocet'); if(!c.error) ceka = c.data || 0; } catch(_){}
+    }
+    posledniCeka = ceka;
+
     const neprec = data.filter(z=>!z.precteno).length;
-    const badge = bell.querySelector('.bell-badge');
-    if(neprec>0){ badge.textContent = neprec>9?'9+':String(neprec); badge.hidden=false; bell.classList.add('ma-nove'); }
-    else { badge.hidden=true; bell.classList.remove('ma-nove'); }
-    if(!data.length){
+    aktualizujBadge(neprec + ceka);
+
+    const radekCeka = ceka>0
+      ? `<a class="bell-zprava nova" href="/sprava" style="display:block;text-decoration:none;color:inherit;cursor:pointer">`+
+          `<p class="bell-text">🗺 ${ceka} ${ceka===1?'místo čeká':(ceka<5?'místa čekají':'míst čeká')} na schválení</p>`+
+          `<p class="bell-meta">otevřít Správu Atlasu ›</p>`+
+        `</a>`
+      : '';
+
+    if(!data.length && !ceka){
       panel.innerHTML = '<div class="bell-head">Vzkazy od správce</div><div class="bell-prazdno">Zatím žádné vzkazy 🌿</div>';
     } else {
-      panel.innerHTML = '<div class="bell-head">Vzkazy od správce</div>' + data.map(z=>
+      panel.innerHTML = '<div class="bell-head">Vzkazy od správce</div>' + radekCeka + data.map(z=>
         `<div class="bell-zprava${z.precteno?'':' nova'}">`+
           `<p class="bell-text">${zEsc(z.text)}</p>`+
           `<p class="bell-meta">${z.misto_nazev?('k místu '+zEsc(z.misto_nazev)+' · '):''}${zKdy(z.vytvoreno)}</p>`+
@@ -106,8 +129,8 @@ function zpravyInit(){
     panel.hidden = !otevrit;
     bell.setAttribute('aria-expanded', String(otevrit));
     if(otevrit){
-      const badge = bell.querySelector('.bell-badge');
-      badge.hidden = true; bell.classList.remove('ma-nove');
+      /* vzkazy se otevřením označí jako přečtené; počet čekajících míst na odznaku zůstává, dokud je neschválíš */
+      aktualizujBadge(posledniCeka);
       try { await db.from('atlas_zpravy').update({precteno:true}).eq('precteno',false); } catch(_){}
     }
   });

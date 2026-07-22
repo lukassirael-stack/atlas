@@ -150,10 +150,23 @@ async function nactiFotky(autorId, hotovyDotaz){
       <img src="${url}" alt="Fotka místa" loading="lazy" />
       ${hlavni ? '<span class="foto-odznak">Hlavní</span>' : ''}
       ${(smiRadit && !hlavni) ? `<button type="button" class="foto-hlavni-btn" data-id="${f.id}">Nastavit jako hlavní</button>` : ''}
+      ${smiRadit ? `<button type="button" class="foto-smaz-btn" data-id="${f.id}" aria-label="Smazat fotku" title="Smazat fotku" style="position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(22,36,29,.72);color:#fbf7ef;font:600 14px/1 'Jost',sans-serif;cursor:pointer">×</button>` : ''}
     </figure>`;
   }).join('');
 
   if (smiRadit) {
+    /* dlaždice pro dodatečné nahrání fotek (autor místa nebo správce) */
+    grid.insertAdjacentHTML('beforeend',
+      `<label class="galerie-item galerie-add" style="display:grid;place-items:center;cursor:pointer;`+
+      `border:1px dashed rgba(201,161,74,.6);border-radius:12px;min-height:96px;`+
+      `color:var(--gold-deep,#b98f38);font:600 13px 'Jost',sans-serif;text-align:center;padding:10px">`+
+      `➕ Přidat fotky<input type="file" accept="image/*" multiple hidden></label>`);
+    grid.querySelector('.galerie-add input').addEventListener('change', e=>pridejFotky(e.target, autorId, fotky));
+
+    grid.querySelectorAll('.foto-smaz-btn').forEach(btn=>{
+      const f=fotky.find(x=>String(x.id)===btn.dataset.id);
+      btn.addEventListener('click', ()=>smazFoto(f, autorId));
+    });
     grid.querySelectorAll('.foto-hlavni-btn').forEach(btn=>{
       btn.addEventListener('click', async ()=>{
         btn.disabled = true; btn.textContent = 'Měním…';
@@ -333,6 +346,47 @@ document.querySelectorAll('.slider-row input[type=range]').forEach(slider=>{
   const sync=()=>{out.textContent=slider.value};
   slider.addEventListener('input',sync);sync();
 });
+
+/* ---- dodatečné fotky galerie (autor místa nebo správce) ---- */
+async function pridejFotky(input, autorId, stavajici){
+  const db=window.atlasDb, ucet=window.atlasUcet&&window.atlasUcet();
+  const soubory=[...input.files].slice(0,6);
+  input.value='';
+  if(!soubory.length||!ucet||!mistoData)return;
+  if((stavajici?.length||0)+soubory.length>12){notify('Galerie má strop 12 fotek.');return}
+  if(!navigator.onLine){notify('Jsi mimo signál — fotky do galerie nahraj, až se připojíš.');return}
+  notify('Nahrávám fotky…');
+  let maxPoradi=0;(stavajici||[]).forEach(f=>{if(f.poradi>maxPoradi)maxPoradi=f.poradi});
+  const radky=[];
+  for(let i=0;i<soubory.length;i++){
+    let blob=soubory[i], pripona='jpg';
+    if(window.atlasZpracujFoto){const z=await window.atlasZpracujFoto(soubory[i]);blob=z.blob;pripona=z.pripona}
+    const cesta=`mista/${mistoData.id}/${Date.now()}-${i}.${pripona}`;
+    const {error:fe}=await db.storage.from('atlas').upload(cesta,blob,{contentType:blob.type||'image/jpeg',upsert:false});
+    if(!fe)radky.push({misto_id:mistoData.id,autor_id:ucet.id,cesta,poradi:++maxPoradi});
+  }
+  if(!radky.length){notify('Fotky se nepodařilo nahrát. Zkontroluj připojení a zkus to znovu.');return}
+  const {error}=await db.from('atlas_fotky').insert(radky);
+  if(error){
+    radky.forEach(r=>db.storage.from('atlas').remove([r.cesta]));
+    notify('Fotky se nepodařilo uložit: '+error.message);
+    return;
+  }
+  notify(radky.length===1?'Fotka přidána 🌿':'Fotky přidány 🌿');
+  await nactiFotky(autorId);
+}
+
+async function smazFoto(f, autorId){
+  if(!f)return;
+  const db=window.atlasDb;
+  const otazka=(window.t?window.t('Opravdu smazat tuhle fotku?'):'Opravdu smazat tuhle fotku?');
+  if(!confirm(otazka))return;
+  const {data:smazano,error}=await db.from('atlas_fotky').delete().eq('id',f.id).select('id');
+  if(error||!smazano||!smazano.length){notify('Fotku se nepodařilo smazat'+(error?': '+error.message:'.'));return}
+  db.storage.from('atlas').remove([f.cesta]);
+  notify('Fotka smazána.');
+  await nactiFotky(autorId);
+}
 
 /* ---- offline fronta zápisů ----
    Bez signálu se zápis (včetně fotky a polohy z místa) uschová v telefonu
