@@ -146,13 +146,14 @@ async function nactiFotky(autorId, hotovyDotaz){
   grid.innerHTML = fotky.map((f,i)=>{
     const url = window.atlasFotoUrl(f.cesta) || '';
     const hlavni = i===0;
-    return `<figure class="galerie-item${hlavni?' je-hlavni':''}">
+    return `<figure class="galerie-item${hlavni?' je-hlavni':''}" data-lb="${i}" style="cursor:zoom-in">
       <img src="${url}" alt="Fotka místa" loading="lazy" />
       ${hlavni ? '<span class="foto-odznak">Hlavní</span>' : ''}
-      ${(smiRadit && !hlavni) ? `<button type="button" class="foto-hlavni-btn" data-id="${f.id}">Nastavit jako hlavní</button>` : ''}
-      ${smiRadit ? `<button type="button" class="foto-smaz-btn" data-id="${f.id}" aria-label="Smazat fotku" title="Smazat fotku" style="position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(22,36,29,.72);color:#fbf7ef;font:600 14px/1 'Jost',sans-serif;cursor:pointer">×</button>` : ''}
     </figure>`;
   }).join('');
+  grid.querySelectorAll('[data-lb]').forEach(el=>{
+    el.addEventListener('click',()=>otevriLightbox(fotky, Number(el.dataset.lb), smiRadit, autorId));
+  });
 
   if (smiRadit) {
     /* dlaždice pro dodatečné nahrání fotek (autor místa nebo správce) */
@@ -162,21 +163,110 @@ async function nactiFotky(autorId, hotovyDotaz){
       `color:var(--gold-deep,#b98f38);font:600 13px 'Jost',sans-serif;text-align:center;padding:10px">`+
       `➕ Přidat fotky<input type="file" accept="image/*" multiple hidden></label>`);
     grid.querySelector('.galerie-add input').addEventListener('change', e=>pridejFotky(e.target, autorId, fotky));
-
-    grid.querySelectorAll('.foto-smaz-btn').forEach(btn=>{
-      const f=fotky.find(x=>String(x.id)===btn.dataset.id);
-      btn.addEventListener('click', ()=>smazFoto(f, autorId));
-    });
-    grid.querySelectorAll('.foto-hlavni-btn').forEach(btn=>{
-      btn.addEventListener('click', async ()=>{
-        btn.disabled = true; btn.textContent = 'Měním…';
-        const { error } = await db.rpc('atlas_foto_hlavni', { p_foto_id: btn.dataset.id });
-        if (error) { btn.disabled=false; btn.textContent='Nastavit jako hlavní'; notify('Nepodařilo se: '+error.message); return; }
-        notify('Hlavní fotka změněna 🌿');
-        await nactiFotky(autorId);
-      });
-    });
   }
+}
+
+/* ---- prohlížeč fotek (lightbox) ---- */
+let lbFotky=[], lbIndex=0, lbSmi=false, lbAutorId=null;
+function lightboxStylPridej(){
+  if(document.getElementById('lb-styl'))return;
+  const s=document.createElement('style'); s.id='lb-styl';
+  s.textContent=
+    '#foto-lb{position:fixed;inset:0;z-index:120;background:rgba(10,16,12,.94);display:none;'+
+      'align-items:center;justify-content:center;flex-direction:column;gap:14px;padding:16px}'+
+    '#foto-lb.open{display:flex}'+
+    '#foto-lb img{max-width:94vw;max-height:72vh;border-radius:10px;box-shadow:0 22px 60px rgba(0,0,0,.55);'+
+      'user-select:none;-webkit-user-drag:none}'+
+    '#foto-lb .lb-zavrit{position:absolute;top:14px;right:16px;width:42px;height:42px;border-radius:50%;'+
+      'border:1px solid rgba(201,161,74,.5);background:rgba(22,36,29,.7);color:#fbf7ef;font:400 20px/1 sans-serif;cursor:pointer}'+
+    '#foto-lb .lb-sipka{position:absolute;top:50%;transform:translateY(-50%);width:46px;height:46px;border-radius:50%;'+
+      'border:1px solid rgba(201,161,74,.5);background:rgba(22,36,29,.7);color:#c9a14a;font:400 22px/1 sans-serif;cursor:pointer}'+
+    '#foto-lb .lb-prev{left:12px}#foto-lb .lb-next{right:12px}'+
+    '#foto-lb .lb-pocet{color:#d9d3c2;font:500 13px "Jost",sans-serif;letter-spacing:.08em}'+
+    '#foto-lb .lb-akce{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}'+
+    '#foto-lb .lb-akce button{border:1px solid rgba(201,161,74,.55);background:rgba(22,36,29,.7);color:#fbf7ef;'+
+      'border-radius:99px;padding:9px 16px;font:600 13px "Jost",sans-serif;cursor:pointer}'+
+    '#foto-lb .lb-akce .lb-smaz:hover{border-color:#b5442d;color:#ffd9cf}';
+  document.head.appendChild(s);
+}
+function lightboxEl(){
+  let lb=document.querySelector('#foto-lb');
+  if(lb)return lb;
+  lightboxStylPridej();
+  lb=document.createElement('div');
+  lb.id='foto-lb';
+  lb.innerHTML=
+    `<button type="button" class="lb-zavrit" aria-label="Zavřít">×</button>`+
+    `<button type="button" class="lb-sipka lb-prev" aria-label="Předchozí fotka">‹</button>`+
+    `<img alt="Fotka místa" />`+
+    `<button type="button" class="lb-sipka lb-next" aria-label="Další fotka">›</button>`+
+    `<p class="lb-pocet"></p>`+
+    `<div class="lb-akce" hidden>`+
+      `<button type="button" class="lb-hlavni">Nastavit jako hlavní</button>`+
+      `<button type="button" class="lb-smaz">Smazat fotku</button>`+
+    `</div>`;
+  document.body.appendChild(lb);
+  lb.querySelector('.lb-zavrit').addEventListener('click',zavriLightbox);
+  lb.addEventListener('click',e=>{if(e.target===lb)zavriLightbox()});
+  lb.querySelector('.lb-prev').addEventListener('click',()=>posunLightbox(-1));
+  lb.querySelector('.lb-next').addEventListener('click',()=>posunLightbox(1));
+  lb.querySelector('.lb-hlavni').addEventListener('click',async()=>{
+    const f=lbFotky[lbIndex]; if(!f)return;
+    const db=window.atlasDb;
+    const {error}=await db.rpc('atlas_foto_hlavni',{p_foto_id:f.id});
+    if(error){notify('Nepodařilo se: '+error.message);return}
+    zavriLightbox(); notify('Hlavní fotka změněna 🌿'); await nactiFotky(lbAutorId);
+  });
+  lb.querySelector('.lb-smaz').addEventListener('click',async()=>{
+    const f=lbFotky[lbIndex]; if(!f)return;
+    zavriLightbox();
+    await smazFoto(f, lbAutorId);
+  });
+  /* přejetí prstem */
+  let dotykX=null;
+  lb.addEventListener('touchstart',e=>{dotykX=e.touches[0].clientX},{passive:true});
+  lb.addEventListener('touchend',e=>{
+    if(dotykX===null)return;
+    const d=e.changedTouches[0].clientX-dotykX; dotykX=null;
+    if(Math.abs(d)>40)posunLightbox(d<0?1:-1);
+  },{passive:true});
+  document.addEventListener('keydown',e=>{
+    if(!lb.classList.contains('open'))return;
+    if(e.key==='Escape')zavriLightbox();
+    if(e.key==='ArrowLeft')posunLightbox(-1);
+    if(e.key==='ArrowRight')posunLightbox(1);
+  });
+  return lb;
+}
+function otevriLightbox(fotky,index,smi,autorId){
+  lbFotky=fotky; lbIndex=index; lbSmi=!!smi; lbAutorId=autorId;
+  const lb=lightboxEl();
+  lb.classList.add('open');
+  document.body.style.overflow='hidden';
+  vykresliLightbox();
+}
+function zavriLightbox(){
+  const lb=document.querySelector('#foto-lb');
+  if(lb)lb.classList.remove('open');
+  document.body.style.overflow='';
+}
+function posunLightbox(smer){
+  if(!lbFotky.length)return;
+  lbIndex=(lbIndex+smer+lbFotky.length)%lbFotky.length;
+  vykresliLightbox();
+}
+function vykresliLightbox(){
+  const lb=document.querySelector('#foto-lb');
+  const f=lbFotky[lbIndex];
+  if(!lb||!f)return;
+  lb.querySelector('img').src=window.atlasFotoUrl(f.cesta)||'';
+  lb.querySelector('.lb-pocet').textContent=`${lbIndex+1} / ${lbFotky.length}`;
+  const vic=lbFotky.length>1;
+  lb.querySelector('.lb-prev').hidden=!vic;
+  lb.querySelector('.lb-next').hidden=!vic;
+  const akce=lb.querySelector('.lb-akce');
+  akce.hidden=!lbSmi;
+  akce.querySelector('.lb-hlavni').hidden=(lbIndex===0);   /* hlavní už je */
 }
 
 async function nactiZapisy(){
