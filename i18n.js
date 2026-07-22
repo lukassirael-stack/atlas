@@ -349,6 +349,8 @@
     'Poslali jsme ho na': 'We\u2019ve sent it to',
     'Otevři si schránku a klikni na něj. Tuhle stránku můžeš klidně zavřít.': 'Open your inbox and click it. You can close this page.',
     'Poslat znovu': 'Send again',
+    'Nemáš teď slova? Stačí věta — zápis si doma kdykoli rozepíšeš přes ✎ Upravit.': 'No words right now? A sentence is enough — you can expand your entry any time at home via ✎ Edit.',
+    'Nemusíš psát hned na místě. Stačí načíst polohu, naladit osy a uložit pár slov — doma pak zápis v klidu rozepíšeš přes ✎ Upravit. Poloha i datum zůstávají z tvé návštěvy.': 'You don\u2019t have to write on the spot. Just read your location, set the axes and save a few words — at home you can expand the entry in peace via ✎ Edit. The location and date stay from your visit.',
     'Předchozí fotka': 'Previous photo',
     'Další fotka': 'Next photo',
     'Hlavní fotka změněna 🌿': 'Main photo changed 🌿',
