@@ -349,6 +349,10 @@
     'Poslali jsme ho na': 'We\u2019ve sent it to',
     'Otevři si schránku a klikni na něj. Tuhle stránku můžeš klidně zavřít.': 'Open your inbox and click it. You can close this page.',
     'Poslat znovu': 'Send again',
+    'Moje místa': 'My places',
+    'čeká na schválení': 'awaiting approval',
+    'zamítnuté': 'rejected',
+    'Pod svým nickem vpravo nahoře pak najdeš Moje cesty — místa, kde máš zápis — a Moje místa, která jsi do Atlasu přidal.': 'Under your nickname in the top right you\u2019ll then find My journeys — places where you have an entry — and My places, the ones you\u2019ve added to the Atlas.',
 
     /* — stránka Nápověda — */
     'Nápověda': 'Guide',

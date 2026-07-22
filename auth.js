@@ -162,10 +162,13 @@ function vykresliUctoveMenu(){
     `<div class="um-hlava"><span class="um-eyebrow">Přihlášen jako</span><b>${escHtmlAuth(profil.nick)}</b></div>`+
     `<div class="um-cesty"><span class="um-eyebrow">🧭 Moje cesty</span>`+
       `<div id="um-cesty-seznam" class="um-cesty-seznam"><p class="um-cesty-nacitam">Načítám…</p></div></div>`+
+    `<div class="um-cesty" id="um-mista-blok" hidden><span class="um-eyebrow">⊕ Moje místa</span>`+
+      `<div id="um-mista-seznam" class="um-cesty-seznam"></div></div>`+
     sprava+
     `<button type="button" class="um-odhlasit" id="um-odhlasit">Odhlásit se</button>`;
   p.querySelector('#um-odhlasit')?.addEventListener('click',()=>{ p.hidden=true; odhlas(); });
   nactiMojeCesty();
+  nactiMojeMista();
 }
 
 function datumAuth(iso){
@@ -194,6 +197,33 @@ async function nactiMojeCesty(){
   }
 }
 vlozUctoveMenu();
+
+async function nactiMojeMista(){
+  const blok=document.querySelector('#um-mista-blok');
+  const box=document.querySelector('#um-mista-seznam');
+  if(!blok || !box || !db || !ucet) return;
+  try{
+    const { data, error } = await db.from('atlas_mista')
+      .select('nazev,slug,stav,vytvoreno')
+      .eq('autor_id', ucet.id)
+      .neq('stav','rozepsane')
+      .order('vytvoreno',{ascending:false})
+      .limit(30);
+    if(error) throw error;
+    if(!data || !data.length) return;   /* nic nepřidal → sekce zůstane skrytá */
+    blok.hidden=false;
+    box.innerHTML=data.map(m=>{
+      if(m.stav==='zverejnene')
+        return `<a class="um-cesta" href="/misto?m=${encodeURIComponent(m.slug)}">`+
+          `<span class="umc-nazev">◎ ${escHtmlAuth(m.nazev)}</span>`+
+          `<span class="umc-datum">${datumAuth(m.vytvoreno)}</span></a>`;
+      const stitek=m.stav==='ceka'?'⏳ čeká na schválení':'✕ zamítnuté';
+      return `<span class="um-cesta" style="cursor:default;opacity:.72">`+
+        `<span class="umc-nazev">◎ ${escHtmlAuth(m.nazev)}</span>`+
+        `<span class="umc-datum">${stitek}</span></span>`;
+    }).join('');
+  }catch(_){ /* výpadek sítě: sekci prostě neukázat */ }
+}
 
 document.querySelector('.profile')?.addEventListener('click', () => {
   if (!db) { notify('Přihlášení připravujeme.'); return; }
