@@ -18,7 +18,7 @@ function notify(message){if(!toast)return;toast.textContent=message;toast.classL
     document.body.appendChild(ov);
   }
   /* symbol každé položky v jemném zlatém kroužku */
-  const iko={'Mapa':'◎','Objevuj':'✦','Deník':'✎','Přidat místo':'⊕','O projektu':'❖','Komunita':'☾'};
+  const iko={'Mapa':'◎','Objevuj':'✦','Deník':'✎','Přidat místo':'⊕','O projektu':'❖','Nápověda':'✱','Komunita':'☾'};
   nav.querySelectorAll('a').forEach(a=>{
     if(a.querySelector('.mn-ico')) return;
     const t=a.textContent.trim();

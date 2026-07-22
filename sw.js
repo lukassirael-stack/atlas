@@ -1,8 +1,8 @@
 /* Atlas energetických míst — service worker (offline shell + rychlé spuštění) */
-const CACHE = 'atlas-v5';
+const CACHE = 'atlas-v6';
 
 const SHELL = [
-  '/', '/misto', '/o-projektu', '/sprava', '/objevit', '/denik', '/podminky',
+  '/', '/misto', '/o-projektu', '/napoveda', '/sprava', '/objevit', '/denik', '/podminky',
   '/styles.css', '/header.js', '/auth.js', '/data.js',
   '/app.js', '/misto.js', '/i18n.js', '/sprava.js', '/objevit.js', '/denik.js',
   '/foto.js', '/geo.js',
