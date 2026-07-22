@@ -302,6 +302,16 @@ document.querySelector('#place-form')?.addEventListener('submit',async event=>{
   if(!window.vyzadujUcet||!window.vyzadujUcet())return;
 
   const db=window.atlasDb, ucet=window.atlasUcet();
+
+  /* pojistka: naladil osy, ale nenapsal prožitek → naladění by se tiše zahodilo */
+  const zapisText=document.querySelector('#misto-zapis')?.value.trim();
+  const osyNaladene=[...document.querySelectorAll('#misto-dna input[type="range"]')].some(r=>Number(r.value)!==70);
+  if(!zapisText && osyNaladene){
+    const dotaz=(window.t?window.t('Naladil jsi osy, ale bez pár slov prožitku se první zápis neuloží a místo zůstane bez DNA. Doplníš větu? (Zrušit = odeslat bez zápisu)')
+      :'Naladil jsi osy, ale bez pár slov prožitku se první zápis neuloží a místo zůstane bez DNA. Doplníš větu? (Zrušit = odeslat bez zápisu)');
+    if(confirm(dotaz)){ document.querySelector('#misto-zapis')?.focus(); return; }
+  }
+
   const odeslat=form.querySelector('button[type=submit]');
   const puvodni=odeslat.textContent;
   odeslat.disabled=true;odeslat.textContent='Ukládám…';
@@ -341,7 +351,6 @@ document.querySelector('#place-form')?.addEventListener('submit',async event=>{
 
   // první zápis s DNA — jen když autor něco napsal (stojí přímo na místě, trigger projde)
   let prvniZapis=false;
-  const zapisText=document.querySelector('#misto-zapis')?.value.trim();
   if(zapisText){
     const dna={};
     document.querySelectorAll('#misto-dna input[type="range"]').forEach(r=>{dna[r.dataset.k]=Number(r.value)});
