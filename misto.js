@@ -272,8 +272,8 @@ function vykresliLightbox(){
 async function nactiZapisy(){
   const db=window.atlasDb, box=document.querySelector('#log-list');
   const { data, error } = await db.from('atlas_zapisy')
-    .select('id,autor_id,text,klid,energie,mystika,krasa,lecivost,vytvoren,atlas_profily(nick)')
-    .eq('misto_id', mistoData.id).order('vytvoren',{ascending:false}).limit(50);
+    .select('id,autor_id,text,klid,energie,mystika,krasa,lecivost,vytvoreno,atlas_profily(nick)')
+    .eq('misto_id', mistoData.id).order('vytvoreno',{ascending:false}).limit(50);
   if (error){
     box.innerHTML = `<li class="log-prazdno">Zápisy se nepodařilo načíst. Zkus obnovit stránku.</li>`;
     return;
@@ -288,7 +288,7 @@ async function nactiZapisy(){
     const dna = `Klid ${z.klid} · Energie ${z.energie} · Mystika ${z.mystika} · Krása ${z.krasa} · Léčivost ${z.lecivost}`;
     const smi = (profil&&profil.spravce) || (ucet&&ucet.id===z.autor_id);
     const upr = smi ? `<button type="button" class="edit-link" data-edit-zapis="${z.id}">✎ Upravit</button>` : '';
-    return `<li class="log-item" data-zapis="${z.id}"><div class="log-head"><span class="log-nick">${escHtml(nick)}</span><span class="log-badge">◎ ověřeno na místě</span><time>${fmtDatum(z.vytvoren)}</time></div><p class="zapis-text">${escHtml(z.text)}</p><p class="log-dna">${dna}</p>${upr}</li>`;
+    return `<li class="log-item" data-zapis="${z.id}"><div class="log-head"><span class="log-nick">${escHtml(nick)}</span><span class="log-badge">◎ ověřeno na místě</span><time>${fmtDatum(z.vytvoreno)}</time></div><p class="zapis-text">${escHtml(z.text)}</p><p class="log-dna">${dna}</p>${upr}</li>`;
   }).join('');
   if(ucet||profil) box.querySelectorAll('[data-edit-zapis]').forEach(b=>{
     const z=data.find(x=>String(x.id)===b.dataset.editZapis);
@@ -300,8 +300,8 @@ async function nactiKomentare(){
   const db=window.atlasDb, box=document.querySelector('#comment-list');
   const [komentare, navstevnici] = await Promise.all([
     db.from('atlas_komentare')
-      .select('id,autor_id,text,vytvoren,atlas_profily(nick)')
-      .eq('misto_id', mistoData.id).eq('stav','zverejneny').order('vytvoren',{ascending:false}).limit(50),
+      .select('id,autor_id,text,vytvoreno,atlas_profily(nick)')
+      .eq('misto_id', mistoData.id).eq('stav','zverejneny').order('vytvoreno',{ascending:false}).limit(50),
     db.from('atlas_zapisy').select('autor_id').eq('misto_id', mistoData.id)
   ]);
   const { data, error } = komentare;
@@ -321,7 +321,7 @@ async function nactiKomentare(){
     const odznak = bylTu.has(k.autor_id) ? '<span class="log-badge">◎ byl tu</span>' : '';
     const smi = (profil&&profil.spravce) || (ucet&&ucet.id===k.autor_id);
     const upr = smi ? `<button type="button" class="edit-link" data-edit-koment="${k.id}">✎ Upravit</button>` : '';
-    return `<li class="log-item comment" data-koment="${k.id}"><div class="log-head"><span class="log-nick">${escHtml(nick)}</span>${odznak}<time>${fmtDatum(k.vytvoren)}</time></div><p class="koment-text">${escHtml(k.text)}</p>${upr}</li>`;
+    return `<li class="log-item comment" data-koment="${k.id}"><div class="log-head"><span class="log-nick">${escHtml(nick)}</span>${odznak}<time>${fmtDatum(k.vytvoreno)}</time></div><p class="koment-text">${escHtml(k.text)}</p>${upr}</li>`;
   }).join('');
   if(ucet||profil) box.querySelectorAll('[data-edit-koment]').forEach(b=>{
     const k=data.find(x=>String(x.id)===b.dataset.editKoment);
