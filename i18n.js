@@ -348,6 +348,7 @@
     'Poslali jsme ho na': 'We\u2019ve sent it to',
     'Otevři si schránku a klikni na něj. Tuhle stránku můžeš klidně zavřít.': 'Open your inbox and click it. You can close this page.',
     'Poslat znovu': 'Send again',
+    'Nedaří se ověřit tvůj účet — zkontroluj signál a zkus to znovu.': 'Your account can\u2019t be verified right now — check your signal and try again.',
     'Přihlas se': 'Sign in',
     'Zadej e-mail a pošleme ti odkaz. Klikneš na něj a jsi uvnitř — žádné heslo si pamatovat nemusíš.': 'Enter your e-mail and we\u2019ll send you a link. Click it and you\u2019re in — no password to remember.',
     'Tvůj e-mail': 'Your e-mail',

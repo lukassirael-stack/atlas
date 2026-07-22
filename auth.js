@@ -12,6 +12,30 @@ const db = window.supabase
 
 let ucet = null;      // auth.users
 let profil = null;    // atlas_profily (nick)
+let profilZnamy = false;   // true = víme jistě, zda profil existuje (ne jen výpadek sítě)
+const PROFIL_CACHE = 'atlas_profil_cache';
+
+async function nactiProfil() {
+  if (!db || !ucet) { profil = null; profilZnamy = true; return; }
+  const { data, error } = await db.from('atlas_profily').select('id,nick,spravce').eq('id', ucet.id).maybeSingle();
+  if (error) {
+    /* bez signálu: nezahazovat, co víme — držet stávající profil, případně vzít mezipaměť */
+    profilZnamy = false;
+    if (!profil) {
+      try {
+        const c = JSON.parse(localStorage.getItem(PROFIL_CACHE) || 'null');
+        if (c && c.id === ucet.id) profil = c;
+      } catch (_) {}
+    }
+    return;
+  }
+  profil = data || null;
+  profilZnamy = true;
+  try {
+    if (profil) localStorage.setItem(PROFIL_CACHE, JSON.stringify(profil));
+    else localStorage.removeItem(PROFIL_CACHE);
+  } catch (_) {}
+}
 
 /* ---------- modály se vkládají samy, ať je nemusí mít každá stránka ---------- */
 function vlozModaly() {
@@ -79,26 +103,26 @@ function vykresliStav() {
   }
 }
 
-async function nactiProfil() {
-  if (!db || !ucet) { profil = null; return; }
-  const { data } = await db.from('atlas_profily').select('id,nick,spravce').eq('id', ucet.id).maybeSingle();
-  profil = data || null;
-}
-
 async function nactiSession() {
   if (!db) return;
   const { data: { session } } = await db.auth.getSession();
   ucet = session?.user || null;
   await nactiProfil();
   vykresliStav();
-  if (ucet && !profil) otevri('#nick-modal');
+  if (ucet && !profil && profilZnamy) otevri('#nick-modal');
 }
 
 /* ---------- veřejná pojistka pro app.js a misto.js ---------- */
 function vyzadujUcet() {
   if (!db) { notify('Přihlášení zatím není dostupné. Zkus to za chvíli.'); return false; }
   if (!ucet) { otevri('#auth-modal'); return false; }
-  if (!profil) { otevri('#nick-modal'); return false; }
+  if (!profil) {
+    if (profilZnamy) { otevri('#nick-modal'); return false; }
+    /* profil se nepodařilo načíst (typicky slabý signál) — neotravovat volbou nicku */
+    notify('Nedaří se ověřit tvůj účet — zkontroluj signál a zkus to znovu.');
+    nactiProfil().then(vykresliStav);
+    return false;
+  }
   return true;
 }
 window.vyzadujUcet = vyzadujUcet;
@@ -183,7 +207,8 @@ document.querySelector('.profile')?.addEventListener('click', () => {
 
 async function odhlas() {
   await db.auth.signOut();
-  ucet = null; profil = null;
+  ucet = null; profil = null; profilZnamy = true;
+  try { localStorage.removeItem(PROFIL_CACHE); } catch (_) {}
   vykresliStav();
   notify('Odhlášeno.');
 }
@@ -309,9 +334,14 @@ db?.auth.onAuthStateChange(async (event, session) => {
     clearInterval(znovuTimer);
     autForm(true);
     zavri(document.querySelector('#auth-modal'));
-    if (!profil) otevri('#nick-modal');
-    else notify(`Přihlášen jako ${profil.nick}.`);
+    if (!profil && profilZnamy) otevri('#nick-modal');
+    else if (profil) notify(`Přihlášen jako ${profil.nick}.`);
   }
+});
+
+/* návrat signálu: tiše doověřit profil, ať se stav v hlavičce srovná sám */
+window.addEventListener('online', () => {
+  if (ucet && !profilZnamy) nactiProfil().then(vykresliStav);
 });
 
 nactiSession().then(()=>{
