@@ -334,6 +334,91 @@ document.querySelectorAll('.slider-row input[type=range]').forEach(slider=>{
   slider.addEventListener('input',sync);sync();
 });
 
+/* ---- offline fronta zápisů ----
+   Bez signálu se zápis (včetně fotky a polohy z místa) uschová v telefonu
+   a odešle se sám, jakmile se síť vrátí. Poloha i časové razítko jsou z okamžiku návštěvy. */
+function frontaDb(){
+  return new Promise((res,rej)=>{
+    const r=indexedDB.open('atlas-fronta',1);
+    r.onupgradeneeded=()=>{r.result.createObjectStore('zapisy',{autoIncrement:true})};
+    r.onsuccess=()=>res(r.result);
+    r.onerror=()=>rej(r.error);
+  });
+}
+async function frontaPridej(polozka){
+  const d=await frontaDb();
+  return new Promise((res,rej)=>{
+    const t=d.transaction('zapisy','readwrite');
+    t.objectStore('zapisy').add(polozka);
+    t.oncomplete=()=>res();
+    t.onerror=()=>rej(t.error);
+  });
+}
+async function frontaVse(){
+  const d=await frontaDb();
+  return new Promise((res,rej)=>{
+    const t=d.transaction('zapisy','readonly').objectStore('zapisy').openCursor();
+    const out=[];
+    t.onsuccess=()=>{const c=t.result;if(c){out.push({klic:c.key,z:c.value});c.continue()}else res(out)};
+    t.onerror=()=>rej(t.error);
+  });
+}
+async function frontaSmaz(klic){
+  const d=await frontaDb();
+  return new Promise((res,rej)=>{
+    const t=d.transaction('zapisy','readwrite');
+    t.objectStore('zapisy').delete(klic);
+    t.oncomplete=()=>res();
+    t.onerror=()=>rej(t.error);
+  });
+}
+function jeSitovaChyba(e){
+  if(!navigator.onLine)return true;
+  if(!e)return false;
+  if(e instanceof TypeError)return true;
+  return /failed to fetch|networkerror|network request failed|load failed|fetch failed/i.test(e.message||'');
+}
+let frontaBezi=false;
+async function zpracujFrontu(){
+  if(frontaBezi||!navigator.onLine)return;
+  const db=window.atlasDb;
+  if(!db)return;
+  frontaBezi=true;
+  try{
+    const cekajici=await frontaVse();
+    for(const {klic,z} of cekajici){
+      try{
+        const zaznam=z.zaznam;
+        if(z.fotoBlob){
+          const cesta=`zapisy/${zaznam.misto_id}/${Date.now()}.${z.pripona||'jpg'}`;
+          const {error:fe}=await db.storage.from('atlas').upload(cesta,z.fotoBlob,{contentType:z.fotoTyp||'image/jpeg'});
+          if(fe){
+            if(jeSitovaChyba(fe))throw fe;   /* síť: nechat ve frontě, zkusit později */
+            /* jiná chyba fotky: odeslat zápis bez ní */
+          } else zaznam.fotka=cesta;
+        }
+        const {error}=await db.from('atlas_zapisy').insert(zaznam);
+        if(error){
+          if(jeSitovaChyba(error))throw error;
+          /* server zápis odmítl (vzdálenost, duplicita) — z fronty pryč, ať se nezkouší donekonečna */
+          if(zaznam.fotka)db.storage.from('atlas').remove([zaznam.fotka]);
+          await frontaSmaz(klic);
+          notify(error.message.includes('m od místa')?('Uschovaný zápis nebyl přijat: '+error.message)
+            :(error.code==='23505'?'Uschovaný zápis nebyl přijat — z toho místa už ten den zápis máš.'
+            :'Uschovaný zápis nebyl přijat: '+error.message));
+          continue;
+        }
+        await frontaSmaz(klic);
+        notify('Uschovaný zápis z místa se právě odeslal 🌿');
+        if(mistoData&&mistoData.id===zaznam.misto_id)nactiMisto();
+      }catch(e){break}   /* síť zase vypadla — zbytek fronty počká */
+    }
+  }catch(_){}finally{frontaBezi=false}
+}
+window.addEventListener('online',zpracujFrontu);
+if(window.atlasAuthReady)zpracujFrontu();
+else window.addEventListener('atlas-auth-ready',zpracujFrontu,{once:true});
+
 /* ---- odeslání zápisu ---- */
 document.querySelector('#log-form')?.addEventListener('submit',async event=>{
   event.preventDefault();
@@ -359,19 +444,49 @@ document.querySelector('#log-form')?.addEventListener('submit',async event=>{
     krasa:hodnota('Krása'), lecivost:hodnota('Léčivost')
   };
 
+  /* společný šťastný konec: zavřít, vyčistit, poděkovat */
+  const uklid=zprava=>{
+    odeslat.disabled=false; odeslat.textContent=puvodni;
+    closeModal(document.querySelector('#log-modal'));
+    form.reset(); geoReset(); logPhotoReset();
+    document.querySelectorAll('.slider-row input[type=range]').forEach(s=>s.dispatchEvent(new Event('input')));
+    notify(zprava);
+  };
+  /* uschovat do telefonu, když není síť */
+  const uschovej=async blob=>{
+    try{
+      await frontaPridej({zaznam,fotoBlob:blob||null,fotoTyp:blob?(blob.type||'image/jpeg'):null,pripona:blob?pripona:null,vytvoreno:Date.now()});
+      uklid('Jsi mimo signál — zápis je uschovaný v telefonu a odešle se sám, až se připojíš.');
+    }catch(e){
+      odeslat.disabled=false; odeslat.textContent=puvodni;
+      notify('Zápis se nepodařilo uschovat. Zůstává vyplněný — zkus Uložit, až chytíš signál.');
+    }
+  };
+
+  let pripona='jpg', fotoBlob=null;
   if(logPhotoFile){
-    let blob=logPhotoFile, pripona='jpg';
-    if(window.atlasZpracujFoto){ const z=await window.atlasZpracujFoto(logPhotoFile); blob=z.blob; pripona=z.pripona; }
+    fotoBlob=logPhotoFile;
+    if(window.atlasZpracujFoto){ const z=await window.atlasZpracujFoto(logPhotoFile); fotoBlob=z.blob; pripona=z.pripona; }
+  }
+
+  /* bez sítě rovnou do fronty — nic nezkoušet, ať to netrvá */
+  if(!navigator.onLine){ await uschovej(fotoBlob); return; }
+
+  if(fotoBlob){
     const cesta=`zapisy/${mistoData.id}/${Date.now()}.${pripona}`;
-    const {error:fe}=await db.storage.from('atlas').upload(cesta,blob,{contentType:blob.type||'image/jpeg'});
-    if(fe){ notify('Fotku se nepodařilo nahrát — zápis uložím bez ní.'); }
+    const {error:fe}=await db.storage.from('atlas').upload(cesta,fotoBlob,{contentType:fotoBlob.type||'image/jpeg'});
+    if(fe){
+      if(jeSitovaChyba(fe)){ await uschovej(fotoBlob); return; }
+      notify('Fotku se nepodařilo nahrát — zápis uložím bez ní.');
+    }
     else zaznam.fotka=cesta;
   }
 
   const {error}=await db.from('atlas_zapisy').insert(zaznam);
-  odeslat.disabled=false; odeslat.textContent=puvodni;
 
   if(error){
+    if(jeSitovaChyba(error)){ delete zaznam.fotka; await uschovej(fotoBlob); return; }
+    odeslat.disabled=false; odeslat.textContent=puvodni;
     console.error(error);
     if(zaznam.fotka) db.storage.from('atlas').remove([zaznam.fotka]);
     notify(error.message.includes('m od místa') ? error.message
@@ -379,10 +494,7 @@ document.querySelector('#log-form')?.addEventListener('submit',async event=>{
       : 'Zápis se nepodařilo uložit: '+error.message));
     return;
   }
-  closeModal(document.querySelector('#log-modal'));
-  form.reset(); geoReset(); logPhotoReset();
-  document.querySelectorAll('.slider-row input[type=range]').forEach(s=>s.dispatchEvent(new Event('input')));
-  notify('Zápis uložen. Tvé vnímání vstoupilo do DNA místa.');
+  uklid('Zápis uložen. Tvé vnímání vstoupilo do DNA místa.');
   nactiMisto();
 });
 

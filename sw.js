@@ -1,10 +1,10 @@
 /* Atlas energetických míst — service worker (offline shell + rychlé spuštění) */
-const CACHE = 'atlas-v4';
+const CACHE = 'atlas-v5';
 
 const SHELL = [
   '/', '/misto', '/o-projektu', '/sprava', '/objevit', '/denik', '/podminky',
   '/styles.css', '/header.js', '/auth.js', '/data.js',
-  '/app.js', '/misto.js', '/sprava.js', '/objevit.js', '/denik.js',
+  '/app.js', '/misto.js', '/i18n.js', '/sprava.js', '/objevit.js', '/denik.js',
   '/foto.js', '/geo.js',
   '/img/logo.png', '/img/icon-192.png', '/img/icon-512.png',
   '/img/hero-brana.jpg', '/img/brana-svit.jpg',
@@ -38,7 +38,7 @@ self.addEventListener('fetch', event => {
     event.respondWith(
       fetch(req)
         .then(res => { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); return res; })
-        .catch(() => caches.match(req).then(r => r || caches.match('/')))
+        .catch(() => caches.match(req).then(r => r || caches.match(url.pathname)).then(r => r || caches.match('/')))
     );
     return;
   }
