@@ -349,6 +349,7 @@
     'Poslali jsme ho na': 'We\u2019ve sent it to',
     'Otevři si schránku a klikni na něj. Tuhle stránku můžeš klidně zavřít.': 'Open your inbox and click it. You can close this page.',
     'Poslat znovu': 'Send again',
+    'byl tu': 'was here',
     'Prožitky a poznámky': 'Experiences and notes',
     'Poděl se o prožitek či zkušenost': 'Share an experience or insight',
     'Komentář napíšeš odkudkoli — třeba sis odnesl prožitek z dřívější návštěvy, nebo víš něco, co ostatním pomůže. Do DNA místa se nezapočítá; tu tvoří jen zápisy z místa.': 'A comment can be written from anywhere — perhaps you carry an experience from an earlier visit, or know something that will help others. It doesn\u2019t count toward the place\u2019s DNA; only entries made on the spot do.',

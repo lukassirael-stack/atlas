@@ -298,9 +298,13 @@ async function nactiZapisy(){
 
 async function nactiKomentare(){
   const db=window.atlasDb, box=document.querySelector('#comment-list');
-  const { data, error } = await db.from('atlas_komentare')
-    .select('id,autor_id,text,vytvoren,atlas_profily(nick)')
-    .eq('misto_id', mistoData.id).eq('stav','zverejneny').order('vytvoren',{ascending:false}).limit(50);
+  const [komentare, navstevnici] = await Promise.all([
+    db.from('atlas_komentare')
+      .select('id,autor_id,text,vytvoren,atlas_profily(nick)')
+      .eq('misto_id', mistoData.id).eq('stav','zverejneny').order('vytvoren',{ascending:false}).limit(50),
+    db.from('atlas_zapisy').select('autor_id').eq('misto_id', mistoData.id)
+  ]);
+  const { data, error } = komentare;
   if (error){
     box.innerHTML = `<li class="log-prazdno">Komentáře se nepodařilo načíst. Zkus obnovit stránku.</li>`;
     return;
@@ -309,12 +313,15 @@ async function nactiKomentare(){
     box.innerHTML = `<li class="log-prazdno">Zatím bez komentářů.</li>`;
     return;
   }
+  /* kdo tu má ověřený zápis, nese u komentáře odznak přítomnosti */
+  const bylTu = new Set((navstevnici.data||[]).map(z=>z.autor_id));
   const ucet=window.atlasUcet&&window.atlasUcet(), profil=window.atlasProfil&&window.atlasProfil();
   box.innerHTML = data.map(k=>{
     const nick = k.atlas_profily?.nick || 'poutník';
+    const odznak = bylTu.has(k.autor_id) ? '<span class="log-badge">◎ byl tu</span>' : '';
     const smi = (profil&&profil.spravce) || (ucet&&ucet.id===k.autor_id);
     const upr = smi ? `<button type="button" class="edit-link" data-edit-koment="${k.id}">✎ Upravit</button>` : '';
-    return `<li class="log-item comment" data-koment="${k.id}"><div class="log-head"><span class="log-nick">${escHtml(nick)}</span><time>${fmtDatum(k.vytvoren)}</time></div><p class="koment-text">${escHtml(k.text)}</p>${upr}</li>`;
+    return `<li class="log-item comment" data-koment="${k.id}"><div class="log-head"><span class="log-nick">${escHtml(nick)}</span>${odznak}<time>${fmtDatum(k.vytvoren)}</time></div><p class="koment-text">${escHtml(k.text)}</p>${upr}</li>`;
   }).join('');
   if(ucet||profil) box.querySelectorAll('[data-edit-koment]').forEach(b=>{
     const k=data.find(x=>String(x.id)===b.dataset.editKoment);
