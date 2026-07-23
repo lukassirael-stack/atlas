@@ -133,7 +133,9 @@ async function nactiFotky(autorId, hotovyDotaz){
   // smí přeřazovat? autor místa nebo správce
   const ucet = window.atlasUcet && window.atlasUcet();
   const profil = window.atlasProfil && window.atlasProfil();
-  const smiRadit = !!(profil && profil.spravce);   /* hlavní galerii kurátoruje správce */
+  const jeSpravce = !!(profil && profil.spravce);
+  const jeAutor = !!(ucet && autorId && ucet.id === autorId);
+  const smiRadit = jeSpravce || jeAutor;   /* autor své místo eviduje, mazat smí jen správce */
 
   // galerie zobraz jen když je víc fotek, nebo když smí správce/autor spravovat
   const grid = document.querySelector('#galerie-grid');
@@ -278,7 +280,7 @@ function vykresliLightbox(){
   const spravce=!!(profil&&profil.spravce);
   akce.hidden=!(lbSmi||(lbZKomentare&&spravce));
   akce.querySelector('.lb-hlavni').hidden=lbZKomentare||(lbIndex===0);
-  akce.querySelector('.lb-smaz').hidden=lbZKomentare;
+  akce.querySelector('.lb-smaz').hidden=lbZKomentare||!spravce;   /* mazání jen správce */
   akce.querySelector('.lb-galerie').hidden=!(lbZKomentare&&spravce);
 }
 

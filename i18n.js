@@ -351,6 +351,7 @@
     'Poslat znovu': 'Send again',
     /* — geocachingový model (návštěvy) — */
     'Byl jsem tady': 'I was here',
+    'Fotky můžeš doplnit i později — v galerii svého místa najdeš dlaždici Přidat fotky a u otevřené fotky zvolíš, která bude hlavní.': 'You can add photos later too — in your place\u2019s gallery you\u2019ll find the Add photos tile, and with a photo open you choose which one is the main.',
     'Tvé první naladění': 'Your first attunement',
     'Nepovinné': 'Optional',
     'Označíš ✦ Byl jsem tady, naladíš pět os a necháš pár slov — na místě, nebo v klidu doma. DNA místa je pravdivější s každým, kdo ho procítí.': 'You mark ✦ I was here, set the five axes and leave a few words — on the spot, or calmly at home. The place\u2019s DNA grows truer with everyone who feels it.',
