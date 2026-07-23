@@ -135,7 +135,13 @@ async function atlasStart(){
   atlasMista = await window.atlasNactiMista();
   dlazdiceVykresli();
   znackyVykresli();
-  if (atlasMista.length) kartaZobraz(atlasMista[0]);
+  if (atlasMista.length){
+    /* místo dne — výloha se každý den protočí na další místo v pořadí */
+    const den = Math.floor(Date.now()/86400000);
+    const dnesni = atlasMista[den % atlasMista.length];
+    posledniLos = dnesni.slug;
+    kartaZobraz(dnesni);
+  }
 }
 if (window.atlasAuthReady) atlasStart();
 else window.addEventListener('atlas-auth-ready', atlasStart, {once:true});
