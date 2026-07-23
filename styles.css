@@ -882,3 +882,15 @@ html{overflow-x:clip}
   .kk-telo{padding:0 16px 14px}
   .kk-foto{min-height:150px}
 }
+
+/* potvrzený stav ověření polohy + jednorázový odznak místa */
+.geo-button.hotovo{background:#416d51;border-color:#355942;color:#f2f8f1}
+.geo-button.hotovo:hover:not(:disabled){background:#355942;transform:none}
+.geo-capture.ready{border-style:solid;border-color:#7aa88c;background:#f1f7f1}
+.geo-status.ok span{color:var(--ink-soft);font-size:11.5px}
+.geo-hotovo{margin:0;font-size:12.5px;line-height:1.55;color:var(--forest);max-width:34ch}
+.geo-hotovo[hidden]{display:none}
+.mn-smazat{border:1px solid transparent;background:none;color:var(--cream-soft);border-radius:99px;
+  padding:4px 8px;font-size:12px;cursor:pointer;transition:.2s;opacity:.65}
+.mn-smazat:hover:not(:disabled){border-color:#a2452f;color:#ffd9cf;opacity:1}
+.mn-smazat:disabled{opacity:.3;cursor:default}

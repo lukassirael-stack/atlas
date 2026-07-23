@@ -233,21 +233,24 @@ function geoChybaText(err){
     return 'Hledání polohy trvá moc dlouho. Zkus to prosím znovu.';
   return 'Polohu se nepodařilo načíst. Máš v telefonu zapnutou polohu (GPS)? Jsi venku, pod otevřeným nebem?';
 }
-function geoReset(){geoFix=null;geoCapture.classList.remove('ready');geoStatus.className='geo-status';geoStatus.textContent='Poloha zatím nenačtena. Musíš stát přímo na místě.';geoButton.textContent='◎ Načíst mou polohu';geoButton.disabled=false}
+function geoVychozi(){geoButton.textContent='◎ Načíst mou polohu';geoButton.classList.remove('hotovo');geoButton.removeAttribute('title');geoButton.disabled=false}
+function geoHotovo(){geoButton.textContent='✓ Poloha načtena';geoButton.classList.add('hotovo');geoButton.title='Načíst polohu znovu';geoButton.disabled=false}
+function geoReset(){geoFix=null;geoCapture.classList.remove('ready');geoStatus.className='geo-status';geoStatus.textContent='Poloha zatím nenačtena. Musíš stát přímo na místě.';geoVychozi()}
 geoButton?.addEventListener('click',()=>{
   if(!navigator.geolocation){geoStatus.className='geo-status err';geoStatus.textContent='Tvůj prohlížeč polohu nepodporuje.';return}
-  geoStatus.className='geo-status';geoStatus.textContent='Hledám tvou polohu…';geoButton.disabled=true;
+  geoStatus.className='geo-status';geoStatus.textContent='Hledám tvou polohu…';
+  geoButton.textContent='◎ Hledám polohu…';geoButton.classList.remove('hotovo');geoButton.disabled=true;
   navigator.geolocation.getCurrentPosition(position=>{
     const{latitude,longitude,accuracy}=position.coords;
     geoFix={lat:latitude,lng:longitude,accuracy};
     geoCapture.classList.add('ready');
     geoStatus.className='geo-status ok';
     geoStatus.innerHTML=`<b>${latitude.toFixed(5)} N, ${longitude.toFixed(5)} E</b><br>přesnost ±${Math.round(accuracy)} m`;
-    geoButton.textContent='◎ Načíst znovu';geoButton.disabled=false;
+    geoHotovo();
   },error=>{
     geoStatus.className='geo-status err';
     geoStatus.textContent=geoChybaText(error);
-    geoButton.disabled=false;
+    if(geoFix) geoHotovo(); else geoVychozi();
   },{enableHighAccuracy:true,timeout:12000,maximumAge:0});
 });
 const tagPicker=document.querySelector('#tag-picker');

@@ -332,17 +332,28 @@ async function nactiMojeNavstevy(){
     .select('id,vytvoreno,vzdalenost_m,klid,energie,mystika,krasa,lecivost')
     .eq('misto_id', mistoData.id).eq('autor_id', ucet.id)
     .order('vytvoreno',{ascending:false}).limit(20);
-  if(error||!data||!data.length){ box.hidden=true; return; }
+  if(error||!data||!data.length){ box.hidden=true; mamOvereno=false; nastavGeoKrok(); return; }
+  mamOvereno = data.some(z=>z.vzdalenost_m!=null);
+  nastavGeoKrok();
   box.hidden=false;
   box.innerHTML = '<div class="mn-box"><span class="mn-titul">★ Tvé návštěvy</span>' + data.map(z=>
     `<span class="mn-radek">${fmtDatum(z.vytvoreno)}`+
       (z.vzdalenost_m!=null?' <span class="log-badge">◎ ověřeno na místě</span>':'')+
       `<button type="button" class="mn-upravit" data-zapis="${z.id}">✎ Upravit naladění</button>`+
+      `<button type="button" class="mn-smazat" data-smaz="${z.id}" title="Smazat návštěvu" aria-label="Smazat návštěvu">🗑</button>`+
     `</span>`).join('') + '</div>';
   box.querySelectorAll('[data-zapis]').forEach(b=>{
     const z=data.find(x=>String(x.id)===b.dataset.zapis);
     b.addEventListener('click',()=>otevriEditZapis(z));
   });
+  box.querySelectorAll('[data-smaz]').forEach(b=>b.addEventListener('click',async()=>{
+    if(!confirm('Smazat tuhle návštěvu? Její naladění odejde z DNA místa.'))return;
+    b.disabled=true;
+    const {data:smazano,error:chyba}=await db.from('atlas_zapisy').delete().eq('id',b.dataset.smaz).select('id');
+    if(chyba||!smazano||!smazano.length){notify('Návštěvu se nepodařilo smazat'+(chyba?': '+chyba.message:'.'));b.disabled=false;return}
+    notify('Návštěva smazána.');
+    nactiMisto();
+  }));
 }
 function otevriEditZapis(z){
   const m=document.querySelector('#edit-log-modal'); if(!m||!z) return;
@@ -403,7 +414,18 @@ document.addEventListener('keydown',event=>{if(event.key==='Escape')document.que
 const geoCapture=document.querySelector('#geo-capture');
 const geoButton=document.querySelector('#geo-get');
 const geoStatus=document.querySelector('#geo-status');
+const geoHotovoText=document.querySelector('#geo-hotovo');
 let geoFix=null;
+let mamOvereno=false;   // odznak ◎ u tohoto místa už mám — ověřovat znovu nejde
+
+/* krok 3 se u už ověřeného místa promění v prosté konstatování */
+function nastavGeoKrok(){
+  if(!geoCapture||!geoButton)return;
+  geoButton.hidden=mamOvereno;
+  if(geoStatus) geoStatus.hidden=mamOvereno;
+  if(geoHotovoText) geoHotovoText.hidden=!mamOvereno;
+  geoCapture.classList.toggle('ready', mamOvereno || !!geoFix);
+}
 function geoChybaText(err){
   if(/FBAN|FBAV|FB_IAB|Instagram/i.test(navigator.userAgent))
     return 'Prohlížeč uvnitř aplikace (Facebook, Instagram…) polohu neumí. Návštěvu můžeš uložit i bez ověření.';
@@ -413,21 +435,38 @@ function geoChybaText(err){
     return 'Hledání polohy trvá moc dlouho. Zkus to prosím znovu.';
   return 'Polohu se nepodařilo načíst. Máš v telefonu zapnutou polohu (GPS)? Jsi venku, pod otevřeným nebem?';
 }
-function geoReset(){geoFix=null;geoCapture?.classList.remove('ready');if(!geoStatus)return;geoStatus.className='geo-status';geoStatus.textContent='Nepovinné — ověřená návštěva získá odznak ◎ ověřeno na místě.';geoButton.textContent='◎ Ověřit, že tu stojím';geoButton.disabled=false}
+function geoVychozi(){
+  if(!geoButton)return;
+  geoButton.textContent='◎ Ověřit, že tu stojím';
+  geoButton.classList.remove('hotovo');
+  geoButton.removeAttribute('title');
+  geoButton.disabled=false;
+}
+function geoHotovo(){
+  if(!geoButton)return;
+  geoButton.textContent='✓ Ověřeno na místě';
+  geoButton.classList.add('hotovo');
+  geoButton.title='Načíst polohu znovu';
+  geoButton.disabled=false;
+}
+function geoReset(){geoFix=null;geoCapture?.classList.remove('ready');if(!geoStatus)return;geoStatus.className='geo-status';geoStatus.textContent='Nepovinné — ověřená návštěva získá odznak ◎ ověřeno na místě.';geoVychozi();nastavGeoKrok()}
 geoButton?.addEventListener('click',()=>{
+  if(mamOvereno)return;   /* odznak je jednorázový — tlačítko už není vidět */
   if(!navigator.geolocation){geoStatus.className='geo-status err';geoStatus.textContent='Tvůj prohlížeč polohu nepodporuje.';return}
-  geoStatus.className='geo-status';geoStatus.textContent='Hledám tvou polohu…';geoButton.disabled=true;
+  geoStatus.className='geo-status';geoStatus.textContent='Hledám tvou polohu…';
+  geoButton.textContent='◎ Hledám polohu…';geoButton.classList.remove('hotovo');geoButton.disabled=true;
   navigator.geolocation.getCurrentPosition(position=>{
     const{latitude,longitude,accuracy}=position.coords;
     geoFix={lat:latitude,lng:longitude,accuracy};
     geoCapture.classList.add('ready');
     geoStatus.className='geo-status ok';
-    geoStatus.innerHTML=`<b>${latitude.toFixed(5)} N, ${longitude.toFixed(5)} E</b><br>přesnost ±${Math.round(accuracy)} m`;
-    geoButton.textContent='◎ Ověřit znovu';geoButton.disabled=false;
+    geoStatus.innerHTML=`<b>${latitude.toFixed(5)} N, ${longitude.toFixed(5)} E</b><br>přesnost ±${Math.round(accuracy)} m<br><span>Návštěva ponese odznak ◎ ověřeno na místě.</span>`;
+    geoHotovo();
   },error=>{
     geoStatus.className='geo-status err';
     geoStatus.textContent=geoChybaText(error);
-    geoButton.disabled=false;
+    /* nepovedlo se znovu, ale předchozí ověření pořád platí */
+    if(geoFix) geoHotovo(); else geoVychozi();
   },{enableHighAccuracy:true,timeout:12000,maximumAge:0});
 });
 
@@ -569,9 +608,8 @@ async function zpracujFrontu(){
         if(error){
           if(jeSitovaChyba(error))throw error;
           await frontaSmaz(klic);
-          notify(error.message.includes('m od místa')?('Uschovaná návštěva nebyla přijata: '+error.message)
-            :(error.code==='23505'?'Uschovaná návštěva nebyla přijata — ten den už tu jednu máš.'
-            :'Uschovaná návštěva nebyla přijata: '+error.message));
+          notify(error.code==='23505'?'Uschovaná návštěva nebyla přijata — tohle místo už máš ověřené.'
+            :'Uschovaná návštěva nebyla přijata: '+error.message);
           continue;
         }
         if(z.komentarText||z.fotoBlob){
@@ -647,8 +685,8 @@ document.querySelector('#log-form')?.addEventListener('submit',async event=>{
     if(jeSitovaChyba(error)){ await uschovej(fotoBlob); return; }
     odeslat.disabled=false; odeslat.textContent=puvodni;
     console.error(error);
-    notify(error.message.includes('m od místa') ? error.message
-      : (error.code==='23505' ? 'Dnešní návštěvu tu už zapsanou máš. Další můžeš přidat zase jindy.'
+    notify(/m od místa|už máš ověřené/.test(error.message) ? error.message
+      : (error.code==='23505' ? 'Tohle místo už máš ověřené. Další návštěvu zapiš bez ověřování polohy.'
       : 'Návštěvu se nepodařilo uložit: '+error.message));
     return;
   }
