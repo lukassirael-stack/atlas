@@ -80,7 +80,7 @@ function zpravyInit(){
   panel.hidden = true;
   document.body.appendChild(panel);
 
-  let posledniCeka = 0;   // kolik míst čeká na schválení (jen pro správce)
+  let posledniCeka = 0;   // kolik míst + komentářů čeká na schválení (jen pro správce)
 
   function aktualizujBadge(n){
     const badge = bell.querySelector('.bell-badge');
@@ -93,28 +93,36 @@ function zpravyInit(){
     try { const r = await db.rpc('atlas_moje_zpravy'); if(r.error) throw r.error; data = r.data || []; }
     catch(e){ return; }
 
-    /* správce: kolik míst čeká na schválení */
-    let ceka = 0;
+    /* správce: kolik míst a komentářů čeká na schválení */
+    let cekaMista = 0, cekaKomentare = 0;
     const profil = window.atlasProfil && window.atlasProfil();
     if(profil && profil.spravce){
-      try { const c = await db.rpc('atlas_ceka_pocet'); if(!c.error) ceka = c.data || 0; } catch(_){}
+      try {
+        const c = await db.rpc('atlas_ceka_prehled');
+        if(!c.error && c.data){ cekaMista = c.data.mista || 0; cekaKomentare = c.data.komentare || 0; }
+      } catch(_){}
     }
-    posledniCeka = ceka;
+    posledniCeka = cekaMista + cekaKomentare;
 
     const neprec = data.filter(z=>!z.precteno).length;
-    aktualizujBadge(neprec + ceka);
+    aktualizujBadge(neprec + posledniCeka);
 
-    const radekCeka = ceka>0
-      ? `<a class="bell-zprava nova" href="/sprava" style="display:block;text-decoration:none;color:inherit;cursor:pointer">`+
-          `<p class="bell-text">🗺 ${ceka} ${ceka===1?'místo čeká':(ceka<5?'místa čekají':'míst čeká')} na schválení</p>`+
-          `<p class="bell-meta">otevřít Správu Atlasu ›</p>`+
-        `</a>`
+    const radekOdkaz = text =>
+      `<a class="bell-zprava nova" href="/sprava" style="display:block;text-decoration:none;color:inherit;cursor:pointer">`+
+        `<p class="bell-text">${text}</p>`+
+        `<p class="bell-meta">otevřít Správu Atlasu ›</p>`+
+      `</a>`;
+    const radekCeka = cekaMista>0
+      ? radekOdkaz(`🗺 ${cekaMista} ${cekaMista===1?'místo čeká':(cekaMista<5?'místa čekají':'míst čeká')} na schválení`)
+      : '';
+    const radekKoment = cekaKomentare>0
+      ? radekOdkaz(`✎ ${cekaKomentare} ${cekaKomentare===1?'komentář čeká':(cekaKomentare<5?'komentáře čekají':'komentářů čeká')} na schválení`)
       : '';
 
-    if(!data.length && !ceka){
+    if(!data.length && !posledniCeka){
       panel.innerHTML = '<div class="bell-head">Vzkazy od správce</div><div class="bell-prazdno">Zatím žádné vzkazy 🌿</div>';
     } else {
-      panel.innerHTML = '<div class="bell-head">Vzkazy od správce</div>' + radekCeka + data.map(z=>
+      panel.innerHTML = '<div class="bell-head">Vzkazy od správce</div>' + radekCeka + radekKoment + data.map(z=>
         `<div class="bell-zprava${z.precteno?'':' nova'}">`+
           `<p class="bell-text">${zEsc(z.text)}</p>`+
           `<p class="bell-meta">${z.misto_nazev?('k místu '+zEsc(z.misto_nazev)+' · '):''}${zKdy(z.vytvoreno)}</p>`+

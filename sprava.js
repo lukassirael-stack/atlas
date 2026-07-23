@@ -86,14 +86,14 @@ function navazAkce(data){
   const db=window.atlasDb;
   const mapaData = Object.fromEntries(data.map(m=>[m.id,m]));
 
-  document.querySelectorAll('.btn-schvalit').forEach(b=>b.addEventListener('click',async()=>{
+  obsah.querySelectorAll('.btn-schvalit').forEach(b=>b.addEventListener('click',async()=>{
     b.disabled=true;
     const {error}=await db.rpc('atlas_sprava_stav',{p_id:b.dataset.id,p_stav:'zverejnene'});
     if(error){notify('Chyba: '+error.message);b.disabled=false;return}
     notify('Místo zveřejněno.');nactiMista();
   }));
 
-  document.querySelectorAll('.btn-zamitnout').forEach(b=>b.addEventListener('click',async()=>{
+  obsah.querySelectorAll('.btn-zamitnout').forEach(b=>b.addEventListener('click',async()=>{
     const duvod=prompt('Důvod zamítnutí (nepovinné, uvidí ho autor):','');
     if(duvod===null)return;
     b.disabled=true;
@@ -102,7 +102,7 @@ function navazAkce(data){
     notify('Místo zamítnuto.');nactiMista();
   }));
 
-  document.querySelectorAll('.btn-skryt').forEach(b=>b.addEventListener('click',async()=>{
+  obsah.querySelectorAll('.btn-skryt').forEach(b=>b.addEventListener('click',async()=>{
     if(!confirm('Stáhnout místo z mapy? Vrátí se do stavu „čeká".'))return;
     b.disabled=true;
     const {error}=await db.rpc('atlas_sprava_stav',{p_id:b.dataset.id,p_stav:'ceka'});
@@ -110,7 +110,7 @@ function navazAkce(data){
     notify('Místo staženo z mapy.');nactiMista();
   }));
 
-  document.querySelectorAll('.btn-smazat').forEach(b=>b.addEventListener('click',async()=>{
+  obsah.querySelectorAll('.btn-smazat').forEach(b=>b.addEventListener('click',async()=>{
     if(!confirm(`Nevratně smazat „${b.dataset.nazev}"? Zmizí i všechny jeho zápisy a fotky.`))return;
     b.disabled=true;
     const {error}=await db.from('atlas_mista').delete().eq('id',b.dataset.id);
@@ -118,7 +118,7 @@ function navazAkce(data){
     notify('Místo smazáno.');nactiMista();
   }));
 
-  document.querySelectorAll('.btn-vzkaz').forEach(b=>b.addEventListener('click',async()=>{
+  obsah.querySelectorAll('.btn-vzkaz').forEach(b=>b.addEventListener('click',async()=>{
     const text=prompt(`Vzkaz autorovi místa „${b.dataset.nazev}" (uvidí ho u sebe ve zvonečku):`,'');
     if(text===null)return;
     if(!text.trim()){notify('Vzkaz je prázdný.');return}
@@ -129,7 +129,7 @@ function navazAkce(data){
     notify('Vzkaz odeslán autorovi. ✉');
   }));
 
-  document.querySelectorAll('.btn-edit').forEach(b=>b.addEventListener('click',()=>otevriEdit(mapaData[b.dataset.id])));
+  obsah.querySelectorAll('.btn-edit').forEach(b=>b.addEventListener('click',()=>otevriEdit(mapaData[b.dataset.id])));
 }
 
 /* ---- editace ---- */
@@ -223,14 +223,109 @@ async function nactiPoutnici(){
     }).join('');
 }
 
-/* přepínač Místa / Poutníci */
+/* ==== Komentáře: moderace zdi (jen správce) ==== */
+const komentObsah = document.querySelector('#komentare-obsah');
+const komentFiltry = document.querySelector('#koment-filtry');
+let aktualniKStav = 'ceka';
+
+function kStavLabel(s){
+  return {ceka:'čeká',zverejneny:'zveřejněný',skryty:'skrytý'}[s]||s;
+}
+
+async function nactiKomentareSprava(){
+  komentObsah.innerHTML = `<p class="sprava-stav">Načítám komentáře…</p>`;
+  const db=window.atlasDb;
+  let dotaz = db.from('atlas_komentare')
+    .select('id,text,stav,fotka,vytvoreno,autor_id,atlas_profily(nick),atlas_mista(nazev,slug)')
+    .order('vytvoreno',{ascending:false}).limit(100);
+  if(aktualniKStav) dotaz = dotaz.eq('stav', aktualniKStav);
+  const { data, error } = await dotaz;
+  if(error){komentObsah.innerHTML=`<p class="sprava-stav">Chyba: ${escHtml(error.message)}</p>`;return}
+  if(!data || !data.length){
+    komentObsah.innerHTML = `<p class="sprava-stav">Žádné komentáře v této kategorii.</p>`;
+    return;
+  }
+  komentObsah.innerHTML = data.map(kartaKomentare).join('');
+  navazAkceKomentare(data);
+}
+
+function kartaKomentare(k){
+  const foto = k.fotka ? window.atlasFotoUrl(k.fotka) : null;
+  const misto = k.atlas_mista;
+
+  let akce = '';
+  if(k.stav==='ceka'){
+    akce += `<button class="btn-k-schvalit" data-kid="${k.id}">✓ Schválit</button>`;
+    akce += `<button class="btn-k-skryt" data-kid="${k.id}">✕ Skrýt</button>`;
+  } else if(k.stav==='zverejneny'){
+    akce += `<button class="btn-k-skryt" data-kid="${k.id}">Skrýt ze zdi</button>`;
+  } else {
+    akce += `<button class="btn-k-schvalit" data-kid="${k.id}">✓ Zveřejnit</button>`;
+  }
+  akce += `<button class="btn-k-smazat" data-kid="${k.id}">🗑 Smazat</button>`;
+
+  return `<article class="koment-karta" data-kid="${k.id}">
+    ${foto
+      ? `<a class="kk-foto" href="${foto}" target="_blank" rel="noopener" title="Otevřít fotku v plné velikosti"><img src="${foto}" alt="Fotka u komentáře" loading="lazy" /></a>`
+      : `<div class="kk-foto"><div class="kk-nofoto">bez fotky</div></div>`}
+    <div class="kk-telo">
+      <div class="kk-hlava">
+        <div><span class="sk-stav sk-${k.stav}">${kStavLabel(k.stav)}</span> <b>${escHtml(k.atlas_profily?.nick||'poutník')}</b></div>
+        <time>${fmtDatum(k.vytvoreno)}</time>
+      </div>
+      <p class="kk-meta">k místu ${misto?`<a href="/misto?m=${encodeURIComponent(misto.slug)}#komentare" target="_blank" rel="noopener">${escHtml(misto.nazev)}</a>`:'—'}${foto?' · 📷 s fotkou':''}</p>
+      <p class="kk-text">${escHtml(k.text)}</p>
+      <div class="sk-akce">${akce}</div>
+    </div>
+  </article>`;
+}
+
+function navazAkceKomentare(data){
+  const db=window.atlasDb;
+
+  komentObsah.querySelectorAll('.btn-k-schvalit').forEach(b=>b.addEventListener('click',async()=>{
+    b.disabled=true;
+    const {data:zm,error}=await db.from('atlas_komentare').update({stav:'zverejneny'}).eq('id',b.dataset.kid).select('id');
+    if(error||!zm||!zm.length){notify('Chyba: '+(error?error.message:'úprava neprošla.'));b.disabled=false;return}
+    notify('Komentář zveřejněn.');nactiKomentareSprava();
+  }));
+
+  komentObsah.querySelectorAll('.btn-k-skryt').forEach(b=>b.addEventListener('click',async()=>{
+    b.disabled=true;
+    const {data:zm,error}=await db.from('atlas_komentare').update({stav:'skryty'}).eq('id',b.dataset.kid).select('id');
+    if(error||!zm||!zm.length){notify('Chyba: '+(error?error.message:'úprava neprošla.'));b.disabled=false;return}
+    notify('Komentář skryt.');nactiKomentareSprava();
+  }));
+
+  komentObsah.querySelectorAll('.btn-k-smazat').forEach(b=>b.addEventListener('click',async()=>{
+    const k=data.find(x=>String(x.id)===b.dataset.kid);
+    if(!confirm('Nevratně smazat tento komentář?'+(k&&k.fotka?' Smaže se i jeho fotka.':'')))return;
+    b.disabled=true;
+    const {error}=await db.from('atlas_komentare').delete().eq('id',b.dataset.kid);
+    if(error){notify('Chyba: '+error.message);b.disabled=false;return}
+    if(k&&k.fotka){ try{ db.storage.from('atlas').remove([k.fotka]); }catch(_){} }
+    notify('Komentář smazán.');nactiKomentareSprava();
+  }));
+}
+
+komentFiltry?.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+  komentFiltry.querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+  aktualniKStav=b.dataset.kstav;
+  nactiKomentareSprava();
+}));
+
+/* přepínač Místa / Komentáře / Poutníci */
 document.querySelector('#sprava-rezim')?.addEventListener('click', e=>{
   const btn = e.target.closest('button[data-rezim]');
   if(!btn) return;
   document.querySelectorAll('#sprava-rezim button').forEach(b=>b.classList.toggle('on', b===btn));
-  const poutnici = btn.dataset.rezim === 'poutnici';
-  filtry.hidden = poutnici;
-  obsah.hidden = poutnici;
-  poutniciObsah.hidden = !poutnici;
-  if(poutnici && !poutniciNacteni){ poutniciNacteni = true; nactiPoutnici(); }
+  const rezim = btn.dataset.rezim;
+  filtry.hidden = rezim!=='mista';
+  obsah.hidden = rezim!=='mista';
+  komentFiltry.hidden = rezim!=='komentare';
+  komentObsah.hidden = rezim!=='komentare';
+  poutniciObsah.hidden = rezim!=='poutnici';
+  if(rezim==='komentare') nactiKomentareSprava();
+  if(rezim==='poutnici' && !poutniciNacteni){ poutniciNacteni = true; nactiPoutnici(); }
 });

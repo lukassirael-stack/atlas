@@ -835,3 +835,50 @@ html{overflow-x:clip}
   .cesta{padding:22px 20px}
   .cesta h3{font-size:23px;margin-bottom:14px}
 }
+
+/* ---------- velká revize: legenda mapy, navštívená značka, tvé návštěvy, Správa komentářů ---------- */
+
+/* legenda značek na mapě (Leaflet control vlevo dole) */
+.map-legenda{display:flex;gap:12px;align-items:center;background:rgba(11,20,15,.82);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--line);
+  border-radius:99px;padding:7px 13px;font:500 11.5px 'Jost',sans-serif;letter-spacing:.02em;
+  color:var(--cream-soft);margin:0 0 6px 6px;pointer-events:none}
+.map-legenda .ml-nav{color:var(--gold-lume)}
+@media(max-width:560px){.map-legenda{font-size:10.5px;padding:6px 10px;gap:9px;margin:0 0 4px 4px}}
+
+/* navštívené místo: tmavě zelený kotouček se zlatou hvězdou (✦ zůstává zlatý kotouček) */
+.atlas-znacka.navstiveno span{background:radial-gradient(circle at 40% 35%,#2e4a38,#16241d 72%);
+  color:var(--gold-lume);border-color:var(--gold);text-shadow:0 0 6px rgba(236,208,138,.5)}
+
+/* tvé návštěvy na stránce místa */
+.moje-navstevy{max-width:1440px;margin:auto;padding:12px clamp(22px,6vw,88px) 0}
+.mn-box{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;border:1px solid var(--line);
+  border-radius:14px;background:rgba(251,247,239,.045);padding:10px 14px}
+.mn-titul{font:500 11px 'Cinzel',serif;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-lume)}
+.mn-radek{display:inline-flex;align-items:center;gap:8px;color:var(--cream-soft);font-size:12.5px}
+.mn-upravit{border:1px solid var(--line);background:none;color:var(--gold-lume);border-radius:99px;
+  padding:4px 11px;font:500 11.5px 'Jost',sans-serif;cursor:pointer;transition:.2s}
+.mn-upravit:hover{background:var(--gold);color:var(--forest);border-color:var(--gold-deep)}
+@media(max-width:560px){.moje-navstevy{padding:10px 18px 0}}
+
+/* Správa: moderace komentářů */
+.koment-karta{display:grid;grid-template-columns:110px 1fr;gap:16px;margin-top:16px;
+  border:1px solid var(--line);border-radius:16px;background:rgba(251,247,239,.04);overflow:hidden}
+.kk-foto{display:block;background:#243a2e;min-height:96px}
+.kk-foto img{width:100%;height:100%;object-fit:cover;display:block}
+.kk-nofoto{display:grid;place-items:center;height:100%;color:var(--cream-soft);font-size:11px}
+.kk-telo{padding:12px 16px 14px 0;min-width:0}
+.kk-hlava{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.kk-hlava b{color:var(--cream)}
+.kk-hlava time{color:var(--cream-soft);font-size:11.5px;white-space:nowrap}
+.kk-meta{margin:4px 0 0;font-size:12px;color:var(--cream-soft)}
+.kk-meta a{color:var(--gold-lume);text-decoration:none}
+.kk-meta a:hover{text-decoration:underline}
+.kk-text{color:var(--cream);font-size:14px;line-height:1.55;margin:8px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.sk-zverejneny{background:#5a8b6a;color:#0e1f14}
+.sk-skryty{background:#5a6a70;color:#0e171b}
+@media(max-width:700px){
+  .koment-karta{grid-template-columns:1fr}
+  .kk-telo{padding:0 16px 14px}
+  .kk-foto{min-height:150px}
+}

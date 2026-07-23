@@ -97,6 +97,17 @@ function mapaInit(){
     }
   });
   atlasMap.addControl(new NajitControl());
+  // legenda značek: ✦ místo, které tě čeká · ★ místo s tvou návštěvou
+  const LegendaControl = L.Control.extend({
+    options: { position: 'bottomleft' },
+    onAdd: function(){
+      const el = L.DomUtil.create('div', 'map-legenda');
+      el.innerHTML = '<span>✦ čeká na objevení</span><span class="ml-nav">★ navštíveno</span>';
+      L.DomEvent.disableClickPropagation(el);
+      return el;
+    }
+  });
+  atlasMap.addControl(new LegendaControl());
   // satelit — Esri World Imagery, zdarma bez klíče
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
     maxZoom: 19,
@@ -355,13 +366,13 @@ document.querySelector('#place-form')?.addEventListener('submit',async event=>{
   {
     const dna=k=>Number(document.querySelector(`#misto-dna input[data-k="${k}"]`).value);
     const {error:zErr}=await db.from('atlas_zapisy').insert({
-      misto_id:mistoId, autor_id:ucet.id, text:'',
+      misto_id:misto.id, autor_id:ucet.id, text:'',
       poloha:`SRID=4326;POINT(${geoFix.lng} ${geoFix.lat})`, presnost_m:Math.round(geoFix.accuracy),
       klid:dna('klid'), energie:dna('energie'), mystika:dna('mystika'), krasa:dna('krasa'), lecivost:dna('lecivost')
     });
     if(zErr) console.warn('První návštěva se nezaložila:', zErr.message);
     else prvniZapis=true;
-    const {error:kErr}=await db.from('atlas_komentare').insert({misto_id:mistoId, autor_id:ucet.id, text:zapisText});
+    const {error:kErr}=await db.from('atlas_komentare').insert({misto_id:misto.id, autor_id:ucet.id, text:zapisText});
     if(kErr) console.warn('Prožitek se nezaložil:', kErr.message);
   }
 

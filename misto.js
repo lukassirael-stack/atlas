@@ -108,6 +108,7 @@ async function nactiMisto(){
   await nactiFotky(m.autor_id, fotkyPromise);
 
   nactiKomentare();
+  nactiMojeNavstevy();
 }
 
 function nastavHero(url){
@@ -283,33 +284,6 @@ function vykresliLightbox(){
   akce.querySelector('.lb-galerie').hidden=!(lbZKomentare&&spravce);
 }
 
-async function nactiZapisy(){
-  const db=window.atlasDb, box=document.querySelector('#log-list');
-  const { data, error } = await db.from('atlas_zapisy')
-    .select('id,autor_id,text,klid,energie,mystika,krasa,lecivost,vytvoreno,atlas_profily(nick)')
-    .eq('misto_id', mistoData.id).order('vytvoreno',{ascending:false}).limit(50);
-  if (error){
-    box.innerHTML = `<li class="log-prazdno">Zápisy se nepodařilo načíst. Zkus obnovit stránku.</li>`;
-    return;
-  }
-  if (!data || !data.length){
-    box.innerHTML = `<li class="log-prazdno">Zatím tu nikdo nezapsal návštěvu. Až tu budeš stát, buď první.</li>`;
-    return;
-  }
-  const ucet=window.atlasUcet&&window.atlasUcet(), profil=window.atlasProfil&&window.atlasProfil();
-  box.innerHTML = data.map(z=>{
-    const nick = z.atlas_profily?.nick || 'poutník';
-    const dna = `Klid ${z.klid} · Energie ${z.energie} · Mystika ${z.mystika} · Krása ${z.krasa} · Léčivost ${z.lecivost}`;
-    const smi = (profil&&profil.spravce) || (ucet&&ucet.id===z.autor_id);
-    const upr = smi ? `<button type="button" class="edit-link" data-edit-zapis="${z.id}">✎ Upravit</button>` : '';
-    return `<li class="log-item" data-zapis="${z.id}"><div class="log-head"><span class="log-nick">${escHtml(nick)}</span><span class="log-badge">◎ ověřeno na místě</span><time>${fmtDatum(z.vytvoreno)}</time></div><p class="zapis-text">${escHtml(z.text)}</p><p class="log-dna">${dna}</p>${upr}</li>`;
-  }).join('');
-  if(ucet||profil) box.querySelectorAll('[data-edit-zapis]').forEach(b=>{
-    const z=data.find(x=>String(x.id)===b.dataset.editZapis);
-    b.addEventListener('click',()=>otevriEditZapis(z));
-  });
-}
-
 async function nactiKomentare(){
   const db=window.atlasDb, box=document.querySelector('#comment-list');
   const [komentare, navstevnici] = await Promise.all([
@@ -348,10 +322,30 @@ async function nactiKomentare(){
   });
 }
 
-/* ---- editace zápisu (text + DNA) ---- */
+/* ---- tvé návštěvy: přehled pod akcemi a úprava naladění (pět os DNA) ---- */
+async function nactiMojeNavstevy(){
+  const box=document.querySelector('#moje-navstevy');
+  if(!box) return;
+  const db=window.atlasDb, ucet=window.atlasUcet&&window.atlasUcet();
+  if(!db||!ucet||!mistoData){ box.hidden=true; return; }
+  const { data, error } = await db.from('atlas_zapisy')
+    .select('id,vytvoreno,vzdalenost_m,klid,energie,mystika,krasa,lecivost')
+    .eq('misto_id', mistoData.id).eq('autor_id', ucet.id)
+    .order('vytvoreno',{ascending:false}).limit(20);
+  if(error||!data||!data.length){ box.hidden=true; return; }
+  box.hidden=false;
+  box.innerHTML = '<div class="mn-box"><span class="mn-titul">★ Tvé návštěvy</span>' + data.map(z=>
+    `<span class="mn-radek">${fmtDatum(z.vytvoreno)}`+
+      (z.vzdalenost_m!=null?' <span class="log-badge">◎ ověřeno na místě</span>':'')+
+      `<button type="button" class="mn-upravit" data-zapis="${z.id}">✎ Upravit naladění</button>`+
+    `</span>`).join('') + '</div>';
+  box.querySelectorAll('[data-zapis]').forEach(b=>{
+    const z=data.find(x=>String(x.id)===b.dataset.zapis);
+    b.addEventListener('click',()=>otevriEditZapis(z));
+  });
+}
 function otevriEditZapis(z){
   const m=document.querySelector('#edit-log-modal'); if(!m||!z) return;
-  m.querySelector('#edit-log-text').value=z.text;
   m.querySelectorAll('#edit-log-dna input[type=range]').forEach(r=>{
     r.value=z[r.dataset.k]; r.closest('.slider-row').querySelector('output').textContent=r.value;
   });
@@ -364,15 +358,13 @@ document.querySelector('#edit-log-dna')?.addEventListener('input',e=>{
 document.querySelector('#edit-log-form')?.addEventListener('submit',async event=>{
   event.preventDefault();
   const m=document.querySelector('#edit-log-modal'), db=window.atlasDb;
-  const text=m.querySelector('#edit-log-text').value.trim();
-  if(!text){notify('Zápis nemůže být prázdný.');return}
   const dna={}; m.querySelectorAll('#edit-log-dna input[type=range]').forEach(r=>{dna[r.dataset.k]=Number(r.value)});
   const btn=event.currentTarget.querySelector('button[type=submit]'); btn.disabled=true; const p=btn.textContent; btn.textContent='Ukládám…';
-  const {data:upraveno,error}=await db.from('atlas_zapisy').update({text,klid:dna.klid,energie:dna.energie,mystika:dna.mystika,krasa:dna.krasa,lecivost:dna.lecivost}).eq('id',m.dataset.id).select('id');
+  const {data:upraveno,error}=await db.from('atlas_zapisy').update(dna).eq('id',m.dataset.id).select('id');
   btn.disabled=false; btn.textContent=p;
   if(error){notify('Úprava se nepodařila: '+error.message);return}
   if(!upraveno||!upraveno.length){notify('Úprava se neuložila — nemáš k ní oprávnění, nebo vypršelo přihlášení.');return}
-  closeModal(m); notify('Zápis upraven 🌿'); nactiZapisy();
+  closeModal(m); notify('Naladění upraveno 🌿'); nactiMisto();
 });
 
 /* ---- editace komentáře (text) ---- */
@@ -715,7 +707,8 @@ document.querySelector('#comment-form')?.addEventListener('submit',async event=>
   if(error){console.error(error);notify('Komentář se nepodařilo uložit: '+error.message);return}
   closeModal(document.querySelector('#comment-modal'));
   form.reset(); comPhotoReset();
-  notify('Děkujeme! Komentář se ukáže po schválení.');
+  const profilK=window.atlasProfil&&window.atlasProfil();
+  notify(profilK&&profilK.spravce?'Komentář je na zdi 🌿':'Děkujeme! Komentář se ukáže po schválení.');
   nactiKomentare();
 });
 
