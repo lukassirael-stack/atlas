@@ -129,7 +129,7 @@
               <li><b>Objevuješ.</b> Projdeš mapu podle sebe — nebo si vybereš z osmnácti kategorií podle toho, co tě volá.</li>
               <li><b>Vydáváš se.</b> Zvolíš místo, které tě přitahuje, a navigace tě dovede až k němu.</li>
               <li><b>Procítíš.</b> Až tam budeš stát, zastavíš se. Ztišíš mysl, nadechneš se toho místa, dopřeješ si čas.</li>
-              <li><b>Zapíšeš.</b> Zanecháš svědectví a naladění pěti os — DNA místa je pravdivější s každým, kdo ho procítí.</li>
+              <li><b>Zapíšeš.</b> Označíš ✦ Byl jsem tady, naladíš pět os a necháš pár slov — na místě, nebo v klidu doma. DNA místa je pravdivější s každým, kdo ho procítí.</li>
             </ol>
           </article>
         </div>
@@ -161,15 +161,9 @@
         <p class="form-step">2 · Co to je</p>
         <label>Název místa<input type="text" id="misto-nazev" required maxlength="120" placeholder="Např. Studánka pod Javorem" /></label>
         <div class="tag-field"><p class="tag-label">Štítky místa <small>vyber až tři</small></p><div class="tag-picker" id="tag-picker"><button type="button" data-tag="klid" data-popis="🌿 Klid a regenerace">🌿 Klid a regenerace</button><button type="button" data-tag="energie" data-popis="⚡ Síla a energie">⚡ Síla a energie</button><button type="button" data-tag="srdce" data-popis="❤️ Místo srdce">❤️ Místo srdce</button><button type="button" data-tag="leciva" data-popis="🔥 Léčivá místa">🔥 Léčivá místa</button><button type="button" data-tag="prameny" data-popis="💧 Léčivé prameny">💧 Léčivé prameny</button><button type="button" data-tag="stromy" data-popis="🌳 Posvátné stromy">🌳 Posvátné stromy</button><button type="button" data-tag="megality" data-popis="🪨 Megality a posvátné skály">🪨 Megality a posvátné skály</button><button type="button" data-tag="hory" data-popis="⛰️ Hory a posvátné vrcholy">⛰️ Hory a posvátné vrcholy</button><button type="button" data-tag="mohyly" data-popis="🔺 Pyramidy a mohyly">🔺 Pyramidy a mohyly</button><button type="button" data-tag="meditace" data-popis="🧘 Meditační místa">🧘 Meditační místa</button><button type="button" data-tag="portaly" data-popis="✨ Portály">✨ Portály</button><button type="button" data-tag="magie" data-popis="🔮 Magická a rituální místa">🔮 Magická a rituální místa</button><button type="button" data-tag="historie" data-popis="🏛 Historická a posvátná místa">🏛 Historická a posvátná místa</button><button type="button" data-tag="pohanska" data-popis="🌙 Pohanská a keltská místa">🌙 Pohanská a keltská místa</button><button type="button" data-tag="kontakt" data-popis="👁 Kontaktní místa">👁 Kontaktní místa</button><button type="button" data-tag="stinova" data-popis="🌑 Stínová místa">🌑 Stínová místa</button><button type="button" data-tag="vyhledy" data-popis="🌅 Výhledy a krajinné scenérie">🌅 Výhledy a krajinné scenérie</button><button type="button" data-tag="anomalie" data-popis="🌀 Anomálie a záhady">🌀 Anomálie a záhady</button></div></div>
-        <label>Popis místa<small>Co to je, co tu uvidíš, kousek historie.</small><textarea id="misto-popis" required placeholder="Kamenná studánka pod třemi břízami, obezděná v 19. století…"></textarea></label>
+        <label>Vyprávěj o místě<small>Hlavně co tu cítíš a prožíváš. Klidně přidej i jak se sem dostat nebo kdy je tu nejkrásněji.</small><textarea id="misto-popis" required placeholder="Zvláštní ticho, které tu padá s ránem… Od kapličky sem dojdeš po modré za dvacet minut."></textarea></label>
 
-        <p class="form-step">3 · Příběh <span>nepovinné — můžeš dopsat později</span></p>
-        <label>Jak se sem dostat<small>Odkud vyrazit, kde nechat auto, jak dlouho se jde.</small><textarea id="misto-pristup" placeholder="Od kapličky po modré značce asi 20 minut, poslední úsek bez cesty…"></textarea></label>
-        <label>Hloubka místa<small>Co se tu dá vnímat, jaká je atmosféra, jaké legendy se váží.</small><textarea id="misto-hloubka" placeholder="Zvláštní ticho — i vítr jako by se tu zastavil. Místní říkají…"></textarea></label>
-        <label>Práce s místem<small>Meditace, rituál, tichý sed — jak k místu přistoupit.</small><textarea id="misto-prace" placeholder="Posaď se zády ke třem břízám, tři nádechy do klidu…"></textarea></label>
-        <label>Nejlepší čas<small>Denní doba, roční období, počasí.</small><input type="text" id="misto-cas" maxlength="200" placeholder="Např. za rozbřesku, nejlépe na podzim" /></label>
-
-        <p class="form-step">4 · Tvé první naladění <span>utvoří DNA místa hned od zrodu</span></p>
+        <p class="form-step">3 · Tvé první naladění <span>utvoří DNA místa hned od zrodu</span></p>
         <label>Co tu právě prožíváš<small>Stojíš na místě — vyplň a vznikne první zápis, který místu dá DNA hned od zrodu.</small><textarea id="misto-zapis" required placeholder="Stojím tady a cítím…"></textarea></label>
         <div class="dna-sliders" id="misto-dna">
           <label class="slider-row"><span>Klid</span><input type="range" min="0" max="100" step="5" value="70" data-k="klid" /><output>70</output></label>
@@ -184,12 +178,12 @@
     <div class="toast" id="toast" role="status"></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="header.js?v=10"></script>
-    <script src="i18n.js?v=13"></script>
+    <script src="i18n.js?v=14"></script>
     <script src="auth.js?v=8"></script>
     <script src="data.js?v=3"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="geo.js?v=1"></script>
     <script src="foto.js?v=1"></script>
-    <script src="app.js?v=23"></script>
+    <script src="app.js?v=24"></script>
   </body>
 </html>

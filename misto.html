@@ -58,9 +58,9 @@
       </section>
 
       <section class="place-actions">
-        <button class="button primary" id="open-log">◎ Zapsat návštěvu</button>
+        <button class="button primary" id="open-log">✦ Byl jsem tady</button>
         <button class="button quiet" id="open-comment">✎ Přidat komentář</button>
-        <p class="actions-note">Zápis lze pořídit jen přímo na místě — utváří DNA. Komentář napíšeš odkudkoli.</p>
+        <p class="actions-note">Návštěvou naladíš DNA místa — rovnou tady, nebo v klidu doma po cestě. Komentář může nechat kdokoli.</p>
       </section>
 
       <section class="place-galerie" id="place-galerie" hidden>
@@ -112,11 +112,6 @@
         </aside>
       </div>
 
-      <section class="place-logs" id="zapisy">
-        <div class="section-heading"><div><p class="eyebrow">Svědectví z místa</p><h2>Zápisy</h2></div><button class="text-button" id="open-log-2">◎ Zapsat návštěvu</button></div>
-        <ul class="log-list" id="log-list"></ul>
-      </section>
-
       <section class="place-comments" id="komentare">
         <div class="section-heading"><div><p class="eyebrow">Prožitky a poznámky</p><h2>Komentáře</h2></div><button class="text-button" id="open-comment-2">✎ Přidat komentář</button></div>
         <ul class="log-list" id="comment-list"></ul>
@@ -125,20 +120,9 @@
 
     <footer id="komunita"><img class="brand-logo brand-logo-sm" src="img/logo.png" alt="" /><strong>Atlas energetických míst</strong><p>Objevuj. Prožívej. Sdílej.</p><p class="footer-legal">© 2026 Oáza Adamanthea · <a href="/podminky">Podmínky užití</a> · <a href="/napoveda">Nápověda</a></p></footer>
 
-    <div class="modal-backdrop" id="log-modal" aria-hidden="true"><section class="add-modal" role="dialog" aria-modal="true" aria-labelledby="log-title"><button class="modal-close" data-close="log-modal" aria-label="Zavřít">×</button><p class="eyebrow">Zápis z místa</p><h2 id="log-title">Byl jsi tady</h2><p>Zápis vzniká jen přímo na místě. Tvé vnímání pěti os pak spoluutváří DNA tohoto místa.</p>
+    <div class="modal-backdrop" id="log-modal" aria-hidden="true"><section class="add-modal" role="dialog" aria-modal="true" aria-labelledby="log-title"><button class="modal-close" data-close="log-modal" aria-label="Zavřít">×</button><p class="eyebrow">Návštěva</p><h2 id="log-title">Byl jsem tady</h2><p>Naladíš pět os — z nich žije DNA místa. Zapsat můžeš rovnou na místě i doma po návratu.</p>
       <form id="log-form">
-        <p class="form-step">1 · Důkaz, že tu stojíš</p>
-        <div class="geo-capture" id="geo-capture"><button type="button" class="geo-button" id="geo-get">◎ Načíst mou polohu</button><p class="geo-status" id="geo-status" role="status">Poloha zatím nenačtena. Musíš stát přímo na místě.</p></div>
-        <p class="form-step">2 · Co jsi tu prožil</p>
-        <label>Tvůj zápis<small>Co se dělo, co jsi vnímal, co sis odnesl.</small><textarea required placeholder="Přišel jsem za rozbřesku…"></textarea></label>
-        <small style="display:block;margin:-8px 0 14px;color:#9a8f70;font-style:italic">Nemáš teď slova? Stačí věta — zápis si doma kdykoli rozepíšeš přes ✎ Upravit.</small>
-        <div class="photo-drop" id="log-photo-drop"><span class="photo-icon">⌾</span><span class="photo-text">Přidej fotku z návštěvy</span><small>Nepovinné — takhle to tu vypadalo</small>
-          <div class="photo-buttons"><label class="photo-btn" for="log-photo-cam">📷 Vyfotit</label><label class="photo-btn" for="log-photo-gal">🖼 Z galerie</label></div>
-        </div>
-        <input type="file" id="log-photo-cam" accept="image/*" capture="environment" hidden />
-        <input type="file" id="log-photo-gal" accept="image/*" hidden />
-        <img class="photo-preview" id="log-photo-preview" alt="Náhled fotky ze zápisu" hidden />
-        <p class="form-step">3 · Jak jsi místo vnímal <span>tvoje hodnocení tvoří DNA</span></p>
+        <p class="form-step">1 · Jak na tebe místo působilo <span>tvoje naladění tvoří DNA</span></p>
         <div class="dna-sliders" id="dna-sliders">
           <label class="slider-row"><span>Klid</span><input type="range" min="0" max="100" step="5" value="70" data-axis="Klid" /><output>70</output></label>
           <label class="slider-row"><span>Energie</span><input type="range" min="0" max="100" step="5" value="70" data-axis="Energie" /><output>70</output></label>
@@ -146,12 +130,28 @@
           <label class="slider-row"><span>Krása</span><input type="range" min="0" max="100" step="5" value="70" data-axis="Krása" /><output>70</output></label>
           <label class="slider-row"><span>Léčivost</span><input type="range" min="0" max="100" step="5" value="70" data-axis="Léčivost" /><output>70</output></label>
         </div>
-        <button class="button primary" type="submit">Uložit zápis</button>
+        <p class="form-step">2 · Pár slov a fotka <span>nepovinné — ukáže se na zdi místa</span></p>
+        <label>Co sis odnesl<textarea placeholder="Přišel jsem za rozbřesku…"></textarea></label>
+        <div class="photo-drop" id="log-photo-drop"><span class="photo-icon">⌾</span><span class="photo-text">Přidej fotku z návštěvy</span><small>Nepovinné — takhle to tu vypadalo</small>
+          <div class="photo-buttons"><label class="photo-btn" for="log-photo-cam">📷 Vyfotit</label><label class="photo-btn" for="log-photo-gal">🖼 Z galerie</label></div>
+        </div>
+        <input type="file" id="log-photo-cam" accept="image/*" capture="environment" hidden />
+        <input type="file" id="log-photo-gal" accept="image/*" hidden />
+        <img class="photo-preview" id="log-photo-preview" alt="Náhled fotky z návštěvy" hidden />
+        <p class="form-step">3 · Stojíš právě tady? <span>nepovinný bonus</span></p>
+        <div class="geo-capture" id="geo-capture"><button type="button" class="geo-button" id="geo-get">◎ Ověřit, že tu stojím</button><p class="geo-status" id="geo-status" role="status">Nepovinné — ověřená návštěva získá odznak ◎ ověřeno na místě.</p></div>
+        <button class="button primary" type="submit">Uložit návštěvu</button>
       </form></section></div>
 
-    <div class="modal-backdrop" id="comment-modal" aria-hidden="true"><section class="add-modal" role="dialog" aria-modal="true" aria-labelledby="comment-title"><button class="modal-close" data-close="comment-modal" aria-label="Zavřít">×</button><p class="eyebrow">Komentář</p><h2 id="comment-title">Poděl se o prožitek či zkušenost</h2><p>Komentář napíšeš odkudkoli — třeba sis odnesl prožitek z dřívější návštěvy, nebo víš něco, co ostatním pomůže. Do DNA místa se nezapočítá; tu tvoří jen zápisy z místa.</p>
+    <div class="modal-backdrop" id="comment-modal" aria-hidden="true"><section class="add-modal" role="dialog" aria-modal="true" aria-labelledby="comment-title"><button class="modal-close" data-close="comment-modal" aria-label="Zavřít">×</button><p class="eyebrow">Komentář</p><h2 id="comment-title">Poděl se o prožitek či zkušenost</h2><p>Komentář napíšeš odkudkoli — prožitek z dřívějška, upozornění na cestu, kus historie. Do DNA místa se nezapočítá; tu tvoří návštěvy.</p>
       <form id="comment-form">
         <label>Tvůj komentář<textarea required placeholder="Chodil jsem sem jako kluk…"></textarea></label>
+        <div class="photo-drop" id="com-photo-drop"><span class="photo-icon">⌾</span><span class="photo-text">Přidej fotku</span><small>Nepovinné</small>
+          <div class="photo-buttons"><label class="photo-btn" for="com-photo-cam">📷 Vyfotit</label><label class="photo-btn" for="com-photo-gal">🖼 Z galerie</label></div>
+        </div>
+        <input type="file" id="com-photo-cam" accept="image/*" capture="environment" hidden />
+        <input type="file" id="com-photo-gal" accept="image/*" hidden />
+        <img class="photo-preview" id="com-photo-preview" alt="Náhled fotky ke komentáři" hidden />
         <button class="button primary" type="submit">Odeslat</button>
       </form></section></div>
 
@@ -176,10 +176,10 @@
       </form></section></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="header.js?v=10"></script>
-    <script src="i18n.js?v=13"></script>
+    <script src="i18n.js?v=14"></script>
     <script src="auth.js?v=8"></script>
     <script src="data.js?v=3"></script>
     <script src="foto.js?v=1"></script>
-    <script src="misto.js?v=18"></script>
+    <script src="misto.js?v=19"></script>
   </body>
 </html>

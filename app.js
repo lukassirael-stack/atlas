@@ -331,11 +331,7 @@ document.querySelector('#place-form')?.addEventListener('submit',async event=>{
     stav:'ceka',
     zeme:uzemi.zeme,
     kraj:uzemi.kraj,
-    popis:hodnota('#misto-popis'),
-    pristup:hodnota('#misto-pristup'),
-    hloubka:hodnota('#misto-hloubka'),
-    prace_s_mistem:hodnota('#misto-prace'),
-    nejlepsi_cas:hodnota('#misto-cas')
+    popis:hodnota('#misto-popis')
   }).select('id,slug,nazev').single();
 
   if(error){
@@ -348,26 +344,26 @@ document.querySelector('#place-form')?.addEventListener('submit',async event=>{
   odeslat.textContent='Nahrávám fotky…';
   const nahrano=await nahrajFotky(misto.id);
 
-  // první zápis s DNA — jen když autor něco napsal (stojí přímo na místě, trigger projde)
+  // první návštěva s DNA (zakladatel stojí na místě → ověřený bonus) + prožitek jako komentář
   let prvniZapis=false;
-  if(zapisText){
-    const dna={};
-    document.querySelectorAll('#misto-dna input[type="range"]').forEach(r=>{dna[r.dataset.k]=Number(r.value)});
+  {
+    const dna=k=>Number(document.querySelector(`#misto-dna input[data-k="${k}"]`).value);
     const {error:zErr}=await db.from('atlas_zapisy').insert({
-      misto_id:misto.id, autor_id:ucet.id, text:zapisText,
-      poloha:`SRID=4326;POINT(${geoFix.lng} ${geoFix.lat})`,
-      presnost_m:Math.round(geoFix.accuracy),
-      klid:dna.klid, energie:dna.energie, mystika:dna.mystika, krasa:dna.krasa, lecivost:dna.lecivost
+      misto_id:mistoId, autor_id:ucet.id, text:'',
+      poloha:`SRID=4326;POINT(${geoFix.lng} ${geoFix.lat})`, presnost_m:Math.round(geoFix.accuracy),
+      klid:dna('klid'), energie:dna('energie'), mystika:dna('mystika'), krasa:dna('krasa'), lecivost:dna('lecivost')
     });
-    if(zErr) console.warn('První zápis se nepodařil:', zErr);
+    if(zErr) console.warn('První návštěva se nezaložila:', zErr.message);
     else prvniZapis=true;
+    const {error:kErr}=await db.from('atlas_komentare').insert({misto_id:mistoId, autor_id:ucet.id, text:zapisText});
+    if(kErr) console.warn('Prožitek se nezaložil:', kErr.message);
   }
 
   odeslat.disabled=false;odeslat.textContent=puvodni;
 
   closeModal();form.reset();formReset();
   document.querySelectorAll('#misto-dna .slider-row').forEach(radek=>{radek.querySelector('output').textContent=radek.querySelector('input').value});
-  notify(`Děkujeme! „${misto.nazev}" (${nahrano} ${sklon(nahrano,['fotka','fotky','fotek'])}${prvniZapis?' + tvůj první zápis':''}) čeká na schválení.`);
+  notify(`Děkujeme! „${misto.nazev}" (${nahrano} ${sklon(nahrano,['fotka','fotky','fotek'])}${prvniZapis?' + tvá první návštěva':''}) čeká na schválení.`);
 });
 /* posuvníky DNA ve formuláři místa: živé číslo vedle osy */
 document.querySelector('#misto-dna')?.addEventListener('input',e=>{
