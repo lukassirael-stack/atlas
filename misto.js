@@ -124,11 +124,10 @@ function nastavHero(url){
 
 async function nactiFotky(autorId, hotovyDotaz){
   const db = window.atlasDb;
-  const { data: fotky } = await (hotovyDotaz || db.rpc('atlas_misto_fotky', { p_slug: SLUG }));
-  if (!fotky || !fotky.length){ nastavHero('img/brana-svit.jpg'); return; }
-
+  const { data } = await (hotovyDotaz || db.rpc('atlas_misto_fotky', { p_slug: SLUG }));
+  const fotky = data || [];
   // hlavní foto do hero — prolne se až po načtení (žádné probliknutí)
-  nastavHero(window.atlasFotoUrl(fotky[0].cesta));
+  nastavHero(fotky.length ? window.atlasFotoUrl(fotky[0].cesta) : 'img/brana-svit.jpg');
 
   // smí přeřazovat? autor místa nebo správce
   const ucet = window.atlasUcet && window.atlasUcet();
@@ -141,7 +140,7 @@ async function nactiFotky(autorId, hotovyDotaz){
   const grid = document.querySelector('#galerie-grid');
   const sekce = document.querySelector('#place-galerie');
   if (!grid || !sekce) return;
-  if (fotky.length < 2 && !smiRadit) return;
+  if (fotky.length < 2 && !smiRadit) return;   /* poutníkovi se galerie ukáže až od dvou fotek; autor a správce ji vidí vždy (kvůli dlaždici ➕) */
 
   sekce.hidden = false;
   grid.innerHTML = fotky.map((f,i)=>{
