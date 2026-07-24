@@ -894,3 +894,16 @@ html{overflow-x:clip}
   padding:4px 8px;font-size:12px;cursor:pointer;transition:.2s;opacity:.65}
 .mn-smazat:hover:not(:disabled){border-color:#a2452f;color:#ffd9cf;opacity:1}
 .mn-smazat:disabled{opacity:.3;cursor:default}
+
+/* ---------- druhé hlavní tlačítko: bronzová metalíza ---------- */
+/* tmavší sestra zlaté — stejný kov, hlubší žár */
+.secondary{position:relative;overflow:hidden;text-decoration:none;
+  background:linear-gradient(180deg,#c59a5e 0%,#8a6430 55%,#5e421d 100%);
+  color:#fdf6e3;border:1px solid rgba(255,232,190,.4);
+  box-shadow:0 8px 24px rgba(94,66,29,.4),0 1px 0 rgba(255,240,210,.5) inset;transition:.25s}
+.secondary::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(114deg,transparent 22%,rgba(255,248,225,.2) 40%,transparent 55%)}
+.secondary:hover{background:linear-gradient(180deg,#d2a96e 0%,#997038 55%,#6a4b22 100%);
+  border-color:rgba(255,238,205,.55);transform:translateY(-2px);
+  box-shadow:0 12px 32px rgba(94,66,29,.5),0 1px 0 rgba(255,244,220,.65) inset}
+.secondary:focus-visible{outline:2px solid var(--gold-lume);outline-offset:3px}

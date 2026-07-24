@@ -31,7 +31,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-    <link rel="stylesheet" href="styles.css?v=39" />
+    <link rel="stylesheet" href="styles.css?v=42" />
   </head>
   <body>
     <header class="topbar">
@@ -52,33 +52,9 @@
           <p class="eyebrow">Atlas energetických míst</p>
           <h1>Jsou místa,<br /><i>která promlouvají.</i></h1>
           <p class="lead">Prameny, stavby, portály a tiché brány. Prozkoumej tajemná místa naší země.</p>
-          <div class="hero-actions"><a class="button primary" href="#mapa">Otevřít mapu</a><button class="button quiet" id="surprise">✦ Překvapit mě</button><a class="button quiet" href="#pridat">⊕ Přidat místo</a></div>
+          <div class="hero-actions"><a class="button primary" href="#objevit">✦ Navštívit místo</a><a class="button secondary" href="#pridat">⊕ Přidat místo</a></div>
           <p class="hero-hint">✦ ✦ ✦</p>
         </div>
-      </section>
-
-      <section class="filter-dock" aria-label="Hlavní filtr míst">
-        <button class="journey-filter" id="journey-filter" aria-expanded="false" aria-controls="category-panel"><span class="journey-icon">✦</span><span><small>Naladění</small><strong>Jaké místo tě přitahuje?</strong></span><b>⌄</b></button>
-        <div class="category-panel" id="category-panel" hidden><div class="category-panel-head"><div><p class="eyebrow">Typ zážitku</p><h2>Vyber jeden nebo víc štítků</h2></div><button class="panel-close" id="panel-close" aria-label="Zavřít výběr">×</button></div><div class="category-list" id="category-list">
-          <button data-category="🌿 Klid a regenerace"><span>🌿</span><strong>Klid a regenerace</strong><small>Místa hlubokého odpočinku, ztišení a obnovy.</small></button>
-          <button data-category="⚡ Síla a energie"><span>⚡</span><strong>Síla a energie</strong><small>Místa vitality, motivace a životní energie.</small></button>
-          <button data-category="❤️ Místo srdce"><span>❤️</span><strong>Místo srdce</strong><small>Výjimečně krásná místa pro radost, vděčnost a dojetí.</small></button>
-          <button data-category="🔥 Léčivá místa"><span>🔥</span><strong>Léčivá místa</strong><small>Lokality spojované s uzdravením těla, mysli nebo duše.</small></button>
-          <button data-category="💧 Léčivé prameny"><span>💧</span><strong>Léčivé prameny</strong><small>Posvátné vody, studánky, minerální prameny a místa očisty.</small></button>
-          <button data-category="🌳 Posvátné stromy"><span>🌳</span><strong>Posvátné stromy</strong><small>Významné stromy, aleje a lesy s jedinečnou atmosférou.</small></button>
-          <button data-category="🪨 Megality a posvátné skály"><span>🪨</span><strong>Megality a posvátné skály</strong><small>Menhiry, kamenné kruhy, balvany a skalní útvary.</small></button>
-          <button data-category="⛰️ Hory a posvátné vrcholy"><span>⛰️</span><strong>Hory a posvátné vrcholy</strong><small>Kopce, hory a vrcholy, kde se země dotýká nebe.</small></button>
-          <button data-category="🔺 Pyramidy a mohyly"><span>🔺</span><strong>Pyramidy a mohyly</strong><small>Dávné navršené stavby — mohyly, valy a pyramidální útvary.</small></button>
-          <button data-category="🧘 Meditační místa"><span>🧘</span><strong>Meditační místa</strong><small>Lokality pro meditaci, kontemplaci a vědomou práci se sebou.</small></button>
-          <button data-category="✨ Portály"><span>✨</span><strong>Portály</strong><small>Místa vnímaná jako brány nebo silné přechodové body.</small></button>
-          <button data-category="🔮 Magická a rituální místa"><span>🔮</span><strong>Magická a rituální místa</strong><small>Lokality spojené s obřady, legendami a magickou tradicí.</small></button>
-          <button data-category="🏛 Historická a posvátná místa"><span>🏛</span><strong>Historická a posvátná místa</strong><small>Hrady, kaple, kláštery a stavby s výrazným duchem místa.</small></button>
-          <button data-category="🌙 Pohanská a keltská místa"><span>🌙</span><strong>Pohanská a keltská místa</strong><small>Svatyně, oppida, pohřebiště a předkřesťanské tradice.</small></button>
-          <button data-category="👁 Kontaktní místa"><span>👁</span><strong>Kontaktní místa</strong><small>Místa, kde lidé popisují silnou intuici či neobvyklé zážitky.</small></button>
-          <button data-category="🌑 Stínová místa"><span>🌑</span><strong>Stínová místa</strong><small>Lokality s tíživou atmosférou, historií a potřebou proměny.</small></button>
-          <button data-category="🌅 Výhledy a krajinné scenérie"><span>🌅</span><strong>Výhledy a krajinné scenérie</strong><small>Místa s mimořádnou krásou a dalekými výhledy.</small></button>
-          <button data-category="🌀 Anomálie a záhady"><span>🌀</span><strong>Anomálie a záhady</strong><small>Lokality s nevysvětlenými jevy a neobvyklými fenomény.</small></button>
-        </div><div class="category-actions"><button class="text-button" id="clear-categories">Vymazat výběr</button><button class="button primary" id="apply-categories">Zobrazit místa <span>→</span></button></div></div>
       </section>
 
       <section class="map-section" id="mapa">
@@ -94,8 +70,7 @@
       </section>
 
       <section class="discover" id="objevit">
-        <div class="section-heading"><div><p class="eyebrow">Objevuj po svém</p><h2>Kam tě to vede?</h2></div><button class="text-button" id="filter-toggle">☷ Energetické filtry</button></div>
-        <div class="filter-row" id="filters"><button class="selected">Doporučená místa</button><button>Nejblíž mně</button><button>Nově přidaná</button><button>Nejlépe hodnocená</button></div>
+        <div class="section-heading"><div><p class="eyebrow">Objevuj po svém</p><h2>Kam tě to vede?</h2></div></div>
         <div class="place-grid">
           <article class="place-tile tile-one"><div class="tile-image"></div><div class="tile-info"><span>Příroda · Jeseníky</span><h3>Praděd</h3><p><b>Energie 92 %</b> · 89 km</p></div></article>
           <article class="place-tile tile-two"><div class="tile-image"></div><div class="tile-info"><span>Historie · Křivoklátsko</span><h3>Kaple sv. Huberta</h3><p><b>Klid 94 %</b> · 112 km</p></div></article>
@@ -178,12 +153,12 @@
     <div class="toast" id="toast" role="status"></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="header.js?v=11"></script>
-    <script src="i18n.js?v=16"></script>
+    <script src="i18n.js?v=17"></script>
     <script src="auth.js?v=8"></script>
     <script src="data.js?v=3"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="geo.js?v=1"></script>
     <script src="foto.js?v=1"></script>
-    <script src="app.js?v=27"></script>
+    <script src="app.js?v=29"></script>
   </body>
 </html>
