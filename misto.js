@@ -132,13 +132,14 @@ async function nactiFotky(autorId, hotovyDotaz){
   const profil = window.atlasProfil && window.atlasProfil();
   const jeSpravce = !!(profil && profil.spravce);
   const jeAutor = !!(ucet && autorId && ucet.id === autorId);
-  const smiRadit = jeSpravce || jeAutor;   /* autor své místo eviduje, mazat smí jen správce */
+  const smiRadit = jeSpravce || jeAutor;   /* řadit a přidávat smí autor místa a správce; svou fotku smaže i ten, kdo ji nahrál */
 
   // galerie zobraz jen když je víc fotek, nebo když smí správce/autor spravovat
   const grid = document.querySelector('#galerie-grid');
   const sekce = document.querySelector('#place-galerie');
   if (!grid || !sekce) return;
-  if (fotky.length < 2 && !smiRadit) return;   /* poutníkovi se galerie ukáže až od dvou fotek; autor a správce ji vidí vždy (kvůli dlaždici ➕) */
+  const mamTuFotku = !!(ucet && fotky.some(f=>f.autor_id===ucet.id));
+  if (fotky.length < 2 && !smiRadit && !mamTuFotku) return;   /* poutníkovi se galerie ukáže až od dvou fotek; autor a správce ji vidí vždy (kvůli dlaždici ➕) */
 
   sekce.hidden = false;
   grid.innerHTML = fotky.map((f,i)=>{
@@ -274,10 +275,12 @@ function vykresliLightbox(){
   lb.querySelector('.lb-next').hidden=!vic;
   const akce=lb.querySelector('.lb-akce');
   const profil=window.atlasProfil&&window.atlasProfil();
+  const ucet=window.atlasUcet&&window.atlasUcet();
   const spravce=!!(profil&&profil.spravce);
-  akce.hidden=!(lbSmi||(lbZKomentare&&spravce));
-  akce.querySelector('.lb-hlavni').hidden=lbZKomentare||(lbIndex===0);
-  akce.querySelector('.lb-smaz').hidden=lbZKomentare||!spravce;   /* mazání jen správce */
+  const mojeFotka=!!(ucet&&f.autor_id&&ucet.id===f.autor_id);
+  akce.hidden=!(lbSmi||mojeFotka||(lbZKomentare&&spravce));
+  akce.querySelector('.lb-hlavni').hidden=lbZKomentare||(lbIndex===0)||!lbSmi;
+  akce.querySelector('.lb-smaz').hidden=lbZKomentare||!(spravce||mojeFotka);   /* svou fotku smaže i poutník */
   akce.querySelector('.lb-galerie').hidden=!(lbZKomentare&&spravce);
 }
 
@@ -328,11 +331,20 @@ function nastavUpravuMista(){
   const smi=!!(profil&&profil.spravce) || !!(ucet&&ucet.id===mistoData.autor_id);
   btn.hidden=!smi;
 }
+const epTagy=document.querySelector('#ep-tagy');
+epTagy?.addEventListener('click',event=>{
+  const chip=event.target.closest('button');
+  if(!chip)return;
+  if(!chip.classList.contains('on')&&epTagy.querySelectorAll('.on').length>=3){notify('Vyber nejvýš tři štítky — ať zůstane jasné, čím místo je.');return}
+  chip.classList.toggle('on');
+});
 document.querySelector('#open-edit-place')?.addEventListener('click',()=>{
   if(!mistoData) return;
   const dej=(id,hodnota)=>{const el=document.querySelector(id); if(el) el.value=hodnota||''};
   dej('#ep-nazev',mistoData.nazev);
   dej('#ep-popis',mistoData.popis);
+  const vybrane=new Set(mistoData.stitky||[]);
+  epTagy?.querySelectorAll('button').forEach(chip=>chip.classList.toggle('on', vybrane.has(chip.dataset.tag)));
   openModal('#edit-place-modal');
 });
 document.querySelector('#edit-place-form')?.addEventListener('submit',async event=>{
@@ -340,11 +352,14 @@ document.querySelector('#edit-place-form')?.addEventListener('submit',async even
   const db=window.atlasDb;
   const nazev=document.querySelector('#ep-nazev').value.trim();
   if(!nazev){notify('Název nemůže zůstat prázdný.');return}
+  const stitky=[...(epTagy?epTagy.querySelectorAll('.on'):[])].map(chip=>chip.dataset.tag);
+  if(epTagy&&!stitky.length){notify('Vyber alespoň jeden štítek místa.');return}
   const btn=event.currentTarget.querySelector('button[type=submit]');
   btn.disabled=true; const puvodni=btn.textContent; btn.textContent='Ukládám…';
   const {data:ulozeno,error}=await db.from('atlas_mista').update({
     nazev,
-    popis:document.querySelector('#ep-popis').value.trim()||null
+    popis:document.querySelector('#ep-popis').value.trim()||null,
+    stitky
   }).eq('id',mistoData.id).select('id');
   btn.disabled=false; btn.textContent=puvodni;
   if(error){notify('Uložení se nepodařilo: '+error.message);return}
