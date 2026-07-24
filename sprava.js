@@ -47,10 +47,8 @@ function kartaMista(m){
   const fotky = (m.fotky||[]).map(c=>window.atlasFotoUrl(c)).filter(Boolean);
   const hlavni = fotky[0];
   const stitky = (m.stitky||[]).map(k=>`<span class="chip">${window.atlasStitek(k,true)}</span>`).join('');
-  const texty = [
-    ['Popis',m.popis],['Přístup',m.pristup],['Hloubka',m.hloubka],
-    ['Práce s místem',m.prace_s_mistem],['Nejlepší čas',m.nejlepsi_cas]
-  ].filter(([,v])=>v&&v.trim()).map(([n,v])=>`<p><b>${n}:</b> ${escHtml(v)}</p>`).join('');
+  const vypraveni = (m.popis||'').trim();
+  const texty = vypraveni ? `<p class="sk-vypraveni">${escHtml(vypraveni)}</p>` : '';
 
   let akce = '';
   if(m.stav==='ceka' || m.stav==='rozepsane'){

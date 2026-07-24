@@ -450,7 +450,6 @@ function openModal(id){const m=document.querySelector(id);if(!m)return;m.classLi
 function closeModal(m){if(!m)return;m.classList.remove('open');m.setAttribute('aria-hidden','true')}
 function otevriSUctem(id){if(window.vyzadujUcet&&!window.vyzadujUcet())return;openModal(id)}
 document.querySelector('#open-log')?.addEventListener('click',()=>otevriSUctem('#log-modal'));
-document.querySelector('#open-log-2')?.addEventListener('click',()=>otevriSUctem('#log-modal'));
 document.querySelector('#open-comment')?.addEventListener('click',()=>otevriSUctem('#comment-modal'));
 document.querySelector('#open-comment-2')?.addEventListener('click',()=>otevriSUctem('#comment-modal'));
 document.querySelectorAll('.modal-close').forEach(button=>button.addEventListener('click',()=>closeModal(document.querySelector('#'+button.dataset.close))));
@@ -496,7 +495,12 @@ function geoHotovo(){
   geoButton.title='Načíst polohu znovu';
   geoButton.disabled=false;
 }
-function geoReset(){geoFix=null;geoCapture?.classList.remove('ready');if(!geoStatus)return;geoStatus.className='geo-status';geoStatus.textContent='Nepovinné — ověřená návštěva získá odznak ◎ ověřeno na místě.';geoVychozi();nastavGeoKrok()}
+function geoReset(){
+  geoFix=null;
+  geoCapture?.classList.remove('ready');
+  if(geoStatus){ geoStatus.className='geo-status'; geoStatus.textContent='Nepovinné — ověřená návštěva získá odznak ◎ ověřeno na místě.'; }
+  geoVychozi(); nastavGeoKrok();
+}
 geoButton?.addEventListener('click',()=>{
   if(mamOvereno)return;   /* odznak je jednorázový — tlačítko už není vidět */
   if(!navigator.geolocation){geoStatus.className='geo-status err';geoStatus.textContent='Tvůj prohlížeč polohu nepodporuje.';return}
@@ -591,7 +595,8 @@ async function smazFoto(f, autorId){
   if(!confirm(otazka))return;
   const {data:smazano,error}=await db.from('atlas_fotky').delete().eq('id',f.id).select('id');
   if(error||!smazano||!smazano.length){notify('Fotku se nepodařilo smazat'+(error?': '+error.message:'.'));return}
-  db.storage.from('atlas').remove([f.cesta]);
+  const {error:se}=await db.storage.from('atlas').remove([f.cesta]);
+  if(se) console.warn('Fotka smazána z galerie, soubor v úložišti zůstal:', se.message);
   notify('Fotka smazána.');
   await nactiFotky(autorId);
 }

@@ -914,3 +914,6 @@ html{overflow-x:clip}
   box-shadow:0 6px 22px rgba(201,161,74,.15)}
 .vsechna-odkaz:hover{background:linear-gradient(180deg,#f0d493 0%,var(--gold) 58%,#b98f38 100%);
   color:var(--forest);transform:translateY(-2px);box-shadow:0 10px 28px rgba(201,161,74,.32)}
+
+/* Správa: vyprávění místa se zachovanými odstavci */
+.sk-vypraveni{white-space:pre-wrap;overflow-wrap:anywhere;margin:6px 0 0}
