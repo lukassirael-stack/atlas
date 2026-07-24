@@ -145,14 +145,21 @@ async function nactiFotky(autorId, hotovyDotaz){
   grid.innerHTML = fotky.map((f,i)=>{
     const url = window.atlasFotoUrl(f.cesta) || '';
     const hlavni = i===0;
+    /* koš rovnou na dlaždici — tam ho člověk hledá dřív než v otevřené fotce */
+    const smiSmazat = jeSpravce || !!(ucet && f.autor_id && ucet.id === f.autor_id);
     return `<figure class="galerie-item${hlavni?' je-hlavni':''}" data-lb="${i}" style="cursor:zoom-in">
       <img src="${url}" alt="Fotka místa" loading="lazy" />
       ${hlavni ? '<span class="foto-odznak">Hlavní</span>' : ''}
+      ${smiSmazat ? `<button type="button" class="galerie-smaz" data-smaz-foto="${i}" title="Smazat fotku" aria-label="Smazat fotku">🗑</button>` : ''}
     </figure>`;
   }).join('');
   grid.querySelectorAll('[data-lb]').forEach(el=>{
     el.addEventListener('click',()=>otevriLightbox(fotky, Number(el.dataset.lb), smiRadit, autorId));
   });
+  grid.querySelectorAll('[data-smaz-foto]').forEach(b=>b.addEventListener('click',event=>{
+    event.stopPropagation();          /* klepnutí na koš neotevírá fotku */
+    smazFoto(fotky[Number(b.dataset.smazFoto)], autorId);
+  }));
 
   if (smiRadit) {
     /* dlaždice pro dodatečné nahrání fotek (autor místa nebo správce) */

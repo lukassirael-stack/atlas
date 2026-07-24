@@ -924,3 +924,13 @@ html{overflow-x:clip}
 
 /* Správa: vyprávění místa se zachovanými odstavci */
 .sk-vypraveni{white-space:pre-wrap;overflow-wrap:anywhere;margin:6px 0 0}
+
+/* koš přímo na dlaždici galerie — na myši se vynoří, na dotyku je vidět vždy */
+.galerie-smaz{position:absolute;top:8px;right:8px;width:30px;height:30px;display:grid;place-items:center;
+  border:1px solid rgba(251,247,239,.3);border-radius:50%;background:rgba(11,20,15,.72);
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  color:var(--cream);font-size:13px;line-height:1;cursor:pointer;opacity:0;transition:.2s}
+.galerie-item:hover .galerie-smaz,.galerie-smaz:focus-visible{opacity:1}
+.galerie-smaz:hover{background:#8c3a28;border-color:#b4573f;color:#fff}
+.galerie-smaz:disabled{opacity:.35;cursor:default}
+@media(hover:none){.galerie-smaz{opacity:.9}}

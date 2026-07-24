@@ -60,6 +60,7 @@
     'Tohle místo už máš ověřené. Další návštěvu zapiš bez ověřování polohy.': 'You\u2019ve already verified this place. Log your next visit without location verification.',
     'Uschovaná návštěva nebyla přijata — tohle místo už máš ověřené.': 'The saved visit wasn\u2019t accepted — you\u2019ve already verified this place.',
     'Smazat návštěvu': 'Delete visit',
+    'Smazat fotku': 'Delete photo',
     'Smazat tuhle návštěvu? Její naladění odejde z DNA místa.': 'Delete this visit? Its attunement will leave the place\u2019s DNA.',
     'Návštěva smazána.': 'Visit deleted.',
     'Návštěvu se nepodařilo smazat': 'The visit couldn\u2019t be deleted',
