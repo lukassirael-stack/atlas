@@ -25,11 +25,11 @@ function slovoZapisu(n){
 }
 
 function kartaHtml(z){
-  const nadpis = z.nadpis && z.nadpis.trim() ? `<h3>${escHtml(z.nadpis)}</h3>` : '';
+  const nadpis = z.nadpis && z.nadpis.trim() ? `<h3 data-i18n="off">${escHtml(z.nadpis)}</h3>` : '';
   return `<article class="denik-zapis" data-id="${z.id}">
     <time>${datum(z.vytvoreno)}</time>
     ${nadpis}
-    <div class="telo">${escHtml(z.text)}</div>
+    <div class="telo" data-i18n="off">${escHtml(z.text)}</div>
     <div class="denik-edit">
       <input class="e-nadpis" type="text" maxlength="120" placeholder="Nadpis — nepovinné" value="${escHtml(z.nadpis||'')}" />
       <textarea class="e-text"></textarea>
@@ -74,7 +74,7 @@ form?.addEventListener('submit', async (e)=>{
   const btn = form.querySelector('button[type=submit]');
   btn.disabled = true;
   const { data, error } = await window.atlasDb.from('atlas_denik')
-    .insert({ autor_id: ucet.id, nadpis, text })
+    .insert({ autor_id: ucet.id, nadpis, text, lang: window.atlasJazyk() })
     .select('*').single();
   btn.disabled = false;
 

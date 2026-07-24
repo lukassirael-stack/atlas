@@ -58,3 +58,7 @@ window.atlasNactiMista = async () => {
     dna: m.zapisu ? {zapisu:m.zapisu, klid:m.klid, energie:m.energie, mystika:m.mystika, krasa:m.krasa, lecivost:m.lecivost} : null
   }));
 };
+
+/* Jazyk, ve kterém člověk právě píše — ukládá se k obsahu, aby šlo později
+   nabídnout překlad jen tam, kde se liší od jazyka čtenáře. */
+window.atlasJazyk = () => (window.atlasLang === 'en' ? 'en' : 'cs');

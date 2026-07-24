@@ -783,6 +783,10 @@
 
   /* ---- DOM překladač ----------------------------------------------------- */
   const SKIP = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEXTAREA', 'INPUT', 'CODE', 'PRE']);
+  /* Text od poutníků (komentáře, názvy a vyprávění míst, přezdívky, deník) se nepřekládá.
+     Bez toho by jednoslovný komentář „Klid“ podlehl slovníku a zobrazil se jako „Calm“. */
+  const VLASTNI = '[data-i18n="off"]';
+  function jeVlastni(el){ return !!(el && el.closest && el.closest(VLASTNI)); }
   const ATTRS = ['placeholder', 'aria-label', 'title', 'alt'];
   const origText = new WeakMap();   /* textNode → původní český text */
   const origAttr = new WeakMap();   /* element → {attr: původní hodnota} */
@@ -825,18 +829,18 @@
   function walk(root) {
     if (root.nodeType === Node.TEXT_NODE) { translTextNode(root); return; }
     if (root.nodeType !== Node.ELEMENT_NODE) return;
-    if (SKIP.has(root.tagName) || root.isContentEditable) return;
+    if (SKIP.has(root.tagName) || root.isContentEditable || jeVlastni(root)) return;
     translAttrs(root);
     const it = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
       acceptNode: function (n) {
         const p = n.parentNode;
-        if (p && (SKIP.has(p.tagName) || p.isContentEditable)) return NodeFilter.FILTER_REJECT;
+        if (p && (SKIP.has(p.tagName) || p.isContentEditable || jeVlastni(p))) return NodeFilter.FILTER_REJECT;
         return NodeFilter.FILTER_ACCEPT;
       }
     });
     let n; while ((n = it.nextNode())) translTextNode(n);
     /* atributy potomků */
-    root.querySelectorAll('[placeholder],[aria-label],[title],[alt]').forEach(translAttrs);
+    root.querySelectorAll('[placeholder],[aria-label],[title],[alt]').forEach(function(el){ if(!jeVlastni(el)) translAttrs(el); });
   }
 
   /* hlavička dokumentu: <title>, meta description, <html lang> */

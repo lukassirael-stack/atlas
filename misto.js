@@ -92,7 +92,7 @@ async function nactiMisto(){
   const vypraveni = (m.popis||'').trim();
   textEl.innerHTML = vypraveni
     ? `<section class="place-section"><p class="eyebrow">O místě</p>${
-        vypraveni.split(/\n\s*\n/).map(o=>`<p>${escHtml(o.trim()).replace(/\n/g,'<br />')}</p>`).join('')
+        vypraveni.split(/\n\s*\n/).map(o=>`<p data-i18n="off">${escHtml(o.trim()).replace(/\n/g,'<br />')}</p>`).join('')
       }</section>`
     : '<section class="place-section"><p>U tohoto místa zatím není žádný popis.</p></section>';
 
@@ -311,7 +311,7 @@ async function nactiKomentare(){
     const foto = k.fotka ? `<img class="koment-foto" data-cesta="${k.fotka}" src="${window.atlasFotoUrl(k.fotka)}" alt="Fotka od poutníka" loading="lazy" style="display:block;max-width:180px;max-height:140px;object-fit:cover;border-radius:10px;margin-top:8px;cursor:zoom-in" />` : '';
     const smi = (profil&&profil.spravce) || (ucet&&ucet.id===k.autor_id);
     const upr = smi ? `<button type="button" class="edit-link" data-edit-koment="${k.id}">✎ Upravit</button>` : '';
-    return `<li class="log-item comment" data-koment="${k.id}"><div class="log-head"><span class="log-nick">${escHtml(nick)}</span>${odznak}<time>${fmtDatum(k.vytvoreno)}</time></div><p class="koment-text">${escHtml(k.text)}</p>${foto}${upr}</li>`;
+    return `<li class="log-item comment" data-koment="${k.id}"><div class="log-head"><span class="log-nick" data-i18n="off">${escHtml(nick)}</span>${odznak}<time>${fmtDatum(k.vytvoreno)}</time></div><p class="koment-text" data-i18n="off">${escHtml(k.text)}</p>${foto}${upr}</li>`;
   }).join('');
   box.querySelectorAll('.koment-foto').forEach(img=>{
     img.addEventListener('click',()=>otevriLightbox([{id:null,cesta:img.dataset.cesta}],0,false,mistoData.autor_id,true));
@@ -686,7 +686,7 @@ async function zpracujFrontu(){
           continue;
         }
         if(z.komentarText||z.fotoBlob){
-          const koment={misto_id:zaznam.misto_id,autor_id:zaznam.autor_id,text:z.komentarText||'✦'};
+          const koment={misto_id:zaznam.misto_id,autor_id:zaznam.autor_id,text:z.komentarText||'✦',lang:z.lang||'cs'};
           if(z.fotoBlob){
             const cesta=`komentare/${zaznam.misto_id}/${Date.now()}.${z.pripona||'jpg'}`;
             const {error:fe}=await db.storage.from('atlas').upload(cesta,z.fotoBlob,{contentType:z.fotoTyp||'image/jpeg'});
@@ -723,7 +723,8 @@ document.querySelector('#log-form')?.addEventListener('submit',async event=>{
     autor_id:ucet.id,
     text:'',
     klid:hodnota('Klid'), energie:hodnota('Energie'), mystika:hodnota('Mystika'),
-    krasa:hodnota('Krása'), lecivost:hodnota('Léčivost')
+    krasa:hodnota('Krása'), lecivost:hodnota('Léčivost'),
+    lang:window.atlasJazyk()
   };
   if(geoFix){ zaznam.poloha=`SRID=4326;POINT(${geoFix.lng} ${geoFix.lat})`; zaznam.presnost_m=Math.round(geoFix.accuracy); }
 
@@ -737,7 +738,7 @@ document.querySelector('#log-form')?.addEventListener('submit',async event=>{
   };
   const uschovej=async blob=>{
     try{
-      await frontaPridej({zaznam,komentarText:slova,fotoBlob:blob||null,fotoTyp:blob?(blob.type||'image/jpeg'):null,pripona:blob?pripona:null,vytvoreno:Date.now()});
+      await frontaPridej({zaznam,komentarText:slova,lang:window.atlasJazyk(),fotoBlob:blob||null,fotoTyp:blob?(blob.type||'image/jpeg'):null,pripona:blob?pripona:null,vytvoreno:Date.now()});
       uklid('Jsi mimo signál — návštěva je uschovaná v telefonu a odešle se sama, až se připojíš.');
     }catch(e){
       odeslat.disabled=false; odeslat.textContent=puvodni;
@@ -766,7 +767,7 @@ document.querySelector('#log-form')?.addEventListener('submit',async event=>{
 
   /* slova a fotka putují na zeď jako komentář */
   if(slova||fotoBlob){
-    const koment={misto_id:mistoData.id,autor_id:ucet.id,text:slova||'✦'};
+    const koment={misto_id:mistoData.id,autor_id:ucet.id,text:slova||'✦',lang:window.atlasJazyk()};
     if(fotoBlob){
       const cesta=`komentare/${mistoData.id}/${Date.now()}.${pripona}`;
       const {error:fe}=await db.storage.from('atlas').upload(cesta,fotoBlob,{contentType:fotoBlob.type||'image/jpeg'});
@@ -804,7 +805,7 @@ document.querySelector('#comment-form')?.addEventListener('submit',async event=>
   const db=window.atlasDb, ucet=window.atlasUcet();
   const odeslat=form.querySelector('button[type=submit]');
   odeslat.disabled=true;
-  const koment={misto_id:mistoData.id,autor_id:ucet.id,text:textKomentare};
+  const koment={misto_id:mistoData.id,autor_id:ucet.id,text:textKomentare,lang:window.atlasJazyk()};
   if(comPhotoFile){
     let blob=comPhotoFile, pripona='jpg';
     if(window.atlasZpracujFoto){const z=await window.atlasZpracujFoto(comPhotoFile);blob=z.blob;pripona=z.pripona}

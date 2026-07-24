@@ -43,7 +43,7 @@ function dlazdiceVykresli(){
     const spodek = rys ? `<b>${rys}</b>` : '<b>Nové místo</b>';
     return `<a class="place-tile" href="/misto?m=${m.slug}${m.fotka?`&f=${encodeURIComponent(m.fotka)}`:''}">
       <div class="tile-image"${url?` style="background-image:url(${url})"`:''}></div>
-      <div class="tile-info"><span>${kraj}</span><h3>${m.nazev}</h3><p>${spodek}</p></div>
+      <div class="tile-info"><span>${kraj}</span><h3 data-i18n="off">${m.nazev}</h3><p>${spodek}</p></div>
     </a>`;
   }).join('');
 }
@@ -328,7 +328,8 @@ document.querySelector('#place-form')?.addEventListener('submit',async event=>{
     stav:'ceka',
     zeme:uzemi.zeme,
     kraj:uzemi.kraj,
-    popis:hodnota('#misto-popis')
+    popis:hodnota('#misto-popis'),
+    lang:window.atlasJazyk()
   }).select('id,slug,nazev').single();
 
   if(error){
@@ -348,11 +349,12 @@ document.querySelector('#place-form')?.addEventListener('submit',async event=>{
     const {error:zErr}=await db.from('atlas_zapisy').insert({
       misto_id:misto.id, autor_id:ucet.id, text:'',
       poloha:`SRID=4326;POINT(${geoFix.lng} ${geoFix.lat})`, presnost_m:Math.round(geoFix.accuracy),
-      klid:dna('klid'), energie:dna('energie'), mystika:dna('mystika'), krasa:dna('krasa'), lecivost:dna('lecivost')
+      klid:dna('klid'), energie:dna('energie'), mystika:dna('mystika'), krasa:dna('krasa'), lecivost:dna('lecivost'),
+      lang:window.atlasJazyk()
     });
     if(zErr) console.warn('První návštěva se nezaložila:', zErr.message);
     else prvniZapis=true;
-    const {error:kErr}=await db.from('atlas_komentare').insert({misto_id:misto.id, autor_id:ucet.id, text:zapisText});
+    const {error:kErr}=await db.from('atlas_komentare').insert({misto_id:misto.id, autor_id:ucet.id, text:zapisText, lang:window.atlasJazyk()});
     if(kErr) console.warn('Prožitek se nezaložil:', kErr.message);
   }
 

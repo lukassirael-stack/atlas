@@ -16,7 +16,7 @@ function dlazdice(m){
   const spodek = rys ? `<b>${rys}</b>` : '<b>Nové místo</b>';
   return `<a class="place-tile" href="/misto?m=${m.slug}${m.fotka?`&f=${encodeURIComponent(m.fotka)}`:''}">
     <div class="tile-image"${url?` style="background-image:url(${url})"`:''}></div>
-    <div class="tile-info"><span>${horni}</span><h3>${escHtml(m.nazev)}</h3><p>${spodek}</p></div>
+    <div class="tile-info"><span>${horni}</span><h3 data-i18n="off">${escHtml(m.nazev)}</h3><p>${spodek}</p></div>
   </a>`;
 }
 
