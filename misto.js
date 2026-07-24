@@ -383,12 +383,33 @@ async function nactiMojeNavstevy(){
   mamOvereno = data.some(z=>z.vzdalenost_m!=null);
   nastavGeoKrok();
   box.hidden=false;
-  box.innerHTML = '<div class="mn-box"><span class="mn-titul">★ Tvé návštěvy</span>' + data.map(z=>
-    `<span class="mn-radek">${fmtDatum(z.vytvoreno)}`+
-      (z.vzdalenost_m!=null?' <span class="log-badge">◎ ověřeno na místě</span>':'')+
-      `<button type="button" class="mn-upravit" data-zapis="${z.id}">✎ Upravit naladění</button>`+
-      `<button type="button" class="mn-smazat" data-smaz="${z.id}" title="Smazat návštěvu" aria-label="Smazat návštěvu">🗑</button>`+
-    `</span>`).join('') + '</div>';
+  const posledni=fmtDatum(data[0].vytvoreno);
+  const shrnuti = data.length===1
+    ? posledni
+    : `${data.length}× · <span class="mn-slovo">naposledy</span> ${posledni}`;
+  const odznak  = mamOvereno ? ' <span class="log-badge">◎ ověřeno</span>' : '';
+  box.innerHTML =
+    '<div class="mn-box">'+
+      `<button type="button" class="mn-souhrn" aria-expanded="false" aria-controls="mn-detail">`+
+        `<span class="mn-titul">★ ${data.length===1?'Tvá návštěva':'Tvé návštěvy'}</span>`+
+        `<span class="mn-shrnuti">${shrnuti}</span>${odznak}`+
+        `<span class="mn-sipka" aria-hidden="true">▾</span>`+
+      `</button>`+
+      `<div class="mn-detail" id="mn-detail" hidden>`+
+        data.map(z=>
+          `<span class="mn-radek">${fmtDatum(z.vytvoreno)}`+
+            (z.vzdalenost_m!=null?' <span class="log-badge">◎ ověřeno na místě</span>':'')+
+            `<button type="button" class="mn-upravit" data-zapis="${z.id}">✎ Upravit naladění</button>`+
+            `<button type="button" class="mn-smazat" data-smaz="${z.id}" title="Smazat návštěvu" aria-label="Smazat návštěvu">🗑</button>`+
+          `</span>`).join('')+
+      `</div>`+
+    '</div>';
+  const souhrn=box.querySelector('.mn-souhrn'), detail=box.querySelector('.mn-detail');
+  souhrn.addEventListener('click',()=>{
+    const otevreno = souhrn.getAttribute('aria-expanded')==='true';
+    souhrn.setAttribute('aria-expanded', String(!otevreno));
+    detail.hidden = otevreno;
+  });
   box.querySelectorAll('[data-zapis]').forEach(b=>{
     const z=data.find(x=>String(x.id)===b.dataset.zapis);
     b.addEventListener('click',()=>otevriEditZapis(z));

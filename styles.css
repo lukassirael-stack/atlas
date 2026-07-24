@@ -852,10 +852,17 @@ html{overflow-x:clip}
 
 /* tvé návštěvy na stránce místa */
 .moje-navstevy{max-width:1440px;margin:auto;padding:12px clamp(22px,6vw,88px) 0}
-.mn-box{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;border:1px solid var(--line);
-  border-radius:14px;background:rgba(251,247,239,.045);padding:10px 14px}
-.mn-titul{font:500 11px 'Cinzel',serif;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-lume)}
-.mn-radek{display:inline-flex;align-items:center;gap:8px;color:var(--cream-soft);font-size:12.5px}
+.mn-box{border:1px solid var(--line);border-radius:14px;background:rgba(251,247,239,.045)}
+.mn-souhrn{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;width:100%;
+  background:none;border:0;padding:10px 14px;cursor:pointer;text-align:left;color:inherit;font:inherit}
+.mn-souhrn:hover .mn-titul{color:var(--gold)}
+.mn-titul{font:500 11px 'Cinzel',serif;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-lume);transition:.2s}
+.mn-shrnuti{color:var(--cream-soft);font-size:12.5px}
+.mn-sipka{margin-left:auto;color:var(--cream-soft);font-size:11px;transition:transform .22s}
+.mn-souhrn[aria-expanded="true"] .mn-sipka{transform:rotate(180deg)}
+.mn-detail{display:flex;flex-direction:column;gap:8px;padding:0 14px 12px}
+.mn-detail[hidden]{display:none}
+.mn-radek{display:inline-flex;align-items:center;flex-wrap:wrap;gap:8px;color:var(--cream-soft);font-size:12.5px}
 .mn-upravit{border:1px solid var(--line);background:none;color:var(--gold-lume);border-radius:99px;
   padding:4px 11px;font:500 11.5px 'Jost',sans-serif;cursor:pointer;transition:.2s}
 .mn-upravit:hover{background:var(--gold);color:var(--forest);border-color:var(--gold-deep)}
