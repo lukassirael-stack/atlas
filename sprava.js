@@ -138,10 +138,6 @@ function otevriEdit(m){
   document.querySelector('#edit-nazev-h').textContent=`Upravit: ${m.nazev}`;
   document.querySelector('#edit-nazev').value=m.nazev||'';
   document.querySelector('#edit-popis').value=m.popis||'';
-  document.querySelector('#edit-pristup').value=m.pristup||'';
-  document.querySelector('#edit-hloubka').value=m.hloubka||'';
-  document.querySelector('#edit-prace').value=m.prace_s_mistem||'';
-  document.querySelector('#edit-cas').value=m.nejlepsi_cas||'';
   const mod=document.querySelector('#edit-modal');
   mod.classList.add('open');mod.setAttribute('aria-hidden','false');
   document.querySelector('#edit-nazev').focus();
@@ -160,11 +156,7 @@ document.querySelector('#edit-form')?.addEventListener('submit',async event=>{
   odeslat.disabled=true;
   const {error}=await db.from('atlas_mista').update({
     nazev:document.querySelector('#edit-nazev').value.trim(),
-    popis:val('#edit-popis'),
-    pristup:val('#edit-pristup'),
-    hloubka:val('#edit-hloubka'),
-    prace_s_mistem:val('#edit-prace'),
-    nejlepsi_cas:val('#edit-cas')
+    popis:val('#edit-popis')
   }).eq('id',id);
   odeslat.disabled=false;
   if(error){notify('Uložení selhalo: '+error.message);return}

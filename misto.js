@@ -11,13 +11,6 @@ if (FOTKA_Z_ODKAZU && /^[\w\-./]+$/.test(FOTKA_Z_ODKAZU) && window.atlasFotoUrl)
   heroCesta = FOTKA_Z_ODKAZU;
   nastavHero(window.atlasFotoUrl(heroCesta));
 }
-const SEKCE = [
-  ['popis','Popis místa'],
-  ['pristup','Jak se sem dostat'],
-  ['hloubka','Hloubka místa'],
-  ['prace_s_mistem','Práce s místem'],
-  ['nejlepsi_cas','Nejlepší čas'],
-];
 
 const RADAR = {cx:150, cy:115, r:76};
 function radarBod(index, hodnota){
@@ -96,9 +89,12 @@ async function nactiMisto(){
   }
 
   const textEl = document.querySelector('#place-text');
-  textEl.innerHTML = SEKCE.filter(([k])=>m[k]&&m[k].trim()).map(([k,nadpis])=>
-    `<section class="place-section"><p class="eyebrow">${nadpis}</p><p>${escHtml(m[k])}</p></section>`
-  ).join('') || '<section class="place-section"><p>U tohoto místa zatím není žádný popis.</p></section>';
+  const vypraveni = (m.popis||'').trim();
+  textEl.innerHTML = vypraveni
+    ? `<section class="place-section"><p class="eyebrow">O místě</p>${
+        vypraveni.split(/\n\s*\n/).map(o=>`<p>${escHtml(o.trim()).replace(/\n/g,'<br />')}</p>`).join('')
+      }</section>`
+    : '<section class="place-section"><p>U tohoto místa zatím není žádný popis.</p></section>';
 
   vykresliRadar(m.zapisu ? m : null);
   const note = document.querySelector('#dna-note');
@@ -109,6 +105,7 @@ async function nactiMisto(){
 
   nactiKomentare();
   nactiMojeNavstevy();
+  nastavUpravuMista();
 }
 
 function nastavHero(url){
@@ -321,6 +318,41 @@ async function nactiKomentare(){
     b.addEventListener('click',()=>otevriEditKoment(k));
   });
 }
+
+/* ---- úprava místa: smí autor a správce (poloha, štítky a stav jsou zmrazené v DB) ---- */
+function nastavUpravuMista(){
+  const btn=document.querySelector('#open-edit-place');
+  if(!btn||!mistoData) return;
+  const ucet=window.atlasUcet&&window.atlasUcet();
+  const profil=window.atlasProfil&&window.atlasProfil();
+  const smi=!!(profil&&profil.spravce) || !!(ucet&&ucet.id===mistoData.autor_id);
+  btn.hidden=!smi;
+}
+document.querySelector('#open-edit-place')?.addEventListener('click',()=>{
+  if(!mistoData) return;
+  const dej=(id,hodnota)=>{const el=document.querySelector(id); if(el) el.value=hodnota||''};
+  dej('#ep-nazev',mistoData.nazev);
+  dej('#ep-popis',mistoData.popis);
+  openModal('#edit-place-modal');
+});
+document.querySelector('#edit-place-form')?.addEventListener('submit',async event=>{
+  event.preventDefault();
+  const db=window.atlasDb;
+  const nazev=document.querySelector('#ep-nazev').value.trim();
+  if(!nazev){notify('Název nemůže zůstat prázdný.');return}
+  const btn=event.currentTarget.querySelector('button[type=submit]');
+  btn.disabled=true; const puvodni=btn.textContent; btn.textContent='Ukládám…';
+  const {data:ulozeno,error}=await db.from('atlas_mista').update({
+    nazev,
+    popis:document.querySelector('#ep-popis').value.trim()||null
+  }).eq('id',mistoData.id).select('id');
+  btn.disabled=false; btn.textContent=puvodni;
+  if(error){notify('Uložení se nepodařilo: '+error.message);return}
+  if(!ulozeno||!ulozeno.length){notify('Změny se neuložily — nemáš k nim oprávnění, nebo vypršelo přihlášení.');return}
+  closeModal(document.querySelector('#edit-place-modal'));
+  notify('Místo upraveno 🌿');
+  nactiMisto();
+});
 
 /* ---- tvé návštěvy: přehled pod akcemi a úprava naladění (pět os DNA) ---- */
 async function nactiMojeNavstevy(){

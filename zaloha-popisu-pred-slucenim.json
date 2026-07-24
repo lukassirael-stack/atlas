@@ -1,0 +1,52 @@
+[
+  {
+    "id": "1e1b2b20-ab79-44f9-af25-6ce14b2de2d3",
+    "nazev": "Oáza Adamanthea",
+    "slug": "oaza-adamanthea",
+    "popis": "Oáza Adamanthea s Portálovou zahradou je místo, které bylo vytvořeno s láskou pro lidi, kteří jsou otevřeni vnímat život \"mezi světy\", a chtějí se ponořit hlouběji do sebe,svého srdce a najít své ztracené části.",
+    "pristup": "Nachází se mezi Zlínem a Uherským Hradištěm, v obci Halenkovice.",
+    "hloubka": "Aktivované portály a krásná zahrada.",
+    "prace_s_mistem": "Místo vás provede.",
+    "nejlepsi_cas": "Vhodné je se předem objednat www.oaza-adamanthea.cz"
+  },
+  {
+    "id": "e28beb63-5a8d-4254-956e-8e6e13a776bc",
+    "nazev": "Pod platany - Podzámecká zahrada",
+    "slug": "pod-platany-podzamecka-zahrada",
+    "popis": "180 let staré platany v Podzámecké zahradě v Kroměříži.",
+    "pristup": "Vstup přes bránu, asi deset minut chůze.",
+    "hloubka": "Změněny stav vědomí, klid, mír, napojení, uvolnění, hlubší dech. Regenerace, ztišení, vypíná mysl a myšlenky.",
+    "prace_s_mistem": "Nejsilnější místo je mezi dvěma největšími stromy.",
+    "nejlepsi_cas": null
+  },
+  {
+    "id": "fcdbdc4d-7109-40df-9755-14189ad6a961",
+    "nazev": "Tři gracie",
+    "slug": "tri-gracie",
+    "popis": "Stavba z 1825\nArchitektura Franz Angeles",
+    "pristup": null,
+    "hloubka": null,
+    "prace_s_mistem": null,
+    "nejlepsi_cas": null
+  },
+  {
+    "id": "16ef9722-6599-47ec-a8e5-883ef24f8525",
+    "nazev": "Králův stůl - nastolovací kámen",
+    "slug": "kraluv-stul-nastolovaci-kamen",
+    "popis": "Nastolovací kámen v historii znamenal uzavírání, nastolování, nastavování, domluvy,smlouvy, pasování důležitých momentů a korunovací.",
+    "pristup": "Pěšky od rozhledny Modrá cca 3 km. Nebo příjezd autem přímo k místu. Ale doporučujeme jít pěšky, protože po cestě je ještě jedno speciální místo.",
+    "hloubka": "Místo má povahu rozhodnutí, ukotvení něčeho, co se v tvém životě chce zapsat víc do hloubky.",
+    "prace_s_mistem": "Při příchodu zavři za sebou branku. Odlož všechny předměty, telefon, klíče, apod. Sedni si na kámen a nechej ho, ať ti ukáže co potřebuješ. Na tohle místo můžeš jít s otázkou, že nevíš, co dál, nebo nevíš, co, jak, kam, kdy... tady by se ti měly ukotvit tvé myšlenky a další kroky. Protože v minulosti se tu odehrávaly velké zápisy a rozhodnutí.",
+    "nejlepsi_cas": "Pokud ti nevadí kolem projíždějící auta, můžeš kdykoli. Pokud chceš větší klid, běž brzy ráno."
+  },
+  {
+    "id": "30072024-c15a-42ac-9c97-f223d7483d28",
+    "nazev": "Malý tumulus s velkou energií",
+    "slug": "maly-tumulus-s-velkou-energii",
+    "popis": "Malý, zřejmě uměle navršený kopec o průměru kolem osmi metrů, skrytý v lese stranou cest. Kolem něj bylo kdysi vysazeno dvanáct či třináct stromů, které držely určitou frekvenci. Žádné záznamy ani značení tu nenajdeš — tumulus jsme objevili náhodou, cestou od rozhledny Modrá boční lesní pěšinou ke Královu stolu.",
+    "pristup": null,
+    "hloubka": null,
+    "prace_s_mistem": null,
+    "nejlepsi_cas": null
+  }
+]

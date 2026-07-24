@@ -150,7 +150,6 @@ async function atlasStart(){
     /* místo dne — výloha se každý den protočí na další místo v pořadí */
     const den = Math.floor(Date.now()/86400000);
     const dnesni = atlasMista[den % atlasMista.length];
-    posledniLos = dnesni.slug;
     kartaZobraz(dnesni);
   }
 }
@@ -161,27 +160,6 @@ document.querySelector('#card-close')?.addEventListener('click',()=>{
   document.querySelector('#place-card')?.classList.remove('show');
 });
 
-document.querySelectorAll('.filter-row button').forEach(button=>button.addEventListener('click',()=>{
-  const all=document.querySelector('.filter-row button:first-child');
-  if(button===all){document.querySelectorAll('.filter-row button').forEach(item=>item.classList.remove('selected'));all.classList.add('selected')}else{all.classList.remove('selected');button.classList.toggle('selected')}
-  const active=[...document.querySelectorAll('.filter-row .selected')].map(item=>item.textContent).join(', ');notify(`Aktivní filtr: ${active || 'žádný'}`);
-}));
-let posledniLos = null;
-document.querySelector('#surprise')?.addEventListener('click',()=>{
-  if(!atlasMista.length){notify('Zatím tu není žádné místo. Buď první!');return}
-  let kandidati = atlasMista;
-  if (atlasMista.length > 1 && posledniLos) kandidati = atlasMista.filter(x=>x.slug!==posledniLos);
-  const m=kandidati[Math.floor(Math.random()*kandidati.length)];
-  posledniLos = m.slug;
-  notify(`✦ Atlas tě volá: ${m.nazev}`);
-  const karta=document.querySelector('#place-card');
-  karta?.classList.remove('show');
-  setTimeout(()=>{
-    kartaZobraz(m);
-    if(atlasMap && m.lat!=null) atlasMap.flyTo([m.lat,m.lng],13,{duration:.9});
-  },200);
-  document.querySelector('#mapa')?.scrollIntoView({behavior:'smooth'});
-});
 function najdiPolohu(){
   if(!navigator.geolocation){ notify('Tvůj prohlížeč polohu nepodporuje.'); return; }
   document.querySelector('#place-card')?.classList.remove('show'); // náhled místa pryč, ať nezakrývá polohu
@@ -210,7 +188,6 @@ function najdiPolohu(){
     notify(m);
   }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
 }
-document.querySelector('#filter-toggle')?.addEventListener('click',()=>document.querySelector('#filters').scrollIntoView({behavior:'smooth',block:'center'}));
 const modal=document.querySelector('#place-modal');
 function openModal(){modal.classList.add('open');modal.setAttribute('aria-hidden','false');document.querySelector('#place-form input[type="text"]').focus()}
 function closeModal(){modal.classList.remove('open');modal.setAttribute('aria-hidden','true')}
@@ -389,16 +366,6 @@ document.querySelector('#place-form')?.addEventListener('submit',async event=>{
 document.querySelector('#misto-dna')?.addEventListener('input',e=>{
   if(e.target.type==='range') e.target.closest('.slider-row').querySelector('output').textContent=e.target.value;
 });
-const journeyFilter=document.querySelector('#journey-filter');
-const categoryPanel=document.querySelector('#category-panel');
-const categoryList=document.querySelector('#category-list');
-function toggleCategories(show){const shouldShow=show ?? categoryPanel.hidden;categoryPanel.hidden=!shouldShow;journeyFilter.setAttribute('aria-expanded',String(shouldShow));if(shouldShow) categoryPanel.scrollIntoView({behavior:'smooth',block:'start'})}
-journeyFilter?.addEventListener('click',()=>toggleCategories());
-document.querySelector('#panel-close')?.addEventListener('click',()=>toggleCategories(false));
-categoryList?.addEventListener('click',event=>{const item=event.target.closest('button');if(item)item.classList.toggle('chosen')});
-document.querySelector('#clear-categories')?.addEventListener('click',()=>categoryList.querySelectorAll('.chosen').forEach(item=>item.classList.remove('chosen')));
-document.querySelector('#apply-categories')?.addEventListener('click',()=>{const selected=[...categoryList.querySelectorAll('.chosen')].map(item=>item.dataset.category);if(!selected.length){notify('Vyberte alespoň jednu kategorii.');return}journeyFilter.querySelector('strong').textContent=selected.length===1?selected[0]:`${selected.length} vybrané kategorie`;toggleCategories(false);document.querySelector('#mapa').scrollIntoView({behavior:'smooth',block:'start'});notify(`Mapa zobrazuje: ${selected.join(', ')}`)});
-
 /* ---- instalace aplikace na plochu (PWA) ---- */
 let _installPrompt=null;
 window.addEventListener('beforeinstallprompt',(e)=>{
