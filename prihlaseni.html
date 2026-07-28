@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Přihlášení do Atlasu</title>
+<link rel="stylesheet" href="/styles.css">
+<style>
+  .prih-obal{min-height:70vh;display:flex;align-items:center;justify-content:center;padding:2rem 1rem}
+  .prih-karta{max-width:30rem;width:100%;text-align:center;background:#fbf7ef;border:1px solid rgba(31,49,41,.12);
+    border-radius:1rem;padding:2.4rem 1.8rem;box-shadow:0 18px 48px rgba(31,49,41,.10)}
+  .prih-karta h1{font-size:1.5rem;margin:.3rem 0 .8rem}
+  .prih-karta p{margin:.5rem 0 1.2rem;line-height:1.6}
+  .prih-znak{font-size:2.4rem;line-height:1;display:block;margin-bottom:.6rem}
+  .prih-karta .button{min-width:14rem}
+  .prih-drobne{font-size:.9rem;opacity:.75;margin-top:1.4rem}
+</style>
+</head>
+<body>
+
+<div class="prih-obal">
+  <section class="prih-karta" id="karta">
+    <span class="prih-znak">◎</span>
+    <p class="eyebrow">Atlas energetických míst</p>
+    <h1 id="nadpis">Ještě jedno kliknutí</h1>
+    <p id="text">Potvrď, že přihlášení opravdu žádáš ty. Bez toho tě dovnitř nepustíme.</p>
+    <p class="auth-status" id="stav" role="status"></p>
+    <button class="button primary" type="button" id="potvrdit">Potvrdit přihlášení</button>
+    <p class="prih-drobne" id="drobne">Tenhle krok je tu schválně — brání tomu, aby přihlašovací odkaz spotřebovaly automatické kontroly poštovních serverů dřív než ty.</p>
+  </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function () {
+  var ATLAS_URL = 'https://myybuesoourgpbouwwst.supabase.co';
+  var ATLAS_KEY = 'sb_publishable_v9E-GhERgU5JCvE0D-l65A_QB2S2yux';
+
+  var db = window.supabase.createClient(ATLAS_URL, ATLAS_KEY, {
+    auth: { persistSession: true, detectSessionInUrl: false, autoRefreshToken: true }
+  });
+
+  var q = new URLSearchParams(location.search);
+  var hash = q.get('token_hash');
+  var typ = q.get('type') || 'magiclink';
+
+  var nadpis = document.getElementById('nadpis');
+  var text = document.getElementById('text');
+  var stav = document.getElementById('stav');
+  var btn = document.getElementById('potvrdit');
+  var drobne = document.getElementById('drobne');
+
+  function konec(titulek, popis, odkaz) {
+    nadpis.textContent = titulek;
+    text.textContent = popis;
+    stav.textContent = '';
+    btn.hidden = true;
+    drobne.innerHTML = odkaz || '<a href="/">Zpět do Atlasu</a>';
+  }
+
+  if (!hash) {
+    konec('Odkaz není úplný', 'V adrese chybí přihlašovací část. Zkus si nechat poslat nový odkaz.',
+          '<a href="/">Zpět do Atlasu</a>');
+    return;
+  }
+
+  /* už přihlášen? pak není co potvrzovat */
+  db.auth.getSession().then(function (r) {
+    if (r && r.data && r.data.session) {
+      konec('Už jsi uvnitř', 'Přihlášení platí, můžeš pokračovat.', '<a href="/">Pokračovat do Atlasu</a>');
+    }
+  });
+
+  btn.addEventListener('click', async function () {
+    btn.disabled = true;
+    stav.className = 'auth-status';
+    stav.textContent = 'Ověřuji…';
+
+    var vysledek = await db.auth.verifyOtp({ token_hash: hash, type: typ });
+
+    /* typ v odkazu nemusí sedět (registrace vs. další přihlášení) — zkusit i ten druhý */
+    if (vysledek.error) {
+      var jiny = (typ === 'signup') ? 'magiclink' : 'signup';
+      vysledek = await db.auth.verifyOtp({ token_hash: hash, type: jiny });
+    }
+
+    if (vysledek.error) {
+      btn.disabled = false;
+      stav.className = 'auth-status err';
+      stav.textContent = 'Odkaz už neplatí nebo byl použitý. Nech si prosím poslat nový.';
+      drobne.innerHTML = '<a href="/">Zpět do Atlasu</a>';
+      return;
+    }
+
+    stav.className = 'auth-status ok';
+    stav.textContent = 'Hotovo. Vítej zpátky.';
+    var kam = '/';
+    try {
+      var ulozene = localStorage.getItem('atlas_navrat');
+      if (ulozene && ulozene.charAt(0) === '/') kam = ulozene;
+      localStorage.removeItem('atlas_navrat');
+    } catch (e) {}
+    setTimeout(function () { location.replace(kam); }, 700);
+  });
+})();
+</script>
+
+</body>
+</html>
