@@ -249,6 +249,7 @@ async function odhlas() {
   await db.auth.signOut();
   ucet = null; profil = null; profilZnamy = true;
   try { localStorage.removeItem(PROFIL_CACHE); } catch (_) {}
+  zapomenCekajici();
   vykresliStav();
   notify('Odhlášeno.');
 }
@@ -285,8 +286,18 @@ function autForm(zobrazitEmail) {
   }
 }
 
+const KOD_CEKA = 'atlas_kod_ceka';
+
+function ulozCekajici(email) {
+  try { localStorage.setItem(KOD_CEKA, JSON.stringify({ email, t: Date.now() })); } catch (_) {}
+}
+function zapomenCekajici() {
+  try { localStorage.removeItem(KOD_CEKA); } catch (_) {}
+}
+
 function zobrazKrokKodu(email) {
   odeslanoNa = email;
+  ulozCekajici(email);
   autForm(false);
   document.querySelector('#auth-kod')?.focus();
   let zbyva = 60;
@@ -327,6 +338,7 @@ document.querySelector('#auth-znovu')?.addEventListener('click', () => {
 
 /* „Změnit e-mail" — zpět na první krok */
 document.querySelector('#auth-zmenit')?.addEventListener('click', () => {
+  zapomenCekajici();
   autForm(true);
   const input = document.querySelector('#auth-email');
   if (input && odeslanoNa) input.value = odeslanoNa;
@@ -378,6 +390,7 @@ document.querySelector('#auth-form')?.addEventListener('submit', async event => 
     return;
   }
   clearInterval(znovuTimer);
+  zapomenCekajici();
   /* zbytek (zavření modálu, volba nicku) obstará onAuthStateChange */
 });
 
@@ -438,7 +451,23 @@ window.addEventListener('online', () => {
   if (ucet && !profilZnamy) nactiProfil().then(vykresliStav);
 });
 
+/* stránka se mezitím znovu načetla (mobil, slabý signál)? vrátit uživatele ke kódu */
+function obnovCekajiciKod() {
+  if (ucet) { zapomenCekajici(); return; }
+  let c = null;
+  try { c = JSON.parse(localStorage.getItem(KOD_CEKA) || 'null'); } catch (_) {}
+  if (!c || !c.email) return;
+  if (Date.now() - (c.t || 0) > 60 * 60 * 1000) { zapomenCekajici(); return; }
+  odeslanoNa = c.email;
+  autForm(false);
+  const btn = document.querySelector('#auth-znovu');
+  const cd = document.querySelector('#auth-cd');
+  if (btn) btn.disabled = false;
+  if (cd) cd.textContent = '';
+}
+
 nactiSession().then(()=>{
+  obnovCekajiciKod();
   window.atlasAuthReady = true;
   window.dispatchEvent(new Event('atlas-auth-ready'));
 });
