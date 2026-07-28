@@ -1,4 +1,4 @@
-/* Přihlášení do Atlasu — magic link přes Supabase Auth.
+/* Přihlášení do Atlasu — jednorázový kód přes Supabase Auth.
    Číst může kdokoli. Účet je potřeba až na psaní. */
 
 const ATLAS_URL = 'https://myybuesoourgpbouwwst.supabase.co';
@@ -47,12 +47,22 @@ function vlozModaly() {
         <button class="modal-close" data-close="auth-modal" aria-label="Zavřít">×</button>
         <p class="eyebrow">Komunitní atlas</p>
         <h2 id="auth-title">Přihlas se</h2>
-        <p>Zadej e-mail a pošleme ti odkaz. Klikneš na něj a jsi uvnitř — žádné heslo si pamatovat nemusíš.</p>
+        <p id="auth-uvod">Zadej e-mail a pošleme ti šestimístný kód. Opíšeš ho sem a jsi uvnitř — žádné heslo si pamatovat nemusíš.</p>
         <form id="auth-form">
-          <label>Tvůj e-mail<input type="email" id="auth-email" required placeholder="tvuj@email.cz" autocomplete="email" /></label>
+          <div id="auth-krok-email">
+            <label>Tvůj e-mail<input type="email" id="auth-email" required placeholder="tvuj@email.cz" autocomplete="email" /></label>
+          </div>
+          <div id="auth-krok-kod" hidden>
+            <label>Kód z e-mailu<small>Šest číslic. Platí 15 minut.</small><input type="text" id="auth-kod" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456" style="letter-spacing:.4em;text-align:center;font-size:1.3rem" /></label>
+          </div>
           <p class="auth-status" id="auth-status" role="status"></p>
-          <button class="button primary" type="submit" id="auth-send">Poslat odkaz</button>
+          <button class="button primary" type="submit" id="auth-send">Poslat kód</button>
         </form>
+        <p class="auth-note" id="auth-pod" hidden>
+          <button type="button" class="link-button" id="auth-znovu" disabled>Poslat znovu <span id="auth-cd">(60 s)</span></button>
+          &nbsp;·&nbsp;
+          <button type="button" class="link-button" id="auth-zmenit">Změnit e-mail</button>
+        </p>
         <p class="auth-note">Procházet Atlas můžeš i bez účtu. Přihlášení potřebuješ, až budeš chtít zanést místo, zapsat návštěvu nebo komentovat.</p>
       </section>
     </div>
@@ -247,74 +257,128 @@ document.querySelector('#odhlasit-nick')?.addEventListener('click', async () => 
   zavri(document.querySelector('#nick-modal'));
 });
 
-/* poslání magic linku */
-let odeslanoNa = null;   // e-mail, na který odešel poslední odkaz
+/* přihlášení šestimístným kódem (odolné proti předběžnému načtení odkazu robotem) */
+let odeslanoNa = null;   // e-mail, na který odešel poslední kód
 let znovuTimer = null;
+let krokKodu = false;    // true = zobrazen krok se zadáním kódu
 
-/* přepnout modál mezi formulářem a stavem „odesláno" */
-function autForm(zobrazit) {
-  const label = document.querySelector('#auth-form label');
+function autForm(zobrazitEmail) {
+  krokKodu = !zobrazitEmail;
+  const kEmail = document.querySelector('#auth-krok-email');
+  const kKod = document.querySelector('#auth-krok-kod');
+  const pod = document.querySelector('#auth-pod');
   const send = document.querySelector('#auth-send');
+  const uvod = document.querySelector('#auth-uvod');
   const status = document.querySelector('#auth-status');
-  if (label) label.hidden = !zobrazit;
-  if (send) send.hidden = !zobrazit;
-  if (zobrazit && status) { status.className = 'auth-status'; status.textContent = ''; status.style.textAlign = ''; }
+  if (kEmail) kEmail.hidden = krokKodu;
+  if (kKod) kKod.hidden = !krokKodu;
+  if (pod) pod.hidden = !krokKodu;
+  if (send) send.textContent = krokKodu ? 'Přihlásit se' : 'Poslat kód';
+  if (uvod) uvod.textContent = krokKodu
+    ? 'Kód jsme poslali na ' + (odeslanoNa || 'tvůj e-mail') + '. Opiš ho sem — tuhle stránku nechej otevřenou.'
+    : 'Zadej e-mail a pošleme ti šestimístný kód. Opíšeš ho sem a jsi uvnitř — žádné heslo si pamatovat nemusíš.';
+  if (status) { status.className = 'auth-status'; status.textContent = ''; }
+  if (!krokKodu) {
+    clearInterval(znovuTimer);
+    const kod = document.querySelector('#auth-kod');
+    if (kod) kod.value = '';
+  }
 }
 
-function zobrazOdeslano(email) {
+function zobrazKrokKodu(email) {
   odeslanoNa = email;
   autForm(false);
-  const status = document.querySelector('#auth-status');
-  if (!status) return;
-  status.className = 'auth-status ok';
-  status.style.textAlign = 'center';
-  status.innerHTML =
-    '<span style="display:block;font-size:2rem;line-height:1;margin:.4rem 0 .6rem">✉️</span>' +
-    '<b style="display:block;font-size:1.05rem;margin-bottom:.4rem">Odkaz je na cestě</b>' +
-    '<span>Poslali jsme ho na </span><b>' + escHtmlAuth(email) + '</b><span>.</span><br>' +
-    '<span>Otevři si schránku a klikni na něj. Tuhle stránku můžeš klidně zavřít.</span><br>' +
-    '<button type="button" class="link-button" id="auth-znovu" disabled style="margin-top:.7rem">Poslat znovu <span id="auth-cd">(60 s)</span></button>';
+  document.querySelector('#auth-kod')?.focus();
   let zbyva = 60;
+  const btn = document.querySelector('#auth-znovu');
+  const cd = document.querySelector('#auth-cd');
+  if (btn) btn.disabled = true;
+  if (cd) cd.textContent = '(60 s)';
   clearInterval(znovuTimer);
   znovuTimer = setInterval(() => {
     zbyva--;
-    const cd = document.querySelector('#auth-cd');
-    const btn = document.querySelector('#auth-znovu');
     if (!cd || !btn) { clearInterval(znovuTimer); return; }
     if (zbyva <= 0) { clearInterval(znovuTimer); cd.textContent = ''; btn.disabled = false; }
     else cd.textContent = '(' + zbyva + ' s)';
   }, 1000);
 }
 
-/* „Poslat znovu" vrátí formulář s předvyplněným e-mailem (jde ho i změnit) */
-document.querySelector('#auth-status')?.addEventListener('click', e => {
-  if (!e.target.closest('#auth-znovu')) return;
-  clearInterval(znovuTimer);
+async function posliKod(email) {
+  const status = document.querySelector('#auth-status');
+  const send = document.querySelector('#auth-send');
+  status.className = 'auth-status';
+  status.textContent = 'Posílám kód…';
+  if (send) send.disabled = true;
+  const { error } = await db.auth.signInWithOtp({ email });
+  if (send) send.disabled = false;
+  if (error) {
+    status.className = 'auth-status err';
+    status.textContent = 'Kód se nepodařilo poslat: ' + error.message;
+    return false;
+  }
+  zobrazKrokKodu(email);
+  return true;
+}
+
+/* „Poslat znovu" */
+document.querySelector('#auth-znovu')?.addEventListener('click', () => {
+  if (odeslanoNa) posliKod(odeslanoNa);
+});
+
+/* „Změnit e-mail" — zpět na první krok */
+document.querySelector('#auth-zmenit')?.addEventListener('click', () => {
   autForm(true);
   const input = document.querySelector('#auth-email');
   if (input && odeslanoNa) input.value = odeslanoNa;
   input?.focus();
 });
 
+/* jen číslice, po šesté se přihlásí samo */
+document.querySelector('#auth-kod')?.addEventListener('input', event => {
+  const cistY = event.target.value.replace(/\D/g, '').slice(0, 6);
+  event.target.value = cistY;
+  if (cistY.length === 6) document.querySelector('#auth-form')?.requestSubmit();
+});
+
 document.querySelector('#auth-form')?.addEventListener('submit', async event => {
   event.preventDefault();
-  const email = document.querySelector('#auth-email').value.trim();
   const status = document.querySelector('#auth-status');
   const send = document.querySelector('#auth-send');
-  status.className = 'auth-status';
-  status.textContent = 'Posílám odkaz…';
-  send.disabled = true;
-  const { error } = await db.auth.signInWithOtp({
-    email,
-    options: { emailRedirectTo: window.location.origin + window.location.pathname }
-  });
-  send.disabled = false;
-  if (error) {
-    status.className = 'auth-status err';
-    status.textContent = 'Odkaz se nepodařilo poslat: ' + error.message;
+
+  if (!krokKodu) {
+    const email = document.querySelector('#auth-email').value.trim();
+    if (!email) return;
+    await posliKod(email);
     return;
   }
-  zobrazOdeslano(email);
+
+  const kod = document.querySelector('#auth-kod').value.replace(/\D/g, '');
+  if (kod.length !== 6) {
+    status.className = 'auth-status err';
+    status.textContent = 'Kód má šest číslic.';
+    return;
+  }
+  status.className = 'auth-status';
+  status.textContent = 'Ověřuji…';
+  send.disabled = true;
+
+  let { error } = await db.auth.verifyOtp({ email: odeslanoNa, token: kod, type: 'email' });
+  if (error) {
+    /* nový účet může vyžadovat typ „signup" — zkusit i ten, ať uživatel nic neřeší */
+    const druhy = await db.auth.verifyOtp({ email: odeslanoNa, token: kod, type: 'signup' });
+    error = druhy.error;
+  }
+  send.disabled = false;
+
+  if (error) {
+    status.className = 'auth-status err';
+    status.textContent = 'Kód nesedí nebo už vypršel. Zkontroluj ho, nebo si nech poslat nový.';
+    const pole = document.querySelector('#auth-kod');
+    if (pole) { pole.value = ''; pole.focus(); }
+    return;
+  }
+  clearInterval(znovuTimer);
+  /* zbytek (zavření modálu, volba nicku) obstará onAuthStateChange */
 });
 
 /* volba nicku */
@@ -355,7 +419,7 @@ document.querySelector('#nick-form')?.addEventListener('submit', async event => 
   notify(`Vítej v Atlasu, ${nick}. Teď můžeš zanášet místa i zapisovat návštěvy.`);
 });
 
-/* reakce na návrat z magic linku */
+/* reakce na přihlášení */
 db?.auth.onAuthStateChange(async (event, session) => {
   ucet = session?.user || null;
   await nactiProfil();
