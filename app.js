@@ -160,12 +160,68 @@ document.querySelector('#card-close')?.addEventListener('click',()=>{
   document.querySelector('#place-card')?.classList.remove('show');
 });
 
+/* Dvoufázové hledání polohy.
+   1) přesně z GNSS (enableHighAccuracy) — venku, s výhledem na oblohu
+   2) když to nevyjde, hrubě ze sítě (Wi-Fi + BTS) — funguje i uvnitř budov a na počítači
+   Zamítnuté oprávnění (kód 1) druhý pokus přeskakuje, nemá smysl. */
+window.atlasNajdiPolohu = window.atlasNajdiPolohu || function(hotovo, chyba){
+  if(!navigator.geolocation){ chyba({code:0}); return; }
+  navigator.geolocation.getCurrentPosition(hotovo, prvni=>{
+    if(prvni && prvni.code === 1){ chyba(prvni); return; }
+    navigator.geolocation.getCurrentPosition(hotovo, chyba,
+      { enableHighAccuracy:false, timeout:20000, maximumAge:120000 });
+  }, { enableHighAccuracy:true, timeout:15000, maximumAge:0 });
+};
+
+/* Trpělivé hledání polohy.
+   getCurrentPosition vezme první fix, co dorazí — často hrubý odhad ze sítě.
+   watchPosition místo toho poslouchá dál: přesnost se s přibývajícími družicemi
+   zlepšuje (±500 m → ±80 m → ±6 m). Držíme nejlepší dosažený fix.
+     cilM   — jakmile je fix takhle přesný, končíme dřív, nemá smysl čekat
+     prahM  — horší než tohle nepřijmeme vůbec (chyba s kódem 4)
+     limitMs— dokdy nejdéle hledáme */
+window.atlasSledujPolohu = window.atlasSledujPolohu || function(n){
+  const cil = n.cilM || 20, prah = n.prahM || 100, limit = n.limitMs || 35000;
+  const krok = n.krok || function(){};
+  if(!navigator.geolocation){ n.chyba({code:0}); return function(){}; }
+
+  let nej = null, id = null, casovac = null, dobehlo = false;
+  const zacatek = Date.now();
+
+  const stop = function(){
+    if(dobehlo) return;
+    dobehlo = true;
+    if(id !== null) navigator.geolocation.clearWatch(id);
+    if(casovac) clearTimeout(casovac);
+  };
+  const dokonci = function(){
+    stop();
+    if(nej && nej.coords.accuracy <= prah) n.hotovo(nej);
+    else n.chyba({ code:4, nejlepsi: nej ? nej.coords.accuracy : null });
+  };
+
+  casovac = setTimeout(dokonci, limit);
+  id = navigator.geolocation.watchPosition(function(p){
+    if(dobehlo) return;
+    if(!nej || p.coords.accuracy < nej.coords.accuracy) nej = p;
+    krok(nej.coords.accuracy, Math.round((Date.now() - zacatek) / 1000));
+    if(nej.coords.accuracy <= cil){ stop(); n.hotovo(nej); }
+  }, function(e){
+    if(dobehlo) return;
+    if(e && e.code === 1){ stop(); n.chyba(e); return; }
+    /* kód 2/3 během sledování ignorujeme — družice se můžou chytit později,
+       o konci rozhodne časovač */
+  }, { enableHighAccuracy:true, timeout:limit, maximumAge:0 });
+
+  return stop;
+};
+
 function najdiPolohu(){
   if(!navigator.geolocation){ notify('Tvůj prohlížeč polohu nepodporuje.'); return; }
   document.querySelector('#place-card')?.classList.remove('show'); // náhled místa pryč, ať nezakrývá polohu
   notify('Hledám tvou polohu…');
   if(locateBtn) locateBtn.classList.add('hledam');
-  navigator.geolocation.getCurrentPosition(function(p){
+  window.atlasNajdiPolohu(function(p){
     if(locateBtn) locateBtn.classList.remove('hledam');
     const ll = [p.coords.latitude, p.coords.longitude];
     if(atlasMap){
@@ -184,9 +240,10 @@ function najdiPolohu(){
     if(locateBtn) locateBtn.classList.remove('hledam');
     let m = 'Polohu se nepodařilo načíst.';
     if(err && err.code === 1) m = 'Přístup k poloze je zakázaný — povol ho v nastavení prohlížeče.';
+    else if(err && err.code === 2) m = 'Zařízení polohu nedokáže určit. Zkus zapnout polohu (GPS).';
     else if(err && err.code === 3) m = 'Hledání polohy trvá moc dlouho. Zkus to prosím znovu.';
     notify(m);
-  }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
+  });
 }
 const modal=document.querySelector('#place-modal');
 function openModal(){modal.classList.add('open');modal.setAttribute('aria-hidden','false');document.querySelector('#place-form input[type="text"]').focus()}
@@ -202,13 +259,23 @@ const geoButton=document.querySelector('#geo-get');
 const geoStatus=document.querySelector('#geo-status');
 let geoFix=null;
 function geoChybaText(err){
+  if(err&&err.code===4)
+    return err.nejlepsi
+      ? `Nejlepší poloha byla za půl minuty jen ±${Math.round(err.nejlepsi)} m, potřebujeme ±100 m. Vypadá to, že jsi uvnitř budovy — beton a střecha družicový signál nepustí. Vyjdi prosím ven pod otevřené nebe a zkus to znovu.`
+      : 'Poloha se za půl minuty vůbec nenačetla. Vypadá to, že jsi uvnitř budovy — vyjdi prosím ven pod otevřené nebe a zkus to znovu.';
   if(/FBAN|FBAV|FB_IAB|Instagram/i.test(navigator.userAgent))
     return 'Prohlížeč uvnitř aplikace (Facebook, Instagram…) polohu neumí. Otevři Atlas přes menu ⋮ v běžném prohlížeči — bez polohy místo zanést nelze.';
   if(err&&err.code===1)
     return 'Přístup k poloze je zablokovaný. Klepni na ikonu vedle adresy → Oprávnění → Poloha → Povolit a stránku obnov. Bez polohy místo zanést nelze.';
+  if(!window.isSecureContext)
+    return 'Stránka neběží přes zabezpečené spojení, prohlížeč proto polohu nepovolí.';
+  if(err&&err.code===0)
+    return 'Tvůj prohlížeč polohu nepodporuje.';
+  if(err&&err.code===2)
+    return 'Zařízení polohu nedokáže určit. Na telefonu zapni polohu (GPS), na počítači bývá poloha často nedostupná úplně.';
   if(err&&err.code===3)
     return 'Hledání polohy trvá moc dlouho. Zkus to prosím znovu.';
-  return 'Polohu se nepodařilo načíst. Máš v telefonu zapnutou polohu (GPS)? Jsi venku, pod otevřeným nebem?';
+  return 'Polohu se nepodařilo načíst. Máš v telefonu zapnutou polohu (GPS)?';
 }
 function geoVychozi(){geoButton.textContent='◎ Načíst mou polohu';geoButton.classList.remove('hotovo');geoButton.removeAttribute('title');geoButton.disabled=false}
 function geoHotovo(){geoButton.textContent='✓ Poloha načtena';geoButton.classList.add('hotovo');geoButton.title='Načíst polohu znovu';geoButton.disabled=false}
@@ -217,18 +284,25 @@ geoButton?.addEventListener('click',()=>{
   if(!navigator.geolocation){geoStatus.className='geo-status err';geoStatus.textContent='Tvůj prohlížeč polohu nepodporuje.';return}
   geoStatus.className='geo-status';geoStatus.textContent='Hledám tvou polohu…';
   geoButton.textContent='◎ Hledám polohu…';geoButton.classList.remove('hotovo');geoButton.disabled=true;
-  navigator.geolocation.getCurrentPosition(position=>{
+  window.atlasSledujPolohu({
+    cilM:20, prahM:100, limitMs:35000,
+    krok:(presnost,sekund)=>{
+      geoButton.textContent=`◎ Hledám… ${sekund} s`;
+      geoStatus.className='geo-status';
+      geoStatus.innerHTML=`Zatím ±${Math.round(presnost)} m — zpřesňuji…`;
+    },
+    hotovo:position=>{
     const{latitude,longitude,accuracy}=position.coords;
     geoFix={lat:latitude,lng:longitude,accuracy};
     geoCapture.classList.add('ready');
     geoStatus.className='geo-status ok';
     geoStatus.innerHTML=`<b>${latitude.toFixed(5)} N, ${longitude.toFixed(5)} E</b><br>přesnost ±${Math.round(accuracy)} m`;
     geoHotovo();
-  },error=>{
+  },chyba:error=>{
     geoStatus.className='geo-status err';
     geoStatus.textContent=geoChybaText(error);
     if(geoFix) geoHotovo(); else geoVychozi();
-  },{enableHighAccuracy:true,timeout:12000,maximumAge:0});
+  }});
 });
 const tagPicker=document.querySelector('#tag-picker');
 tagPicker?.addEventListener('click',event=>{
@@ -322,6 +396,8 @@ document.querySelector('#place-form')?.addEventListener('submit',async event=>{
   const {data:misto,error}=await db.from('atlas_mista').insert({
     autor_id:ucet.id,
     nazev:nazev,
+    nazev_oficialni:hodnota('#misto-nazev-oficialni'),
+    nazev_pocitovy:hodnota('#misto-nazev-pocitovy'),
     poloha:`SRID=4326;POINT(${geoFix.lng} ${geoFix.lat})`,
     presnost_m:Math.round(geoFix.accuracy),
     stitky,
