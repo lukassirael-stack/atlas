@@ -397,7 +397,7 @@ a.place-tile{text-decoration:none;color:inherit;display:block}
 .map-top button:hover{background:var(--gold-lume)}
 
 .atlas-znacka{background:none;border:0;cursor:pointer;display:grid;place-items:center}
-.atlas-znacka span{display:grid;place-items:center;width:17px;height:17px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fff3d0,#c9a14a 70%);color:#3a2d10;font-size:9px;border:1px solid #fffaf0;box-shadow:0 2px 6px rgba(5,12,8,.55);transition:transform .15s}
+.atlas-znacka span{display:grid;place-items:center;width:17px;height:17px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fff3d0,#c9a14a 70%);color:#3a2d10;font-size:9px;border:1px solid #fffaf0;box-shadow:0 0 0 1.5px rgba(8,16,11,.85),0 0 0 3px rgba(251,247,239,.4),0 2px 7px rgba(5,12,8,.7);transition:transform .15s}
 .atlas-znacka:hover span{transform:scale(1.5)}
 
 /* karta trvale v rohu mapy */
@@ -744,7 +744,7 @@ html{overflow-x:clip}
 .atlas-znacka.navstiveno span{
   background:radial-gradient(circle at 40% 35%,#2f5a44,#1f3129 72%);
   color:#ecd08a;font-size:9.5px;border-color:#c9a14a;
-  box-shadow:0 2px 6px rgba(5,12,8,.55),0 0 8px rgba(201,161,74,.5)}
+  box-shadow:0 0 0 1.5px rgba(251,247,239,.5),0 0 0 3px rgba(8,16,11,.75),0 2px 7px rgba(5,12,8,.7),0 0 9px rgba(201,161,74,.45)}
 
 /* ---------- účtové menu: Moje cesty ---------- */
 .um-cesty{padding:10px 4px 6px;border-top:1px solid var(--line-soft)}
