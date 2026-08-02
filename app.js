@@ -397,7 +397,6 @@ document.querySelector('#place-form')?.addEventListener('submit',async event=>{
     autor_id:ucet.id,
     nazev:nazev,
     nazev_oficialni:hodnota('#misto-nazev-oficialni'),
-    nazev_pocitovy:hodnota('#misto-nazev-pocitovy'),
     poloha:`SRID=4326;POINT(${geoFix.lng} ${geoFix.lat})`,
     presnost_m:Math.round(geoFix.accuracy),
     stitky,

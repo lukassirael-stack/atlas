@@ -61,16 +61,13 @@ async function nactiMisto(){
 
   document.querySelector('#place-nazev').textContent = m.nazev;
 
-  /* podnázvy: pocitový v uvozovkách, oficiální za ním */
+  /* oficiální název jako podnázev pod hlavním */
   {
     const h1 = document.querySelector('#place-nazev');
     const stary = h1.nextElementSibling;
     if (stary && stary.classList.contains('place-podnazev')) stary.remove();
-    const casti = [];
-    if (m.nazev_pocitovy) casti.push('\u201E' + m.nazev_pocitovy + '\u201C');
-    if (m.nazev_oficialni) casti.push('oficiálně ' + m.nazev_oficialni);
-    if (casti.length) h1.insertAdjacentHTML('afterend',
-      '<p class="place-podnazev" data-i18n="off">' + escHtml(casti.join(' \u00B7 ')) + '</p>');
+    if (m.nazev_oficialni) h1.insertAdjacentHTML('afterend',
+      '<p class="place-podnazev" data-i18n="off">na mapách ' + escHtml(m.nazev_oficialni) + '</p>');
   }
   document.querySelector('#place-souradnice').textContent = window.atlasSouradnice(m.lat, m.lng);
   document.querySelector('#place-tags').innerHTML =
@@ -362,7 +359,6 @@ document.querySelector('#open-edit-place')?.addEventListener('click',()=>{
   const dej=(id,hodnota)=>{const el=document.querySelector(id); if(el) el.value=hodnota||''};
   dej('#ep-nazev',mistoData.nazev);
   dej('#ep-nazev-oficialni',mistoData.nazev_oficialni);
-  dej('#ep-nazev-pocitovy',mistoData.nazev_pocitovy);
   dej('#ep-popis',mistoData.popis);
   const vybrane=new Set(mistoData.stitky||[]);
   epTagy?.querySelectorAll('button').forEach(chip=>chip.classList.toggle('on', vybrane.has(chip.dataset.tag)));
@@ -380,7 +376,6 @@ document.querySelector('#edit-place-form')?.addEventListener('submit',async even
   const {data:ulozeno,error}=await db.from('atlas_mista').update({
     nazev,
     nazev_oficialni:document.querySelector('#ep-nazev-oficialni').value.trim()||null,
-    nazev_pocitovy:document.querySelector('#ep-nazev-pocitovy').value.trim()||null,
     popis:document.querySelector('#ep-popis').value.trim()||null,
     stitky
   }).eq('id',mistoData.id).select('id');
