@@ -396,9 +396,9 @@ a.place-tile{text-decoration:none;color:inherit;display:block}
 .map-top button{border:0;background:var(--gold);color:var(--forest);border-radius:99px;padding:5px 12px;font:500 12px 'Jost';cursor:pointer}
 .map-top button:hover{background:var(--gold-lume)}
 
-.atlas-znacka{background:none;border:0;cursor:pointer}
-.atlas-znacka span{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fff3d0,#c9a14a 70%);color:#3a2d10;font-size:16px;border:2px solid #fffaf0;box-shadow:0 3px 10px rgba(5,12,8,.6);transition:transform .15s}
-.atlas-znacka:hover span{transform:scale(1.18)}
+.atlas-znacka{background:none;border:0;cursor:pointer;display:grid;place-items:center}
+.atlas-znacka span{display:grid;place-items:center;width:17px;height:17px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fff3d0,#c9a14a 70%);color:#3a2d10;font-size:9px;border:1px solid #fffaf0;box-shadow:0 2px 6px rgba(5,12,8,.55);transition:transform .15s}
+.atlas-znacka:hover span{transform:scale(1.5)}
 
 /* karta trvale v rohu mapy */
 .place-card{position:absolute;right:18px;bottom:18px;z-index:400;width:min(340px,calc(100% - 36px));margin:0;opacity:0;transform:translateY(12px);pointer-events:none;transition:.25s}
@@ -743,8 +743,8 @@ html{overflow-x:clip}
 /* ---------- mapa: navštívené místo (mám u něj zápis) ---------- */
 .atlas-znacka.navstiveno span{
   background:radial-gradient(circle at 40% 35%,#2f5a44,#1f3129 72%);
-  color:#ecd08a;font-size:17px;border-color:#c9a14a;
-  box-shadow:0 3px 10px rgba(5,12,8,.6),0 0 12px rgba(201,161,74,.55)}
+  color:#ecd08a;font-size:9.5px;border-color:#c9a14a;
+  box-shadow:0 2px 6px rgba(5,12,8,.55),0 0 8px rgba(201,161,74,.5)}
 
 /* ---------- účtové menu: Moje cesty ---------- */
 .um-cesty{padding:10px 4px 6px;border-top:1px solid var(--line-soft)}
