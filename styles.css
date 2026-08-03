@@ -602,6 +602,13 @@ html{overflow-x:clip}
 @keyframes navDolu{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
 @keyframes navFade{from{opacity:0}to{opacity:1}}
 
+/* ---------- ztlumený satelit ----------
+   Esri World Imagery je syté a světlé; ztmavením a odbarvením podklad ustoupí
+   dozadu, značky a popisky vystoupí dopředu. Třída sedí jen na satelitní
+   vrstvě — popisková vrstva nad ní zůstává v plné síle, aby zůstala čitelná. */
+.leaflet-tile.satelit-tlum,
+.satelit-tlum .leaflet-tile{filter:brightness(.64) saturate(.68) contrast(1.06)}
+
 /* ---------- Najít mě: kruhové tlačítko pod zoomem ---------- */
 /* vyšší váha selektorů, aby nevyhrály vestavěné styly Leafletu (bílá hranatá tlačítka) */
 .leaflet-bar.locate-bar,

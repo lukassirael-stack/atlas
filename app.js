@@ -111,6 +111,7 @@ function mapaInit(){
   // satelit — Esri World Imagery, zdarma bez klíče
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
     maxZoom: 19,
+    className: 'satelit-tlum',   // ztlumení řeší styles.css — popisky zůstávají v plné síle
     attribution: 'Esri, Maxar, Earthstar Geographics'
   }).addTo(atlasMap);
   // jemné popisky obcí a cest přes satelit
