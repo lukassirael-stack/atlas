@@ -39,11 +39,13 @@ function dlazdiceVykresli(){
   grid.innerHTML = atlasMista.slice(0,6).map(m=>{
     const url = window.atlasFotoUrl(m.fotka);
     const rys = window.atlasRys(m.dna);
-    const kraj = (m.stitky&&m.stitky[0]) ? window.atlasStitek(m.stitky[0]) : '';
-    const spodek = rys ? `<b>${rys}</b>` : '<b>Nové místo</b>';
+    const stitek = (m.stitky&&m.stitky[0]) ? window.atlasStitek(m.stitky[0]) : '';
+    /* kde to je: u českých míst kraj, u zahraničních země */
+    const kdeJe = m.kraj ? `${m.kraj} kraj` : (m.zeme || '');
+    const spodek = [rys ? `<b>${rys}</b>` : '<b>Nové místo</b>', kdeJe].filter(Boolean).join(' · ');
     return `<a class="place-tile" href="/misto?m=${m.slug}${m.fotka?`&f=${encodeURIComponent(m.fotka)}`:''}">
       <div class="tile-image"${url?` style="background-image:url(${url})"`:''}></div>
-      <div class="tile-info"><span>${kraj}</span><h3 data-i18n="off">${m.nazev}</h3><p>${spodek}</p></div>
+      <div class="tile-info"><span>${stitek}</span><h3 data-i18n="off">${m.nazev}</h3><p>${spodek}</p></div>
     </a>`;
   }).join('');
 }
@@ -54,17 +56,19 @@ let atlasZnacky = [];
 let mojePoloha = null;
 let locateBtn = null;
 let mojeNavstevy = new Set();   // misto_id míst, která mám navštívená (mám u nich zápis)
+/* špendlík: hrot ukazuje přesně na souřadnice, proto iconAnchor u spodní špičky
+   (střed hlavičky 11 px od vrchu + polovina úhlopříčky otočeného čtverce ≈ 13 px) */
 const znackaIkona = L.divIcon({
-  className: 'atlas-znacka',
-  html: '<span>✦</span>',
-  iconSize: [34,34],
-  iconAnchor: [17,17]
+  className: 'atlas-spendlik ceka',
+  html: '<i></i>',
+  iconSize: [26,28],
+  iconAnchor: [13,24]
 });
 const navstivenaIkona = L.divIcon({
-  className: 'atlas-znacka navstiveno',
-  html: '<span>★</span>',
-  iconSize: [34,34],
-  iconAnchor: [17,17]
+  className: 'atlas-spendlik navstiveno',
+  html: '<i></i>',
+  iconSize: [26,28],
+  iconAnchor: [13,24]
 });
 
 function mapaInit(){
@@ -102,7 +106,7 @@ function mapaInit(){
     options: { position: 'bottomleft' },
     onAdd: function(){
       const el = L.DomUtil.create('div', 'map-legenda');
-      el.innerHTML = '<span>✦ čeká na objevení</span><span class="ml-nav">★ navštíveno</span>';
+      el.innerHTML = '<span class="ml-ceka">čeká na objevení</span><span class="ml-nav">navštíveno</span>';
       L.DomEvent.disableClickPropagation(el);
       return el;
     }
