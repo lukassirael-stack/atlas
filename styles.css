@@ -396,6 +396,22 @@ a.place-tile{text-decoration:none;color:inherit;display:block}
 .map-top button{border:0;background:var(--gold);color:var(--forest);border-radius:99px;padding:5px 12px;font:500 12px 'Jost';cursor:pointer}
 .map-top button:hover{background:var(--gold-lume)}
 
+/* ---------- špendlíky na mapě ----------
+   Kapka: čtverec se třemi zaoblenými rohy, otočený o 45° — čtvrtý roh tvoří hrot.
+   Červená = čeká na objevení, zelená = tvá návštěva. Obě barvy jsou proti
+   béžovo-olivovému satelitu cizí, takže značka nikdy nesplyne s krajinou. */
+.atlas-spendlik{background:none;border:0;cursor:pointer;position:relative}
+.atlas-spendlik i{position:absolute;left:50%;top:2px;margin-left:-9px;
+  width:18px;height:18px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);
+  border:1.5px solid rgba(255,250,240,.9);
+  box-shadow:0 0 0 1.5px rgba(8,16,11,.55),2px -2px 8px rgba(5,12,8,.6);
+  transition:transform .15s ease}
+.atlas-spendlik i::after{content:'';position:absolute;inset:5px;border-radius:50%;
+  background:rgba(255,252,245,.9)}
+.atlas-spendlik.ceka i{background:linear-gradient(135deg,#e2604a,#b32d1a)}
+.atlas-spendlik.navstiveno i{background:linear-gradient(135deg,#5cc47c,#2b7f46)}
+.atlas-spendlik:hover i{transform:rotate(-45deg) scale(1.28)}
+
 .atlas-znacka{background:none;border:0;cursor:pointer;display:grid;place-items:center}
 .atlas-znacka span{display:grid;place-items:center;width:17px;height:17px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fff3d0,#c9a14a 70%);color:#3a2d10;font-size:9px;border:1px solid #fffaf0;box-shadow:0 0 0 1.5px rgba(8,16,11,.85),0 0 0 3px rgba(251,247,239,.4),0 2px 7px rgba(5,12,8,.7);transition:transform .15s}
 .atlas-znacka:hover span{transform:scale(1.5)}
@@ -850,7 +866,11 @@ html{overflow-x:clip}
   backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--line);
   border-radius:99px;padding:7px 13px;font:500 11.5px 'Jost',sans-serif;letter-spacing:.02em;
   color:var(--cream-soft);margin:0 0 6px 6px;pointer-events:none}
-.map-legenda .ml-nav{color:var(--gold-lume)}
+.map-legenda .ml-ceka,.map-legenda .ml-nav{display:inline-flex;align-items:center;gap:6px}
+.map-legenda .ml-ceka::before,.map-legenda .ml-nav::before{content:'';width:9px;height:9px;
+  border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:1px solid rgba(255,250,240,.75)}
+.map-legenda .ml-ceka::before{background:#d9503a}
+.map-legenda .ml-nav::before{background:#4fb96e}
 @media(max-width:560px){.map-legenda{font-size:10.5px;padding:6px 10px;gap:9px;margin:0 0 4px 4px}}
 
 /* navštívené místo: tmavě zelený kotouček se zlatou hvězdou (✦ zůstává zlatý kotouček) */
