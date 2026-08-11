@@ -1,5 +1,5 @@
 /* Atlas energetických míst — service worker (offline shell + rychlé spuštění) */
-const CACHE = 'atlas-v25';
+const CACHE = 'atlas-v26';
 
 const SHELL = [
   '/', '/misto', '/o-projektu', '/napoveda', '/sprava', '/objevit', '/denik', '/podminky',
@@ -8,7 +8,7 @@ const SHELL = [
   '/foto.js', '/geo.js',
   '/img/logo.png', '/img/icon-192.png', '/img/icon-512.png',
   '/img/hero-brana.jpg', '/img/brana-svit.jpg',
-  '/manifest.webmanifest'
+  '/manifest.webmanifest', '/instalace-fallback.js'
 ];
 
 self.addEventListener('install', event => {
