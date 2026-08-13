@@ -84,7 +84,7 @@ async function nactiMisto(){
     const stary = h1.nextElementSibling;
     if (stary && stary.classList.contains('place-podnazev')) stary.remove();
     if (m.nazev_oficialni) h1.insertAdjacentHTML('afterend',
-      '<p class="place-podnazev" data-i18n="off">' + tt('na mapách') + ' ' + escHtml(m.nazev_oficialni) + '</p>');
+      '<p class="place-podnazev" data-i18n="off">' + escHtml(m.nazev_oficialni) + '</p>');
   }
   document.querySelector('#place-souradnice').textContent = window.atlasSouradnice(m.lat, m.lng);
   document.querySelector('#place-tags').innerHTML =

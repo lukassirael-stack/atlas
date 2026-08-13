@@ -14,9 +14,10 @@ function dlazdice(m){
   const misto = m.kraj || m.zeme || '';
   const horni = [stitek, misto].filter(Boolean).join(' · ');
   const spodek = rys ? `<b>${rys}</b>` : '<b>Nové místo</b>';
+  const podnazev = m.nazev_oficialni ? `<p class="tile-podnazev" data-i18n="off">${escHtml(m.nazev_oficialni)}</p>` : '';
   return `<a class="place-tile" href="/misto?m=${m.slug}${m.fotka?`&f=${encodeURIComponent(m.fotka)}`:''}">
     <div class="tile-image"${url?` style="background-image:url(${url})"`:''}></div>
-    <div class="tile-info"><span>${horni}</span><h3 data-i18n="off">${escHtml(m.nazev)}</h3><p>${spodek}</p></div>
+    <div class="tile-info"><span>${horni}</span><h3 data-i18n="off">${escHtml(m.nazev)}</h3>${podnazev}<p>${spodek}</p></div>
   </a>`;
 }
 

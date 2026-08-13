@@ -129,8 +129,8 @@ footer .brand-logo{opacity:.95}
 footer strong{font:500 16px 'Cinzel';letter-spacing:.05em}
 footer p{margin-left:auto;color:var(--cream-soft);font-family:'Cormorant Garamond',serif;font-style:italic;font-size:16px}
 
-.toast{position:fixed;z-index:40;bottom:24px;left:50%;translate:-50% 100px;background:var(--paper);color:var(--forest);border-radius:99px;padding:11px 18px;box-shadow:0 10px 26px rgba(5,12,8,.5);transition:translate .3s;font-size:13px;font-weight:500}
-.toast.show{translate:-50% 0}
+.toast{position:fixed;z-index:40;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;translate:-50% calc(100% + 80px);opacity:0;pointer-events:none;background:var(--paper);color:var(--forest);border-radius:18px;padding:12px 18px;box-shadow:0 10px 26px rgba(5,12,8,.5);transition:translate .3s,opacity .3s;font-size:13px;font-weight:500;max-width:min(92vw,540px);width:max-content;text-align:center;line-height:1.45}
+.toast.show{translate:-50% 0;opacity:1}
 
 @media(max-width:900px){
   .topbar nav{display:none}
@@ -988,3 +988,12 @@ html{overflow-x:clip}
 .cakra-radek span{font:500 13px 'Jost',sans-serif;color:var(--cream-soft,#d9d3c2);flex:1;
   opacity:calc(.55 + .45*var(--sila,0))}
 .cakra-radek b{font:600 13px 'Jost',sans-serif;color:var(--gold,#c9a14a);opacity:calc(.4 + .6*var(--sila,0))}
+
+/* ===== opravy: podnázvy v náhledech + čitelná tlačítka na světlém modalu ===== */
+/* oficiální název v dlaždicích (tmavý overlay fotky) */
+.tile-podnazev{font:italic 500 14px 'Cormorant Garamond',Georgia,serif;color:rgba(251,247,239,.72);margin:1px 0 3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* oficiální název na mapové kartě (světlý papír) */
+.card-podnazev{font:italic 500 15px 'Cormorant Garamond',Georgia,serif;color:#6f6852;margin:0 0 6px}
+/* „quiet" tlačítko uvnitř světlého modalu bylo krémové na krému — ztmavit */
+.add-modal .button.quiet{background:transparent;border:1px solid rgba(185,143,56,.6);color:#7a5c1e}
+.add-modal .button.quiet:hover{border-color:#b98f38;background:rgba(201,161,74,.14);color:#5f4716}

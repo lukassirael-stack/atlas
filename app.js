@@ -5,6 +5,19 @@ let atlasVybrane = null;
 function kartaZobraz(m){
   atlasVybrane = m;
   document.querySelector('#place-name').textContent = m.nazev;
+  /* oficiální název menším písmem pod hlavním */
+  {
+    const h = document.querySelector('#place-name');
+    const stary = h.nextElementSibling;
+    if (stary && stary.classList.contains('card-podnazev')) stary.remove();
+    if (m.nazev_oficialni){
+      const p = document.createElement('p');
+      p.className = 'card-podnazev';
+      p.setAttribute('data-i18n','off');
+      p.textContent = m.nazev_oficialni;
+      h.after(p);
+    }
+  }
   document.querySelector('#place-souradnice').textContent = window.atlasSouradnice(m.lat, m.lng);
   document.querySelector('#place-description').textContent = m.popis_kratky || '';
   document.querySelector('#place-tags').innerHTML =
@@ -43,9 +56,10 @@ function dlazdiceVykresli(){
     /* kde to je: u českých míst kraj, u zahraničních země */
     const kdeJe = m.kraj ? `${m.kraj} kraj` : (m.zeme || '');
     const spodek = [rys ? `<b>${rys}</b>` : '<b>Nové místo</b>', kdeJe].filter(Boolean).join(' · ');
+    const podnazev = m.nazev_oficialni ? `<p class="tile-podnazev" data-i18n="off">${String(m.nazev_oficialni).replace(/</g,'&lt;')}</p>` : '';
     return `<a class="place-tile" href="/misto?m=${m.slug}${m.fotka?`&f=${encodeURIComponent(m.fotka)}`:''}">
       <div class="tile-image"${url?` style="background-image:url(${url})"`:''}></div>
-      <div class="tile-info"><span>${stitek}</span><h3 data-i18n="off">${m.nazev}</h3><p>${spodek}</p></div>
+      <div class="tile-info"><span>${stitek}</span><h3 data-i18n="off">${m.nazev}</h3>${podnazev}<p>${spodek}</p></div>
     </a>`;
   }).join('');
 }
