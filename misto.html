@@ -30,7 +30,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=53" />
+    <link rel="stylesheet" href="styles.css?v=54" />
     <style>
       /* podnázvy pod hlavním názvem místa (oficiální / dle pocitu) */
       .place-podnazev{font:italic 500 19px 'Cormorant Garamond',Georgia,serif;color:rgba(251,247,239,.72);margin:6px 0 0;letter-spacing:.01em}
@@ -175,6 +175,10 @@
       </form></section></div>
 
     <div class="modal-backdrop" id="edit-place-modal" aria-hidden="true"><section class="add-modal" role="dialog" aria-modal="true" aria-labelledby="edit-place-title"><button class="modal-close" data-close="edit-place-modal" aria-label="Zavřít">×</button><p class="eyebrow">Úprava místa</p><h2 id="edit-place-title">Uprav své místo</h2><p>Název, vyprávění i štítky můžeš měnit kdykoli. Poloha místa zůstává tam, kde jsi ji zanesl — s ní ti pomůže správce.</p>
+      <div class="ep-ladeni" id="ep-ladeni" hidden>
+        <span>Pět os a čakry místa ladíš svou návštěvou.</span>
+        <button type="button" class="button quiet" id="ep-ladeni-btn">✎ Upravit mé naladění</button>
+      </div>
       <form id="edit-place-form">
         <label>Název místa<small>Jméno, které místu odpovídá — podle toho, čím tu skutečně je.</small><input type="text" id="ep-nazev" maxlength="120" required placeholder="Např. Brána tichých vod" /></label>
         <label>Oficiální název<small>Jak se místo jmenuje na mapě nebo v katastru — nepovinné.</small><input type="text" id="ep-nazev-oficialni" maxlength="120" placeholder="Např. Studánka Vrchovina" /></label>
@@ -208,11 +212,11 @@
     <div class="toast" id="toast" role="status"></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="header.js?v=11"></script>
-    <script src="i18n.js?v=25"></script>
+    <script src="i18n.js?v=26"></script>
     <script src="auth.js?v=8"></script>
     <script src="data.js?v=5"></script>
     <script src="foto.js?v=1"></script>
     <script src="koncepty.js?v=1"></script>
-    <script src="misto.js?v=34"></script>
+    <script src="misto.js?v=35"></script>
   </body>
 </html>

@@ -380,7 +380,15 @@ document.querySelector('#open-edit-place')?.addEventListener('click',()=>{
   dej('#ep-popis',mistoData.popis);
   const vybrane=new Set(mistoData.stitky||[]);
   epTagy?.querySelectorAll('button').forEach(chip=>chip.classList.toggle('on', vybrane.has(chip.dataset.tag)));
+  const lista=document.querySelector('#ep-ladeni');
+  if(lista) lista.hidden=false;   /* s návštěvou vede na úpravu naladění, bez ní na nový zápis */
   openModal('#edit-place-modal');
+});
+/* rychlá cesta: z úpravy místa rovnou k pěti osám a čakrám */
+document.querySelector('#ep-ladeni-btn')?.addEventListener('click',()=>{
+  closeModal(document.querySelector('#edit-place-modal'));
+  if(mojeZapisyData.length) otevriEditZapis(mojeZapisyData[0]);
+  else otevriSUctem('#log-modal');
 });
 document.querySelector('#edit-place-form')?.addEventListener('submit',async event=>{
   event.preventDefault();
@@ -406,16 +414,18 @@ document.querySelector('#edit-place-form')?.addEventListener('submit',async even
 });
 
 /* ---- tvé návštěvy: přehled pod akcemi a úprava naladění (pět os DNA) ---- */
+let mojeZapisyData = [];   /* poslední načtené vlastní zápisy — pro rychlou cestu z úpravy místa */
 async function nactiMojeNavstevy(){
   const box=document.querySelector('#moje-navstevy');
   if(!box) return;
   const db=window.atlasDb, ucet=window.atlasUcet&&window.atlasUcet();
-  if(!db||!ucet||!mistoData){ box.hidden=true; return; }
+  if(!db||!ucet||!mistoData){ box.hidden=true; mojeZapisyData=[]; return; }
   const { data, error } = await db.from('atlas_zapisy')
     .select('id,vytvoreno,vzdalenost_m,klid,energie,mystika,krasa,lecivost,cakry')
     .eq('misto_id', mistoData.id).eq('autor_id', ucet.id)
     .order('vytvoreno',{ascending:false}).limit(20);
-  if(error||!data||!data.length){ box.hidden=true; mamOvereno=false; nastavGeoKrok(); return; }
+  if(error||!data||!data.length){ box.hidden=true; mamOvereno=false; mojeZapisyData=[]; nastavGeoKrok(); return; }
+  mojeZapisyData = data;
   mamOvereno = data.some(z=>z.vzdalenost_m!=null);
   nastavGeoKrok();
   box.hidden=false;

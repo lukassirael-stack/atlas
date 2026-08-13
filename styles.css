@@ -997,3 +997,10 @@ html{overflow-x:clip}
 /* „quiet" tlačítko uvnitř světlého modalu bylo krémové na krému — ztmavit */
 .add-modal .button.quiet{background:transparent;border:1px solid rgba(185,143,56,.6);color:#7a5c1e}
 .add-modal .button.quiet:hover{border-color:#b98f38;background:rgba(201,161,74,.14);color:#5f4716}
+
+/* lišta v úpravě místa: cesta k naladění (pět os + čakry patří návštěvě) */
+.ep-ladeni{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  border:1px solid rgba(185,143,56,.45);border-radius:12px;background:rgba(201,161,74,.08);
+  padding:10px 14px;margin:2px 0 16px}
+.ep-ladeni span{font:500 13.5px 'Jost',sans-serif;color:#6f5a2a;line-height:1.4}
+.ep-ladeni .button.quiet{padding:9px 16px;font-size:13px;flex:none}

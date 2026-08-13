@@ -828,6 +828,10 @@
     'Náhled fotky ke komentáři': 'Preview of the comment photo',
     'Tisícový kámen — Atlas energetických míst': 'Tisícový kámen — Atlas of Energetic Places',
 
+    /* — úprava místa: cesta k naladění — */
+    'Pět os a čakry místa ladíš svou návštěvou.': 'The five axes and the chakras of a place are tuned by your visit.',
+    'Upravit mé naladění': 'Edit my attunement',
+
     /* — podmínky: zprávy z Atlasu — */
     'Zprávy z Atlasu': 'News from the Atlas',
     'Občas se ozveme': 'We\u2019ll be in touch now and then',
