@@ -62,3 +62,39 @@ window.atlasNactiMista = async () => {
 /* Jazyk, ve kterém člověk právě píše — ukládá se k obsahu, aby šlo později
    nabídnout překlad jen tam, kde se liší od jazyka čtenáře. */
 window.atlasJazyk = () => (window.atlasLang === 'en' ? 'en' : 'cs');
+
+/* ---- čakry: 1 = kořenová … 7 = korunní ----
+   Barvy jsou zemité, ztlumené k paletě Atlasu — kanonická duha by tu řvala. */
+window.ATLAS_CAKRY = [
+  {c:1, nazev:'Kořenová',       barva:'#8a3a2e'},
+  {c:2, nazev:'Sakrální',       barva:'#b06a35'},
+  {c:3, nazev:'Solární plexus', barva:'#c9a14a'},
+  {c:4, nazev:'Srdeční',        barva:'#5f7d54'},
+  {c:5, nazev:'Krční',          barva:'#4e7d8a'},
+  {c:6, nazev:'Třetí oko',      barva:'#5b5a80'},
+  {c:7, nazev:'Korunní',        barva:'#8a6d9c'},
+];
+
+/* vytvoří řadu čakrových čipů (nepovinný výběr, klidně víc najednou) */
+window.atlasCakraRada = (el) => {
+  if(!el || el.dataset.hotovo) return;
+  el.dataset.hotovo = '1';
+  el.innerHTML = window.ATLAS_CAKRY.map(k =>
+    `<button type="button" data-c="${k.c}" style="--ck:${k.barva}"><i></i>${k.nazev}</button>`).join('');
+  el.addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if(b) b.classList.toggle('on');
+  });
+};
+/* přečte výběr: pole čísel 1–7, prázdný výběr → null */
+window.atlasCakraVyber = (el) => {
+  if(!el) return null;
+  const v = [...el.querySelectorAll('.on')].map(b => Number(b.dataset.c));
+  return v.length ? v : null;
+};
+/* nastaví výběr podle pole čísel (obnovení konceptu, editace naladění) */
+window.atlasCakraNastav = (el, pole) => {
+  if(!el) return;
+  const sada = new Set(pole || []);
+  el.querySelectorAll('button').forEach(b => b.classList.toggle('on', sada.has(Number(b.dataset.c))));
+};

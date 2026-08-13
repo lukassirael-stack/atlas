@@ -351,6 +351,7 @@ function formReset(){
   geoReset();
   photos=[];renderPhotos();
   tagPicker.querySelectorAll('.on').forEach(chip=>chip.classList.remove('on'));
+  window.atlasCakraNastav&&window.atlasCakraNastav(document.querySelector('#misto-cakry'),null);
 }
 async function nahrajFotky(mistoId){
   const db=window.atlasDb, ucet=window.atlasUcet?.();
@@ -426,12 +427,15 @@ document.querySelector('#place-form')?.addEventListener('submit',async event=>{
   let prvniZapis=false;
   {
     const dna=k=>Number(document.querySelector(`#misto-dna input[data-k="${k}"]`).value);
-    const {error:zErr}=await db.from('atlas_zapisy').insert({
+    const zapisZaklad={
       misto_id:misto.id, autor_id:ucet.id, text:'',
       poloha:`SRID=4326;POINT(${geoFix.lng} ${geoFix.lat})`, presnost_m:Math.round(geoFix.accuracy),
       klid:dna('klid'), energie:dna('energie'), mystika:dna('mystika'), krasa:dna('krasa'), lecivost:dna('lecivost'),
       lang:window.atlasJazyk()
-    });
+    };
+    const cakryZaklad=window.atlasCakraVyber?window.atlasCakraVyber(document.querySelector('#misto-cakry')):null;
+    if(cakryZaklad) zapisZaklad.cakry=cakryZaklad;
+    const {error:zErr}=await db.from('atlas_zapisy').insert(zapisZaklad);
     if(zErr) console.warn('První návštěva se nezaložila:', zErr.message);
     else prvniZapis=true;
     const {error:kErr}=await db.from('atlas_komentare').insert({misto_id:misto.id, autor_id:ucet.id, text:zapisText, lang:window.atlasJazyk()});
@@ -441,6 +445,7 @@ document.querySelector('#place-form')?.addEventListener('submit',async event=>{
   odeslat.disabled=false;odeslat.textContent=puvodni;
 
   closeModal();form.reset();formReset();
+  if(window.atlasKoncepty) window.atlasKoncepty.smaz('misto').then(()=>window.atlasKonceptyProuzek&&window.atlasKonceptyProuzek(indexProuzekFiltr)).catch(()=>{});
   document.querySelectorAll('#misto-dna .slider-row').forEach(radek=>{radek.querySelector('output').textContent=radek.querySelector('input').value});
   notify(`Děkujeme! „${misto.nazev}" (${nahrano} ${sklon(nahrano,['fotka','fotky','fotek'])}${prvniZapis?' + tvá první návštěva':''}) čeká na schválení.`);
 });
@@ -448,6 +453,72 @@ document.querySelector('#place-form')?.addEventListener('submit',async event=>{
 document.querySelector('#misto-dna')?.addEventListener('input',e=>{
   if(e.target.type==='range') e.target.closest('.slider-row').querySelector('output').textContent=e.target.value;
 });
+/* čakrová řada ve formuláři místa (nepovinný výběr) */
+window.atlasCakraRada&&window.atlasCakraRada(document.querySelector('#misto-cakry'));
+
+/* ---- rozepsané nové místo (koncept): uschovat teď, dopsat později ----
+   Poloha i fotky z místa zůstávají uschované — text můžeš dopsat večer doma. */
+const indexProuzekFiltr = { onOtevritMisto: obnovKonceptMista };
+async function ulozKonceptMista(){
+  if(!window.atlasKoncepty) return;
+  const hodnota=id=>{const el=document.querySelector(id);return el?el.value:''};
+  const dna={}; document.querySelectorAll('#misto-dna input[type=range]').forEach(r=>{dna[r.dataset.k]=Number(r.value)});
+  const k={
+    typ:'misto',
+    nazev:hodnota('#misto-nazev').trim(),
+    nazevOficialni:hodnota('#misto-nazev-oficialni').trim(),
+    popis:hodnota('#misto-popis'),
+    zapis:hodnota('#misto-zapis'),
+    stitky:[...(tagPicker?tagPicker.querySelectorAll('.on'):[])].map(chip=>chip.dataset.tag),
+    dna, cakry:window.atlasCakraVyber?window.atlasCakraVyber(document.querySelector('#misto-cakry')):null,
+    geoFix: geoFix?{...geoFix}:null,
+    fotky: photos.slice(0,MAX_PHOTOS)
+  };
+  try{ await window.atlasKoncepty.uloz('misto', k); }
+  catch(e){ notify('Místo se nepodařilo uschovat: '+(e&&e.message||e)); return; }
+  closeModal();
+  document.querySelector('#place-form').reset(); formReset();
+  document.querySelectorAll('#misto-dna .slider-row').forEach(radek=>{radek.querySelector('output').textContent=radek.querySelector('input').value});
+  notify('Místo uschováno ✎ Najdeš ho nahoře na stránce, až budeš chtít dopsat.');
+  window.atlasKonceptyProuzek&&window.atlasKonceptyProuzek(indexProuzekFiltr);
+}
+document.querySelector('#place-later')?.addEventListener('click',ulozKonceptMista);
+
+function obnovKonceptMista(k){
+  if(!k) return;
+  if(window.vyzadujUcet&&!window.vyzadujUcet())return;
+  const dej=(id,hodnota)=>{const el=document.querySelector(id); if(el) el.value=hodnota||''};
+  dej('#misto-nazev',k.nazev);
+  dej('#misto-nazev-oficialni',k.nazevOficialni);
+  dej('#misto-popis',k.popis);
+  dej('#misto-zapis',k.zapis);
+  const vybrane=new Set(k.stitky||[]);
+  tagPicker?.querySelectorAll('button').forEach(chip=>chip.classList.toggle('on', vybrane.has(chip.dataset.tag)));
+  document.querySelectorAll('#misto-dna input[type=range]').forEach(r=>{
+    if(k.dna&&k.dna[r.dataset.k]!=null){ r.value=k.dna[r.dataset.k]; r.closest('.slider-row').querySelector('output').textContent=r.value; }
+  });
+  window.atlasCakraNastav&&window.atlasCakraNastav(document.querySelector('#misto-cakry'), k.cakry);
+  photos=(k.fotky||[]).slice(0,MAX_PHOTOS); renderPhotos();
+  if(k.geoFix){
+    geoFix={...k.geoFix};
+    geoCapture&&geoCapture.classList.add('ready');
+    if(geoStatus){
+      geoStatus.className='geo-status ok';
+      geoStatus.innerHTML=`<b>${geoFix.lat.toFixed(5)} N, ${geoFix.lng.toFixed(5)} E</b><br>přesnost ±${Math.round(geoFix.accuracy)} m`;
+    }
+    geoHotovo();
+  }
+  openModal();
+}
+async function startKonceptIndex(){
+  if(!window.atlasKonceptyProuzek) return;
+  await window.atlasKonceptyProuzek(indexProuzekFiltr);
+  if(new URLSearchParams(location.search).get('koncept')==='misto'){
+    try{ const k=await window.atlasKoncepty.nacti('misto'); if(k) obnovKonceptMista(k); }catch(_){}
+  }
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',startKonceptIndex);
+else startKonceptIndex();
 /* ---- instalace aplikace na plochu (PWA) ---- */
 let _installPrompt=null;
 window.addEventListener('beforeinstallprompt',(e)=>{

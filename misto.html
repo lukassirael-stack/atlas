@@ -30,7 +30,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=51" />
+    <link rel="stylesheet" href="styles.css?v=52" />
     <style>
       /* podnázvy pod hlavním názvem místa (oficiální / dle pocitu) */
       .place-podnazev{font:italic 500 19px 'Cormorant Garamond',Georgia,serif;color:rgba(251,247,239,.72);margin:6px 0 0;letter-spacing:.01em}
@@ -115,6 +115,11 @@
               </g>
             </svg>
             <p class="dna-note" id="dna-note">Zatím bez zápisů — DNA se objeví, jakmile někdo zapíše návštěvu.</p>
+            <div class="cakra-sloup" id="cakra-sloup" hidden>
+              <p class="eyebrow">Čakry místa</p>
+              <div class="cakra-pater" id="cakra-pater"></div>
+              <p class="dna-note" id="cakra-note"></p>
+            </div>
           </div>
         </aside>
       </div>
@@ -137,6 +142,10 @@
           <label class="slider-row"><span>Krása</span><input type="range" min="0" max="100" step="5" value="70" data-axis="Krása" /><output>70</output></label>
           <label class="slider-row"><span>Léčivost</span><input type="range" min="0" max="100" step="5" value="70" data-axis="Léčivost" /><output>70</output></label>
         </div>
+        <div class="cakra-blok">
+          <p class="cakra-otazka">Kterou čakrou k tobě místo promlouvá? <span>nepovinné — klidně víc</span></p>
+          <div class="cakra-rada" id="log-cakry"></div>
+        </div>
         <p class="form-step">2 · Pár slov a fotka <span>nepovinné — ukáže se na zdi místa</span></p>
         <label>Co sis odnesl<textarea placeholder="Přišel jsem za rozbřesku…"></textarea></label>
         <div class="photo-drop" id="log-photo-drop"><span class="photo-icon">⌾</span><span class="photo-text">Přidej fotku z návštěvy</span><small>Nepovinné — takhle to tu vypadalo</small>
@@ -147,7 +156,10 @@
         <img class="photo-preview" id="log-photo-preview" alt="Náhled fotky z návštěvy" hidden />
         <p class="form-step">3 · Stojíš právě tady? <span>nepovinný bonus</span></p>
         <div class="geo-capture" id="geo-capture"><button type="button" class="geo-button" id="geo-get">◎ Ověřit, že tu stojím</button><p class="geo-status" id="geo-status" role="status">Nepovinné — ověřená návštěva získá odznak ◎ ověřeno na místě.</p><p class="geo-hotovo" id="geo-hotovo" hidden>◎ Tohle místo už máš ověřené. Odznak platí napořád — další návštěvu zapíšeš rovnou.</p></div>
-        <button class="button primary" type="submit">Uložit návštěvu</button>
+        <div class="modal-actions" style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="button primary" type="submit">Uložit návštěvu</button>
+          <button class="button quiet" type="button" id="log-later" title="Uschová rozepsaný zápis v tomto zařízení — text, fotku i polohu">✎ Dokončit později</button>
+        </div>
       </form></section></div>
 
     <div class="modal-backdrop" id="comment-modal" aria-hidden="true"><section class="add-modal" role="dialog" aria-modal="true" aria-labelledby="comment-title"><button class="modal-close" data-close="comment-modal" aria-label="Zavřít">×</button><p class="eyebrow">Komentář</p><h2 id="comment-title">Poděl se o prožitek či zkušenost</h2><p>Komentář napíšeš odkudkoli — prožitek z dřívějška, upozornění na cestu, kus historie. Do DNA místa se nezapočítá; tu tvoří návštěvy.</p>
@@ -181,6 +193,10 @@
           <label class="slider-row"><span>Krása</span><input type="range" min="0" max="100" step="5" value="70" data-k="krasa" /><output>70</output></label>
           <label class="slider-row"><span>Léčivost</span><input type="range" min="0" max="100" step="5" value="70" data-k="lecivost" /><output>70</output></label>
         </div>
+        <div class="cakra-blok">
+          <p class="cakra-otazka">Kterou čakrou k tobě místo promlouvá? <span>nepovinné — klidně víc</span></p>
+          <div class="cakra-rada" id="edit-log-cakry"></div>
+        </div>
         <button class="button primary" type="submit">Uložit změny</button>
       </form></section></div>
 
@@ -192,10 +208,11 @@
     <div class="toast" id="toast" role="status"></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="header.js?v=11"></script>
-    <script src="i18n.js?v=24"></script>
+    <script src="i18n.js?v=25"></script>
     <script src="auth.js?v=8"></script>
-    <script src="data.js?v=4"></script>
+    <script src="data.js?v=5"></script>
     <script src="foto.js?v=1"></script>
-    <script src="misto.js?v=32"></script>
+    <script src="koncepty.js?v=1"></script>
+    <script src="misto.js?v=33"></script>
   </body>
 </html>

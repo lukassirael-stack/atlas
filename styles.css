@@ -961,3 +961,30 @@ html{overflow-x:clip}
 .galerie-smaz:hover{background:#8c3a28;border-color:#b4573f;color:#fff}
 .galerie-smaz:disabled{opacity:.35;cursor:default}
 @media(hover:none){.galerie-smaz{opacity:.9}}
+
+/* ===== Čakry ===== */
+/* řada čipů ve formuláři (světlý papír modalu) */
+.cakra-blok{margin:12px 0 4px}
+.cakra-otazka{font:600 13px 'Jost',sans-serif;letter-spacing:.04em;color:var(--gold-deep,#b98f38);margin:0 0 8px}
+.cakra-otazka span{font-weight:400;color:#9a8f70;letter-spacing:.02em}
+.cakra-rada{display:flex;flex-wrap:wrap;gap:7px}
+.cakra-rada button{display:inline-flex;align-items:center;gap:7px;border:1px solid #d5c8ab;border-radius:99px;
+  background:#fffdf8;color:#40382a;padding:7px 13px 7px 9px;font:500 13px 'Jost',sans-serif;cursor:pointer;transition:.18s}
+.cakra-rada button i{width:13px;height:13px;border-radius:50%;background:var(--ck);opacity:.45;flex:none;transition:.18s;
+  box-shadow:0 0 0 1px rgba(0,0,0,.08) inset}
+.cakra-rada button:hover{border-color:var(--ck)}
+.cakra-rada button.on{border-color:var(--ck);background:color-mix(in srgb,var(--ck) 12%,#fffdf8);color:#241f14;font-weight:600}
+.cakra-rada button.on i{opacity:1;box-shadow:0 0 8px color-mix(in srgb,var(--ck) 55%,transparent)}
+
+/* světelný sloup na detailu místa (tmavá dna-card) — koruna nahoře, kořen dole */
+.cakra-sloup{margin-top:22px;padding-top:18px;border-top:1px solid rgba(201,161,74,.25)}
+.cakra-pater{display:grid;gap:8px;margin-top:10px;position:relative;padding-left:6px}
+.cakra-pater::before{content:'';position:absolute;left:14px;top:10px;bottom:10px;width:1px;
+  background:linear-gradient(180deg,rgba(201,161,74,.05),rgba(201,161,74,.4),rgba(201,161,74,.05))}
+.cakra-radek{display:flex;align-items:center;gap:11px;position:relative}
+.cakra-radek i{width:17px;height:17px;border-radius:50%;background:var(--ck);flex:none;position:relative;z-index:1;
+  opacity:calc(.16 + .84*var(--sila,0));transform:scale(calc(.55 + .45*var(--sila,0)));
+  box-shadow:0 0 calc(14px*var(--sila,0)) color-mix(in srgb,var(--ck) 70%,transparent)}
+.cakra-radek span{font:500 13px 'Jost',sans-serif;color:var(--cream-soft,#d9d3c2);flex:1;
+  opacity:calc(.55 + .45*var(--sila,0))}
+.cakra-radek b{font:600 13px 'Jost',sans-serif;color:var(--gold,#c9a14a);opacity:calc(.4 + .6*var(--sila,0))}

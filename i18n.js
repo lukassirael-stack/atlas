@@ -214,6 +214,8 @@
     'místa na mapě': 'places on the map',
     'místo na mapě': 'place on the map',
     'zápisů z cest': 'entries from journeys',
+    'zápisy z cest': 'entries from journeys',
+    'zápis z cest': 'entry from journeys',
     'Zápisy z cest': 'Entries from journeys',
     'poutníků': 'pilgrims',
     'Naslouchám pulsu Atlasu…': 'Listening to the pulse of the Atlas…',
@@ -722,6 +724,114 @@
     'Vzkaz odeslán autorovi. ✉': 'Message sent to the author. ✉',
     'Cesty se teď nepodařilo načíst.': 'The journeys couldn\u2019t be loaded right now.',
     'Zatím nikde zápis nemáš. Vydej se na cestu a zanech svou stopu. 🌿': 'You don\u2019t have an entry anywhere yet. Set out and leave your mark. 🌿',
+
+    /* — čakry — */
+    'Kořenová': 'Root',
+    'Sakrální': 'Sacral',
+    'Solární plexus': 'Solar plexus',
+    'Srdeční': 'Heart',
+    'Krční': 'Throat',
+    'Třetí oko': 'Third eye',
+    'Korunní': 'Crown',
+    'Čakry místa': 'Chakras of the place',
+    'Kterou čakrou k tobě místo promlouvá?': 'Which chakra does the place speak to you through?',
+    'nepovinné — klidně víc': 'optional — as many as you feel',
+
+    /* — rozepsané zápisy (koncepty) — */
+    'Dokončit později': 'Finish later',
+    'Uschová rozepsaný zápis v tomto zařízení — text, fotku i polohu': 'Keeps the draft on this device — text, photo and location',
+    'Uschová rozepsané místo v tomto zařízení — text, fotky i polohu': 'Keeps the draft place on this device — text, photos and location',
+    'Rozepsaný zápis:': 'A draft entry:',
+    'Rozepsané nové místo:': 'A draft new place:',
+    'dokončit': 'finish',
+    'rozepsáno': 'drafted',
+    'rozepsáno dnes': 'drafted today',
+    'rozepsáno včera': 'drafted yesterday',
+    'Zahodit koncept': 'Discard the draft',
+    'Zahodit rozepsaný zápis? Uložený text i fotka zmizí.': 'Discard the draft? The saved text and photo will be gone.',
+    'Koncept zahozen.': 'Draft discarded.',
+    'Zápis uschován ✎ Najdeš ho nahoře na stránce, až budeš chtít dopsat.': 'Draft saved ✎ You\u2019ll find it at the top of the page whenever you\u2019re ready to finish.',
+    'Místo uschováno ✎ Najdeš ho nahoře na stránce, až budeš chtít dopsat.': 'Place draft saved ✎ You\u2019ll find it at the top of the page whenever you\u2019re ready to finish.',
+    'Zápis se nepodařilo uschovat:': 'The draft couldn\u2019t be saved:',
+    'Místo se nepodařilo uschovat:': 'The place draft couldn\u2019t be saved:',
+    'Poloha sejmutá na místě — ◎ ověření platí.': 'Location captured on site — the ◎ verification stands.',
+    'Jiná záložka Atlasu drží starou databázi — zavři ji a zkus to znovu.': 'Another Atlas tab is holding the old database — close it and try again.',
+
+    /* — oficiální název a podnázev — */
+    'Oficiální název': 'Official name',
+    'na mapách': 'on the maps as',
+    'Jak se místo jmenuje na mapě nebo v katastru — nepovinné.': 'What the place is called on maps or in the land registry — optional.',
+    'Jméno, které místu odpovídá — podle toho, čím tu skutečně je.': 'A name that fits the place — for what it truly is here.',
+    'Jméno, které místu odpovídá — podle toho, čím tu skutečně je. Pod ním ho lidé najdou.': 'A name that fits the place — for what it truly is here. That\u2019s how people will find it.',
+    'Např. Brána tichých vod': 'E.g. Gate of Quiet Waters',
+    'Např. Studánka Vrchovina': 'E.g. Vrchovina Spring',
+    'Zvláštní ticho, které tu padá s ránem… Od kapličky sem dojdeš po modré za dvacet minut.': 'A peculiar hush that settles here with the morning… From the chapel it\u2019s a twenty-minute walk along the blue trail.',
+
+    /* — detail místa: meta a navigace — */
+    'přidal': 'added by',
+    'Průměr z': 'Average of',
+    'poutníků.': 'pilgrims.',
+    'návštěva': 'visit',
+    'návštěvy': 'visits',
+    'návštěv': 'visits',
+    'Naviguj mě sem': 'Navigate me here',
+
+    /* — puls a prázdné stavy — */
+    'Zatím tu není žádné zveřejněné místo. Buď první — zanes to svoje.': 'No published place here yet. Be the first — record yours.',
+    'Zatím tu vládne ticho před úsvitem.': 'For now, the silence before dawn reigns here.',
+    'Buď první, kdo do Atlasu vloží svůj hlas — navštiv místo, procíť ho a zanech zápis. Každé svědectví utváří DNA místa a rozeznívá mapu pro ostatní.': 'Be the first to add your voice to the Atlas — visit a place, feel it and leave an entry. Every testimony shapes the place\u2019s DNA and makes the map resound for others.',
+    'Otevřít mapu ✦': 'Open the map ✦',
+    'dnes': 'today',
+    'včera': 'yesterday',
+    'V tomto výběru zatím žádné místo není.': 'No place in this selection yet.',
+
+    /* — deník — */
+    'Tvůj deník je zatím prázdný. Napiš první zápis výše. 🌿': 'Your journal is empty so far. Write your first entry above. 🌿',
+    'Zrušit': 'Cancel',
+    'Úpravu se nepodařilo uložit.': 'The edit couldn\u2019t be saved.',
+
+    /* — poloha: hlášky bez proměnných — */
+    'Poloha se za půl minuty vůbec nenačetla. Vypadá to, že jsi uvnitř budovy — vyjdi prosím ven pod otevřené nebe a zkus to znovu.': 'After half a minute no location came through at all. It looks like you\u2019re indoors — please step outside under the open sky and try again.',
+    'Polohu se nepodařilo načíst. Máš v telefonu zapnutou polohu (GPS)?': 'The location couldn\u2019t be read. Is location (GPS) switched on in your phone?',
+    'Zařízení polohu nedokáže určit. Na telefonu zapni polohu (GPS), na počítači bývá poloha často nedostupná úplně.': 'Your device can\u2019t determine the location. On a phone, switch location (GPS) on; on a computer it\u2019s often unavailable entirely.',
+    'Zařízení polohu nedokáže určit. Zkus zapnout polohu (GPS).': 'Your device can\u2019t determine the location. Try switching location (GPS) on.',
+    'Stránka neběží přes zabezpečené spojení, prohlížeč proto polohu nepovolí.': 'The page isn\u2019t running over a secure connection, so the browser won\u2019t allow location.',
+
+    /* — toasty a chyby akcí — */
+    'Návštěvu se nepodařilo uložit:': 'The visit couldn\u2019t be saved:',
+    'Uschovaná návštěva nebyla přijata:': 'The saved visit wasn\u2019t accepted:',
+    'Fotku se nepodařilo smazat': 'The photo couldn\u2019t be deleted',
+    'Fotky se nepodařilo uložit:': 'The photos couldn\u2019t be saved:',
+    'Tenhle nick už někdo má. Zkus jiný.': 'That nickname is already taken. Try another.',
+
+    /* — potvrzení přihlášení (prihlaseni.html) — */
+    'Přihlášení do Atlasu': 'Signing in to the Atlas',
+    'Ještě jedno kliknutí': 'One more click',
+    'Potvrď, že přihlášení opravdu žádáš ty. Bez toho tě dovnitř nepustíme.': 'Confirm that it\u2019s really you asking to sign in. Without that we can\u2019t let you through.',
+    'Potvrdit přihlášení': 'Confirm sign-in',
+    'Tenhle krok je tu schválně — brání tomu, aby přihlašovací odkaz spotřebovaly automatické kontroly poštovních serverů dřív než ty.': 'This step is here on purpose — it keeps mail-server security scanners from consuming your sign-in link before you do.',
+    'Zpět do Atlasu': 'Back to the Atlas',
+    'Odkaz není úplný': 'The link isn\u2019t complete',
+    'V adrese chybí přihlašovací část. Zkus si nechat poslat nový odkaz.': 'The sign-in part is missing from the address. Have a new link sent to you.',
+    'Už jsi uvnitř': 'You\u2019re already in',
+    'Přihlášení platí, můžeš pokračovat.': 'Your sign-in is valid — you can continue.',
+    'Pokračovat do Atlasu': 'Continue to the Atlas',
+    'Ověřuji…': 'Verifying…',
+    'Odkaz už neplatí nebo byl použitý. Nech si prosím poslat nový.': 'The link is no longer valid or was already used. Please have a new one sent.',
+    'Hotovo. Vítej zpátky.': 'Done. Welcome back.',
+
+    /* — instalace a drobnosti — */
+    'Jak přidat Atlas na plochu': 'How to add the Atlas to your home screen',
+    'Přidat na plochu': 'Add to home screen',
+    'Přidat Atlas na plochu': 'Add the Atlas to your home screen',
+    'Náhled fotky z návštěvy': 'Preview of the visit photo',
+    'Náhled fotky ke komentáři': 'Preview of the comment photo',
+    'Tisícový kámen — Atlas energetických míst': 'Tisícový kámen — Atlas of Energetic Places',
+
+    /* — podmínky: zprávy z Atlasu — */
+    'Zprávy z Atlasu': 'News from the Atlas',
+    'Občas se ozveme': 'We\u2019ll be in touch now and then',
+    'Vytvořením účtu souhlasíš s tím, že ti na e-mail občas pošleme provozní oznámení o Atlasu — důležité novinky nebo změny, které se tě týkají. Nebude toho mnoho a z každé zprávy se lze jedním klikem odhlásit.': 'By creating an account you agree that we may occasionally e-mail you service announcements about the Atlas — important news or changes that concern you. There won\u2019t be many, and every message can be unsubscribed from with a single click.',
   };
 
   /* jazyky, které umíme */
@@ -764,6 +874,29 @@
   /* normalizace textu pro klíč: nbsp→mezera, sjednocení bílých znaků, trim */
   function norm(s) { return s.replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim(); }
 
+  /* interpolované texty (číslo či jméno uprostřed) — řeší se vzorem */
+  const PATTERNS = [
+    [/^◎ Hledám… (\d+) s$/, function (m) { return '◎ Searching… ' + m[1] + ' s'; }],
+    [/^Zatím ±(\d+) m — zpřesňuji…$/, function (m) { return '±' + m[1] + ' m so far — refining…'; }],
+    [/^přesnost ±(\d+) m$/, function (m) { return 'accuracy ±' + m[1] + ' m'; }],
+    [/^Nejlepší poloha byla za půl minuty jen ±(\d+) m, potřebujeme ±(\d+) m\. Vypadá to, že jsi uvnitř budovy — beton a střecha družicový signál nepustí\. Vyjdi prosím ven pod otevřené nebe a zkus to znovu\.$/,
+      function (m) { return 'After half a minute the best fix was only ±' + m[1] + ' m and we need ±' + m[2] + ' m. It looks like you\u2019re indoors — concrete and roofing block the satellite signal. Please step outside under the open sky and try again.'; }],
+    [/^Vítej v Atlasu, (.+)\. Teď můžeš zanášet místa i zapisovat návštěvy\.$/,
+      function (m) { return 'Welcome to the Atlas, ' + m[1] + '. You can now record places and log visits.'; }],
+    [/^Přihlášen jako (.+)\.$/, function (m) { return 'Signed in as ' + m[1] + '.'; }],
+    [/^„(.+)" je volný\.$/, function (m) { return '\u201C' + m[1] + '\u201D is free.'; }],
+    [/^„(.+)" už někdo má\. Zkus jiný\.$/, function (m) { return '\u201C' + m[1] + '\u201D is already taken. Try another.'; }],
+    [/^před (\d+) dny$/, function (m) { return m[1] + ' days ago'; }],
+    [/^Máš (\d+) zápis(?:y|ů)?$/, function (m) { return 'You have ' + m[1] + (m[1] === '1' ? ' entry' : ' entries'); }],
+    [/^(\d+) z (\d+) fotek — přidej další$/, function (m) { return m[1] + ' of ' + m[2] + ' photos — add more'; }],
+    [/^Vejde se ještě (\d+) — přidávám prvních (\d+)\.$/, function (m) { return 'Room for ' + m[1] + ' more — adding the first ' + m[2] + '.'; }],
+    [/^Víc než (\d+) fotek zatím nepřijmeme\.$/, function (m) { return 'We can\u2019t take more than ' + m[1] + ' photos yet.'; }],
+    [/^Děkujeme! „(.+)" \((\d+) fot(?:ka|ky|ek)( \+ tvá první návštěva)?\) čeká na schválení\.$/,
+      function (m) { return 'Thank you! \u201C' + m[1] + '\u201D (' + m[2] + (m[2] === '1' ? ' photo' : ' photos') + (m[3] ? ' + your first visit' : '') + ') is awaiting approval.'; }],
+    [/^Uvedlo (\d+) z (\d+) návštěv(?:y)?\.$/, function (m) { return 'Noted by ' + m[1] + ' of ' + m[2] + (m[2] === '1' ? ' visit.' : ' visits.'); }],
+    [/^rozepsáno (.+)$/, function (m) { return 'drafted ' + m[1]; }]
+  ];
+
   /* překlad jednoho stringu (pro použití i z JS: window.t) */
   function tr(raw) {
     if (lang !== 'en' || raw == null) return raw;
@@ -771,6 +904,10 @@
     const key = norm(s);
     if (!key) return raw;
     if (EN[key]) return EN[key];
+    for (var pi = 0; pi < PATTERNS.length; pi++) {
+      var pm = key.match(PATTERNS[pi][0]);
+      if (pm) return PATTERNS[pi][1](pm);
+    }
     /* odloupnout vedoucí ne-písmenné znaky (emoji, číslo, symbol) a přeložit zbytek */
     const m = key.match(/^([^\p{L}]+)(\p{L}.*)$/u);
     if (m && EN[m[2]]) return s.replace(m[2], EN[m[2]]);
