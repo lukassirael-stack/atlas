@@ -32,15 +32,20 @@
     var zrus = function () { stop(); };
     window.addEventListener('wheel', zrus, { passive: true });
     window.addEventListener('touchstart', zrus, { passive: true });
+    window.addEventListener('pointerdown', zrus, { passive: true });
     window.addEventListener('keydown', zrus);
     odpojit = function () {
       window.removeEventListener('wheel', zrus);
       window.removeEventListener('touchstart', zrus);
+      window.removeEventListener('pointerdown', zrus);
       window.removeEventListener('keydown', zrus);
     };
 
+    var plynule = 'smooth';
+    try { if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) plynule = 'auto'; } catch (e) {}
+
     var kam = pozice(el);
-    window.scrollTo({ top: kam, behavior: 'smooth' });
+    window.scrollTo({ top: kam, behavior: plynule });
 
     var konec = Date.now() + 4000;
     hlidac = setInterval(function () {
@@ -50,7 +55,7 @@
          ne během vlastní animace — jinak bychom si ji přerušili */
       if (Math.abs(nova - kam) > 4) {
         kam = nova;
-        window.scrollTo({ top: kam, behavior: 'smooth' });
+        window.scrollTo({ top: kam, behavior: plynule });
       }
     }, 250);
   }
@@ -76,7 +81,7 @@
     if (!el) return;
 
     e.preventDefault();
-    if (location.hash !== hash) history.replaceState(null, '', hash);
+    if (location.hash !== hash) history.pushState(null, '', hash);
     skoc(el);
   }, false);
 
