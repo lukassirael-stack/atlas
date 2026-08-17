@@ -1004,3 +1004,10 @@ html{overflow-x:clip}
   padding:10px 14px;margin:2px 0 16px}
 .ep-ladeni span{font:500 13.5px 'Jost',sans-serif;color:#6f5a2a;line-height:1.4}
 .ep-ladeni .button.quiet{padding:9px 16px;font-size:13px;flex:none}
+
+/* ---- strojový překlad komentáře (misto) ---- */
+.preklad-btn{margin-right:14px}
+.preklad-blok{margin:8px 0 2px;padding:9px 12px 10px;border-left:2px solid var(--line);
+  background:rgba(201,161,74,.07);border-radius:0 10px 10px 0}
+.preklad-text{margin:0;white-space:pre-line;color:var(--cream-soft)}
+.preklad-pozn{display:block;margin-top:5px;font-size:.72rem;letter-spacing:.05em;opacity:.55}

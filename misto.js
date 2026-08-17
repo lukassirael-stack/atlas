@@ -322,7 +322,7 @@ async function nactiKomentare(){
   const db=window.atlasDb, box=document.querySelector('#comment-list');
   const [komentare, navstevnici] = await Promise.all([
     db.from('atlas_komentare')
-      .select('id,autor_id,text,fotka,vytvoreno,atlas_profily(nick)')
+      .select('id,autor_id,text,lang,preklady,fotka,vytvoreno,atlas_profily(nick)')
       .eq('misto_id', mistoData.id).eq('stav','zverejneny').order('vytvoreno',{ascending:false}).limit(50),
     db.from('atlas_zapisy').select('autor_id,vzdalenost_m').eq('misto_id', mistoData.id)
   ]);
@@ -338,6 +338,7 @@ async function nactiKomentare(){
   const bylTu = new Set((navstevnici.data||[]).map(z=>z.autor_id));
   const overen = new Set((navstevnici.data||[]).filter(z=>z.vzdalenost_m!=null).map(z=>z.autor_id));
   const ucet=window.atlasUcet&&window.atlasUcet(), profil=window.atlasProfil&&window.atlasProfil();
+  const jaz = window.atlasJazyk ? window.atlasJazyk() : 'cs';
   box.innerHTML = data.map(k=>{
     const nick = k.atlas_profily?.nick || 'poutník';
     const odznak = overen.has(k.autor_id) ? '<span class="log-badge">◎ ověřeno na místě</span>'
@@ -345,7 +346,11 @@ async function nactiKomentare(){
     const foto = k.fotka ? `<img class="koment-foto" data-cesta="${k.fotka}" src="${window.atlasFotoUrl(k.fotka)}" alt="Fotka od poutníka" loading="lazy" style="display:block;max-width:180px;max-height:140px;object-fit:cover;border-radius:10px;margin-top:8px;cursor:zoom-in" />` : '';
     const smi = (profil&&profil.spravce) || (ucet&&ucet.id===k.autor_id);
     const upr = smi ? `<button type="button" class="edit-link" data-edit-koment="${k.id}">✎ Upravit</button>` : '';
-    return `<li class="log-item comment" data-koment="${k.id}"><div class="log-head"><span class="log-nick" data-i18n="off">${escHtml(nick)}</span>${odznak}<time>${fmtDatum(k.vytvoreno)}</time></div><p class="koment-text" data-i18n="off">${escHtml(k.text)}</p>${foto}${upr}</li>`;
+    const maSlova = (k.text||'').trim().length>1 && (k.text||'').trim()!=='✦';
+    const prelozit = (maSlova && k.lang && k.lang!==jaz)
+      ? `<button type="button" class="edit-link preklad-btn" data-preklad="${k.id}">🌐 Přeložit</button><div class="preklad-blok" data-preklad-blok="${k.id}" hidden></div>`
+      : '';
+    return `<li class="log-item comment" data-koment="${k.id}"><div class="log-head"><span class="log-nick" data-i18n="off">${escHtml(nick)}</span>${odznak}<time>${fmtDatum(k.vytvoreno)}</time></div><p class="koment-text" data-i18n="off">${escHtml(k.text)}</p>${prelozit}${foto}${upr}</li>`;
   }).join('');
   box.querySelectorAll('.koment-foto').forEach(img=>{
     img.addEventListener('click',()=>otevriLightbox([{id:null,cesta:img.dataset.cesta}],0,false,mistoData.autor_id,true));
@@ -354,6 +359,37 @@ async function nactiKomentare(){
     const k=data.find(x=>String(x.id)===b.dataset.editKoment);
     b.addEventListener('click',()=>otevriEditKoment(k));
   });
+  box.querySelectorAll('[data-preklad]').forEach(b=>{
+    const k=data.find(x=>String(x.id)===b.dataset.preklad);
+    if(k) b.addEventListener('click',()=>prelozKoment(k,b));
+  });
+}
+
+/* ---- strojový překlad komentáře (Edge Function atlas-preklad, cache v atlas_komentare.preklady) ---- */
+async function prelozKoment(k, btn){
+  const blok=document.querySelector(`[data-preklad-blok="${k.id}"]`);
+  if(!blok) return;
+  if(!blok.hidden){ blok.hidden=true; btn.textContent='🌐 Přeložit'; return; }
+  if(blok.dataset.hotovo){ blok.hidden=false; btn.textContent='Skrýt překlad'; return; }
+  const jaz=window.atlasJazyk?window.atlasJazyk():'cs';
+  const ukaz=(text)=>{
+    blok.innerHTML='<p class="preklad-text" data-i18n="off"></p><small class="preklad-pozn">strojový překlad</small>';
+    blok.querySelector('.preklad-text').textContent=text;
+    blok.dataset.hotovo='1'; blok.hidden=false; btn.textContent='Skrýt překlad';
+  };
+  if(k.preklady && typeof k.preklady[jaz]==='string' && k.preklady[jaz]){ ukaz(k.preklady[jaz]); return; }
+  btn.disabled=true; const puvodni=btn.textContent; btn.textContent='Překládám…';
+  try{
+    const {data,error}=await window.atlasDb.functions.invoke('atlas-preklad',{body:{id:k.id,cil:jaz}});
+    if(error) throw error;
+    if(data && data.stejny){ blok.remove(); btn.remove(); return; }
+    if(!data || !data.preklad) throw new Error('prazdna odpoved');
+    k.preklady=Object.assign({},k.preklady||{},{[jaz]:data.preklad});
+    ukaz(data.preklad); btn.disabled=false;
+  }catch(_){
+    btn.disabled=false; btn.textContent=puvodni;
+    notify('Překlad se teď nepovedl. Zkus to za chvíli.');
+  }
 }
 
 /* ---- úprava místa: smí autor a správce (poloha, štítky a stav jsou zmrazené v DB) ---- */
