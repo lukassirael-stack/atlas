@@ -762,6 +762,12 @@
     'Poloha sejmutá na místě — ◎ ověření platí.': 'Location captured on site — the ◎ verification stands.',
     'Jiná záložka Atlasu drží starou databázi — zavři ji a zkus to znovu.': 'Another Atlas tab is holding the old database — close it and try again.',
 
+    /* — přesné zaměření bodu (průměrování) — */
+    'Zaměřit přesně': 'Pinpoint precisely',
+    'Použít': 'Use',
+    'Přesné zaměření — stůj klidně na místě, měřím…': 'Precise fix — stand still, measuring…',
+    'Přesné zaměření se nepovedlo — družicový signál je moc slabý. Zkus volnější nebe, nebo použij běžné načtení polohy.': 'The precise fix didn\u2019t work out — the satellite signal is too weak. Try more open sky, or use the regular location button.',
+
     /* — rozsah místa (bod / okolí / krajina) — */
     'Rozsah místa': 'Extent of the place',
     'jak daleko místo sahá': 'how far the place reaches',
@@ -915,6 +921,10 @@
       function (m) { return 'Thank you! \u201C' + m[1] + '\u201D (' + m[2] + (m[2] === '1' ? ' photo' : ' photos') + (m[3] ? ' + your first visit' : '') + ') is awaiting approval.'; }],
     [/^Uvedlo (\d+) z (\d+) návštěv(?:y)?\.$/, function (m) { return 'Noted by ' + m[1] + ' of ' + m[2] + (m[2] === '1' ? ' visit.' : ' visits.'); }],
     [/^rozepsáno (.+)$/, function (m) { return 'drafted ' + m[1]; }],
+    [/^Přesné zaměření — čekám na signál… (\d+) s$/, function (m) { return 'Precise fix — waiting for signal… ' + m[1] + ' s'; }],
+    [/^Průměruji (\d+) měření… zatím ±(\d+) m · (\d+) s$/, function (m) { return 'Averaging ' + m[1] + ' readings… ±' + m[2] + ' m so far · ' + m[3] + ' s'; }],
+    [/^✓ Použít ±(\d+) m$/, function (m) { return '✓ Use ±' + m[1] + ' m'; }],
+    [/^přesnost ±(\d+) m · průměr z (\d+) měření$/, function (m) { return 'accuracy ±' + m[1] + ' m · average of ' + m[2] + ' readings'; }],
     [/^([◉◎○]) (bod|okolí|krajina) ~(\d+) m$/, function (m) { return m[1] + ' ' + ({ bod:'point', 'okolí':'surroundings', krajina:'landscape' })[m[2]] + ' ~' + m[3] + ' m'; }]
   ];
 
