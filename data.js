@@ -98,3 +98,52 @@ window.atlasCakraNastav = (el, pole) => {
   const sada = new Set(pole || []);
   el.querySelectorAll('button').forEach(b => b.classList.toggle('on', sada.has(Number(b.dataset.c))));
 };
+
+/* ---- rozsah místa: jak daleko místo sahá ----
+   Ovlivňuje toleranci ◎ ověření (rozsah + 120 m + přesnost fixu, max 100 m)
+   a kruh na mapě u okolí/krajiny. Bod je výchozí a nikde se nevypisuje. */
+window.ATLAS_ROZSAHY = [
+  { m:30,  znak:'◉', nazev:'Bod',     popis:'strom, kámen, pramen, kaplička' },
+  { m:100, znak:'◎', nazev:'Okolí',   popis:'háj, louka, skalka, vrchol' },
+  { m:400, znak:'○', nazev:'Krajina', popis:'kopec, údolí, meandr' }
+];
+/* stupeň pro libovolné číslo metrů (nejbližší nižší) */
+window.atlasRozsahStupen = (m) => {
+  const n = Number(m) || 30;
+  let s = window.ATLAS_ROZSAHY[0];
+  for (const r of window.ATLAS_ROZSAHY) if (n >= r.m) s = r;
+  return s;
+};
+/* text pro detail a kartu: „◎ okolí ~100 m" */
+window.atlasRozsahText = (m) => {
+  const s = window.atlasRozsahStupen(m);
+  return `${s.znak} ${s.nazev.toLowerCase()} ~${s.m} m`;
+};
+/* vykreslí řadu tří přepínačů (jednovýběr) do prázdného kontejneru */
+window.atlasRozsahRada = (el, vychozi) => {
+  if(!el || el.dataset.hotovo) return;
+  el.dataset.hotovo = '1';
+  el.setAttribute('role','radiogroup');
+  el.innerHTML = window.ATLAS_ROZSAHY.map(r =>
+    `<button type="button" role="radio" data-m="${r.m}" aria-checked="false"><b>${r.znak} ${r.nazev}</b><small>${r.popis}</small></button>`).join('');
+  el.addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if(b) window.atlasRozsahNastav(el, Number(b.dataset.m));
+  });
+  window.atlasRozsahNastav(el, vychozi);
+};
+/* přečte výběr v metrech (bez výběru → 30 = bod) */
+window.atlasRozsahVyber = (el) => {
+  const b = el && el.querySelector('.on');
+  return b ? Number(b.dataset.m) : 30;
+};
+/* nastaví výběr podle metrů (obnovení konceptu, editace místa) */
+window.atlasRozsahNastav = (el, m) => {
+  if(!el) return;
+  const s = window.atlasRozsahStupen(m);
+  el.querySelectorAll('button').forEach(b => {
+    const on = Number(b.dataset.m) === s.m;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-checked', on ? 'true' : 'false');
+  });
+};

@@ -364,7 +364,24 @@ textarea{height:78px}
 .photo-thumb button:hover{background:#a2452f}
 .photo-thumb.main{border:2px solid var(--gold-deep)}
 .photo-thumb.main:after{content:'hlavní';position:absolute;left:5px;bottom:5px;font:600 8px 'Jost';letter-spacing:.1em;text-transform:uppercase;background:var(--gold);color:var(--forest);border-radius:99px;padding:3px 8px}
+/* dlaždice „+" na konci mřížky — ať je zřejmé, že se vejdou další fotky (mizí, když je plno) */
+.photo-add{display:grid;place-items:center;align-content:center;gap:2px;margin:0;aspect-ratio:4/3;border-radius:10px;border:1px dashed var(--gold-deep);background:#fffaf0;color:var(--gold-deep);cursor:pointer;text-align:center;padding:6px;transition:.2s}
+.photo-add:hover,.photo-add:focus-within{background:#f7f0de;border-color:var(--gold)}
+.photo-add .pa-znak{font:300 36px/1 'Jost',sans-serif}
+.photo-add .pa-text{font:600 10px 'Jost';letter-spacing:.08em;text-transform:uppercase}
 @media(max-width:560px){.photo-grid{grid-template-columns:repeat(2,1fr)}}
+
+/* ---------- rozsah místa: bod / okolí / krajina ---------- */
+.rozsah-rada{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.rozsah-rada button{display:grid;gap:3px;text-align:left;border:1px solid #dccfb2;background:#fff;color:var(--forest);border-radius:10px;padding:8px 10px;font:400 11px/1.35 'Jost';cursor:pointer;transition:.15s}
+.rozsah-rada button b{font-weight:500;font-size:12px}
+.rozsah-rada button small{color:var(--ink-soft);font-size:10px}
+.rozsah-rada button:hover{border-color:var(--gold-deep)}
+.rozsah-rada button.on{background:var(--gold);border-color:var(--gold-deep)}
+.rozsah-rada button.on small{color:var(--forest)}
+.rozsah-pozn{font-size:11px;color:var(--ink-soft);line-height:1.4}
+.place-rozsah{white-space:nowrap}
+@media(max-width:380px){.rozsah-rada{grid-template-columns:1fr}}
 
 /* ---------- přihlášení ---------- */
 .auth-status{margin:0;font-size:12px;line-height:1.5;color:var(--ink-soft);min-height:16px}

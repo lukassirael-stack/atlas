@@ -86,7 +86,12 @@ async function nactiMisto(){
     if (m.nazev_oficialni) h1.insertAdjacentHTML('afterend',
       '<p class="place-podnazev" data-i18n="off">' + escHtml(m.nazev_oficialni) + '</p>');
   }
-  document.querySelector('#place-souradnice').textContent = window.atlasSouradnice(m.lat, m.lng);
+  {
+    const sour = document.querySelector('#place-souradnice');
+    sour.textContent = window.atlasSouradnice(m.lat, m.lng);
+    if (Number(m.rozsah_m) >= 100 && window.atlasRozsahText)
+      sour.insertAdjacentHTML('beforeend', ` · <span class="place-rozsah">${window.atlasRozsahText(m.rozsah_m)}</span>`);
+  }
   document.querySelector('#place-tags').innerHTML =
     (m.stitky||[]).map(k=>`<span>${window.atlasStitek(k)}</span>`).join('');
 
@@ -416,6 +421,9 @@ document.querySelector('#open-edit-place')?.addEventListener('click',()=>{
   dej('#ep-popis',mistoData.popis);
   const vybrane=new Set(mistoData.stitky||[]);
   epTagy?.querySelectorAll('button').forEach(chip=>chip.classList.toggle('on', vybrane.has(chip.dataset.tag)));
+  /* rozsah místa: bod / okolí / krajina — mění autor i správce */
+  const epRozsah=document.querySelector('#ep-rozsah');
+  if(epRozsah&&window.atlasRozsahRada){ window.atlasRozsahRada(epRozsah, mistoData.rozsah_m); window.atlasRozsahNastav(epRozsah, mistoData.rozsah_m); }
   const lista=document.querySelector('#ep-ladeni');
   if(lista) lista.hidden=false;   /* s návštěvou vede na úpravu naladění, bez ní na nový zápis */
   openModal('#edit-place-modal');
@@ -435,12 +443,15 @@ document.querySelector('#edit-place-form')?.addEventListener('submit',async even
   if(epTagy&&!stitky.length){notify('Vyber alespoň jeden štítek místa.');return}
   const btn=event.currentTarget.querySelector('button[type=submit]');
   btn.disabled=true; const puvodni=btn.textContent; btn.textContent='Ukládám…';
-  const {data:ulozeno,error}=await db.from('atlas_mista').update({
+  const zmeny={
     nazev,
     nazev_oficialni:document.querySelector('#ep-nazev-oficialni').value.trim()||null,
     popis:document.querySelector('#ep-popis').value.trim()||null,
     stitky
-  }).eq('id',mistoData.id).select('id');
+  };
+  const epRozsahEl=document.querySelector('#ep-rozsah');
+  if(epRozsahEl&&window.atlasRozsahVyber) zmeny.rozsah_m=window.atlasRozsahVyber(epRozsahEl);
+  const {data:ulozeno,error}=await db.from('atlas_mista').update(zmeny).eq('id',mistoData.id).select('id');
   btn.disabled=false; btn.textContent=puvodni;
   if(error){notify('Uložení se nepodařilo: '+error.message);return}
   if(!ulozeno||!ulozeno.length){notify('Změny se neuložily — nemáš k nim oprávnění, nebo vypršelo přihlášení.');return}

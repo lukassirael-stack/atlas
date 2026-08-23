@@ -72,7 +72,7 @@ function kartaMista(m){
         <div><span class="sk-stav sk-${m.stav}">${stavLabel(m.stav)}</span> <h3>${escHtml(m.nazev)}</h3></div>
         <time>${fmtDatum(m.vytvoreno)}</time>
       </div>
-      <p class="sk-meta">${m.autor_nick?`autor <b>${escHtml(m.autor_nick)}</b> · `:''}<a href="${mapaOdkaz}" target="_blank" rel="noopener">${m.lat.toFixed(5)}, ${m.lng.toFixed(5)}</a>${m.presnost_m?` · ±${Math.round(m.presnost_m)} m`:''}</p>
+      <p class="sk-meta">${m.autor_nick?`autor <b>${escHtml(m.autor_nick)}</b> · `:''}<a href="${mapaOdkaz}" target="_blank" rel="noopener">${m.lat.toFixed(5)}, ${m.lng.toFixed(5)}</a>${m.presnost_m?` · ±${Math.round(m.presnost_m)} m`:''}${Number(m.rozsah_m)>=100&&window.atlasRozsahText?` · ${window.atlasRozsahText(m.rozsah_m)}`:''}</p>
       <div class="sk-chips">${stitky}</div>
       <div class="sk-texty">${texty||'<p class="sk-prazdno">Bez popisu.</p>'}</div>
       <div class="sk-akce">${akce}</div>

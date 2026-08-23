@@ -762,6 +762,17 @@
     'Poloha sejmutá na místě — ◎ ověření platí.': 'Location captured on site — the ◎ verification stands.',
     'Jiná záložka Atlasu drží starou databázi — zavři ji a zkus to znovu.': 'Another Atlas tab is holding the old database — close it and try again.',
 
+    /* — rozsah místa (bod / okolí / krajina) — */
+    'Rozsah místa': 'Extent of the place',
+    'jak daleko místo sahá': 'how far the place reaches',
+    'Bod': 'Point',
+    'Okolí': 'Surroundings',
+    'Krajina': 'Landscape',
+    'strom, kámen, pramen, kaplička': 'a tree, a stone, a spring, a chapel',
+    'háj, louka, skalka, vrchol': 'a grove, a meadow, a rock, a summit',
+    'kopec, údolí, meandr': 'a hill, a valley, a river bend',
+    'Čím větší rozsah, tím dál od bodu ještě platí ◎ ověření návštěvy.': 'The larger the extent, the farther from the point a visit still counts as ◎ verified.',
+
     /* — oficiální název a podnázev — */
     'Oficiální název': 'Official name',
     'na mapách': 'on the maps as',
@@ -903,7 +914,8 @@
     [/^Děkujeme! „(.+)" \((\d+) fot(?:ka|ky|ek)( \+ tvá první návštěva)?\) čeká na schválení\.$/,
       function (m) { return 'Thank you! \u201C' + m[1] + '\u201D (' + m[2] + (m[2] === '1' ? ' photo' : ' photos') + (m[3] ? ' + your first visit' : '') + ') is awaiting approval.'; }],
     [/^Uvedlo (\d+) z (\d+) návštěv(?:y)?\.$/, function (m) { return 'Noted by ' + m[1] + ' of ' + m[2] + (m[2] === '1' ? ' visit.' : ' visits.'); }],
-    [/^rozepsáno (.+)$/, function (m) { return 'drafted ' + m[1]; }]
+    [/^rozepsáno (.+)$/, function (m) { return 'drafted ' + m[1]; }],
+    [/^([◉◎○]) (bod|okolí|krajina) ~(\d+) m$/, function (m) { return m[1] + ' ' + ({ bod:'point', 'okolí':'surroundings', krajina:'landscape' })[m[2]] + ' ~' + m[3] + ' m'; }]
   ];
 
   /* překlad jednoho stringu (pro použití i z JS: window.t) */

@@ -1,6 +1,8 @@
 /* Rozepsané zápisy (koncepty) — uschované v zařízení, dokončí se později.
    Sdílí IndexedDB 'atlas-fronta' s offline frontou: verze 2 přidává sklad 'koncepty'.
-   Klíče: 'navsteva:<misto_id>' (rozepsaná návštěva) a 'misto' (rozepsané nové místo).
+   Klíče: 'navsteva:<misto_id>' (rozepsaná návštěva — jedna na místo)
+          'misto:<čas>'         (rozepsané nové místo — může jich být víc najednou).
+   Starý jediný klíč 'misto' se při prvním otevření sám přejmenuje na 'misto:<čas>'.
    Koncept žije v zařízení, kde vznikl — mezi telefonem a počítačem se nepřenáší. */
 (function(){
   'use strict';
@@ -27,17 +29,40 @@
     }));
   }
 
+  /* Jednorázová migrace: starý jediný klíč 'misto' → 'misto:<čas>'.
+     Běží jednou za načtení stránky, před prvním použitím skladu. */
+  let _migrace = null;
+  function migrace(){
+    if(_migrace) return _migrace;
+    _migrace = otevri().then(d => new Promise((res,rej)=>{
+      const t = d.transaction('koncepty', 'readwrite');
+      const s = t.objectStore('koncepty');
+      const g = s.get('misto');
+      g.onsuccess = () => {
+        const k = g.result;
+        if(k){ s.put(k, 'misto:' + (k.ulozeno || Date.now())); s.delete('misto'); }
+      };
+      t.oncomplete = () => res();
+      t.onerror = () => rej(t.error);
+    })).catch(() => {});   // nezdařená migrace nesmí zablokovat zbytek
+    return _migrace;
+  }
+
   const API = {
-    uloz:  (klic, data) => krok('readwrite', s => s.put({...data, ulozeno: Date.now()}, klic)),
-    nacti: (klic)       => krok('readonly',  s => s.get(klic)),
-    smaz:  (klic)       => krok('readwrite', s => s.delete(klic)),
+    uloz:  (klic, data) => migrace().then(() => krok('readwrite', s => s.put({...data, ulozeno: Date.now()}, klic))),
+    nacti: (klic)       => migrace().then(() => krok('readonly',  s => s.get(klic))),
+    smaz:  (klic)       => migrace().then(() => krok('readwrite', s => s.delete(klic))),
+    /* nový klíč pro další rozepsané místo */
+    novyKlicMista: () => 'misto:' + Date.now(),
+    jeMisto: (klic) => typeof klic === 'string' && klic.split(':')[0] === 'misto',
+    /* všechny koncepty, nejnovější první */
     vsechny(){
-      return otevri().then(d => new Promise((res,rej)=>{
+      return migrace().then(otevri).then(d => new Promise((res,rej)=>{
         const req = d.transaction('koncepty','readonly').objectStore('koncepty').openCursor();
         const out = [];
         req.onsuccess = () => { const c = req.result; if(c){ out.push({klic:c.key, k:c.value}); c.continue(); } else res(out); };
         req.onerror = () => rej(req.error);
-      }));
+      })).then(out => out.sort((a,b) => ((b.k && b.k.ulozeno) || 0) - ((a.k && a.k.ulozeno) || 0)));
     }
   };
   window.atlasKoncepty = API;
@@ -72,9 +97,9 @@
   }
 
   /* Vykreslí proužek pod hlavičkou.
-     filtr: {jenMisto:<uuid>, onOtevrit:fn(k)}   — na stránce místa (jen tamní koncept, klik otevře modal)
-            {onOtevritMisto:fn(k)}               — na úvodce (koncept nového místa se otevře bez reloadu)
-            {}                                   — kdekoli jinde (odkazy vedou na příslušné stránky)
+     filtr: {jenMisto:<uuid>, onOtevrit:fn(k,klic)}   — na stránce místa (jen tamní koncept, klik otevře modal)
+            {onOtevritMisto:fn(k,klic)}               — na úvodce (koncept nového místa se otevře bez reloadu)
+            {}                                        — kdekoli jinde (odkazy vedou na příslušné stránky)
      Návrat: počet zobrazených konceptů. */
   window.atlasKonceptyProuzek = async function(filtr){
     filtr = filtr || {};
@@ -97,7 +122,7 @@
       const popisek = k.typ === 'misto' ? t('Rozepsané nové místo:') : t('Rozepsaný zápis:');
       const primo = (k.typ === 'misto' && filtr.onOtevritMisto) || (k.typ !== 'misto' && filtr.onOtevrit);
       const cil = k.typ === 'misto'
-        ? '/?koncept=misto'
+        ? '/?koncept=' + encodeURIComponent(klic)
         : `/misto?m=${encodeURIComponent(k.slug||'')}&koncept=otevrit`;
       return `<div class="koncept-item" data-klic="${klic}">
         <a href="${primo ? '#' : cil}" data-primo="${primo?'1':''}"><span class="ki-znak">✎</span> ${popisek} <b data-i18n="off">${nazev.replace(/</g,'&lt;')}</b>
@@ -110,8 +135,8 @@
       const klic = e.currentTarget.closest('.koncept-item').dataset.klic;
       const zaznam = vse.find(x => x.klic === klic);
       if(!zaznam) return;
-      if(zaznam.k.typ === 'misto' && filtr.onOtevritMisto) filtr.onOtevritMisto(zaznam.k);
-      else if(filtr.onOtevrit) filtr.onOtevrit(zaznam.k);
+      if(zaznam.k.typ === 'misto' && filtr.onOtevritMisto) filtr.onOtevritMisto(zaznam.k, klic);
+      else if(filtr.onOtevrit) filtr.onOtevrit(zaznam.k, klic);
     }));
     pruh.querySelectorAll('.koncept-zahod').forEach(b => b.addEventListener('click', async e => {
       const item = e.currentTarget.closest('.koncept-item');
