@@ -432,6 +432,11 @@ a.place-tile{text-decoration:none;color:inherit;display:block}
 .atlas-spendlik.ceka i{background:linear-gradient(135deg,#e2604a,#b32d1a)}
 .atlas-spendlik.navstiveno i{background:linear-gradient(135deg,#5cc47c,#2b7f46)}
 .atlas-spendlik:hover i{transform:rotate(-45deg) scale(1.28)}
+/* soubor míst: menší špendlíky dalších bodů */
+.atlas-spendlik.bod i{width:13px;height:13px;margin-left:-6.5px;border-width:1.2px}
+.atlas-spendlik.bod i::after{inset:3.5px}
+.atlas-spendlik.bod.ceka i{background:linear-gradient(135deg,#f0d493,#c9a14a)}
+.atlas-spendlik.bod.navstiveno i{background:linear-gradient(135deg,#8fd6a4,#3f9a5c)}
 
 .atlas-znacka{background:none;border:0;cursor:pointer;display:grid;place-items:center}
 .atlas-znacka span{display:grid;place-items:center;width:17px;height:17px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fff3d0,#c9a14a 70%);color:#3a2d10;font-size:9px;border:1px solid #fffaf0;box-shadow:0 0 0 1.5px rgba(8,16,11,.85),0 0 0 3px rgba(251,247,239,.4),0 2px 7px rgba(5,12,8,.7);transition:transform .15s}
@@ -1032,3 +1037,20 @@ html{overflow-x:clip}
   background:rgba(201,161,74,.07);border-radius:0 10px 10px 0}
 .preklad-text{margin:0;white-space:pre-line;color:var(--cream-soft)}
 .preklad-pozn{display:block;margin-top:5px;font-size:.72rem;letter-spacing:.05em;opacity:.55}
+
+/* ---- soubor míst (detail + editor) ---- */
+.place-soubor{margin-top:22px;padding:18px 18px 8px;border:1px solid var(--line);border-radius:18px;background:rgba(251,247,239,.03)}
+.place-soubor .ps-uvod{margin:4px 0 12px;opacity:.85}
+.place-soubor ol{list-style:none;margin:0;padding:0;counter-reset:ps}
+.place-soubor li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line);counter-increment:ps}
+.place-soubor li:first-child{border-top:0}
+.place-soubor .ps-bod{display:flex;flex-direction:column;gap:2px;min-width:0}
+.place-soubor .ps-bod b::before{content:counter(ps) " ✦ ";color:var(--gold);font-weight:400}
+.place-soubor .ps-bod small{opacity:.7;font-size:12.5px}
+.place-soubor .ps-akce{display:flex;gap:6px;flex-shrink:0}
+.place-soubor .nav-btn{padding:9px 13px;font-size:14px}
+.ep-body{display:flex;flex-direction:column;gap:8px;margin:8px 0}
+.ep-bod{display:grid;grid-template-columns:1fr 1.2fr auto;gap:6px;align-items:center}
+.ep-bod input{min-width:0}
+.ep-bod-pryc{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:none;color:inherit;font-size:18px;cursor:pointer}
+@media (max-width:560px){.ep-bod{grid-template-columns:1fr auto}.ep-bod .ep-bod-gps{grid-column:1}.ep-bod .ep-bod-pryc{grid-row:1/3;grid-column:2}}

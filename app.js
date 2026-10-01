@@ -23,6 +23,8 @@ function kartaZobraz(m){
     sour.textContent = window.atlasSouradnice(m.lat, m.lng);
     if (Number(m.rozsah_m) >= 100 && window.atlasRozsahText)
       sour.insertAdjacentHTML('beforeend', ` · <span class="place-rozsah">${window.atlasRozsahText(m.rozsah_m)}</span>`);
+    const nb = window.atlasBody(m).length;
+    if (nb) sour.insertAdjacentHTML('beforeend', ` · <span class="place-rozsah" data-i18n="off">✦ ${window.atlasSouborText(nb+1)}</span>`);
   }
   document.querySelector('#place-description').textContent = m.popis_kratky || '';
   document.querySelector('#place-tags').innerHTML =
@@ -89,6 +91,9 @@ const navstivenaIkona = L.divIcon({
   iconSize: [26,28],
   iconAnchor: [13,24]
 });
+/* menší špendlík pro další body souboru míst (hrot ≈ 2 + 6,5 + 6,5·√2 ≈ 18 px) */
+const bodIkona = L.divIcon({ className: 'atlas-spendlik bod ceka', html: '<i></i>', iconSize: [20,21], iconAnchor: [10,18] });
+const bodNavstivenyIkona = L.divIcon({ className: 'atlas-spendlik bod navstiveno', html: '<i></i>', iconSize: [20,21], iconAnchor: [10,18] });
 
 function mapaInit(){
   if (atlasMap || !document.querySelector('#atlas-map')) return;
@@ -162,6 +167,21 @@ function znackyVykresli(){
     znacka.on('click', ()=>{ kartaZobraz(m); atlasMap.panTo([m.lat, m.lng]); });
     atlasZnacky.push(znacka);
     body.push([m.lat, m.lng]);
+    /* soubor míst: další body spojené jemnou zlatou linkou s hlavním bodem */
+    const navstiveno = mojeNavstevy.has(m.id);
+    window.atlasBody(m).forEach(b=>{
+      const linka = L.polyline([[m.lat, m.lng],[b.lat, b.lng]], {
+        color: '#e8c877', weight: 1.5, opacity: .75, dashArray: '3 6', interactive: false, className: 'atlas-soubor-linka'
+      }).addTo(atlasMap);
+      atlasZnacky.push(linka);
+      const bz = L.marker([b.lat, b.lng], {
+        icon: navstiveno ? bodNavstivenyIkona : bodIkona,
+        title: b.nazev ? `${m.nazev} · ${b.nazev}` : m.nazev
+      }).addTo(atlasMap);
+      bz.on('click', ()=>{ kartaZobraz(m); atlasMap.panTo([b.lat, b.lng]); });
+      atlasZnacky.push(bz);
+      body.push([b.lat, b.lng]);
+    });
   });
   // srovnat pohled na všechna místa
   if (body.length === 1){ atlasMap.setView(body[0], 12); }

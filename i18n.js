@@ -798,6 +798,18 @@
     'návštěv': 'visits',
     'Naviguj mě sem': 'Navigate me here',
 
+    /* — soubor míst — */
+    'Soubor míst': 'Set of places',
+    'Tohle místo tvoří několik bodů, které spolu souvisí jako jeden celek.': 'This place is made of several points that belong together as one whole.',
+    'Hlavní bod': 'Main point',
+    'Bod': 'Point',
+    'další body, které k místu patří jako celek': 'further points that belong to the place as a whole',
+    '＋ Přidat bod': '＋ Add point',
+    'Název bodu': 'Point name',
+    'Odebrat bod': 'Remove point',
+    'Souřadnice vlož ve tvaru 43.972575, 18.180903, třeba zkopírované z Google Map. ◎ ověření návštěvy platí u každého bodu souboru.': 'Enter coordinates as 43.972575, 18.180903, e.g. copied from Google Maps. ◎ visit verification works at every point of the set.',
+    'Soubor pojme nejvýš 12 dalších bodů.': 'A set holds up to 12 further points.',
+
     /* — puls a prázdné stavy — */
     'Zatím tu není žádné zveřejněné místo. Buď první — zanes to svoje.': 'No published place here yet. Be the first — record yours.',
     'Zatím tu vládne ticho před úsvitem.': 'For now, the silence before dawn reigns here.',

@@ -47,6 +47,14 @@ window.atlasRys = (dna) => {
 window.atlasSouradnice = (lat, lng) =>
   `${lat.toFixed(4)} N, ${lng.toFixed(4)} E`;
 
+/* body souboru míst: [{nazev, lat, lng}] — bezpečně i pro starší data */
+window.atlasBody = m => (Array.isArray(m && m.body) ? m.body : [])
+  .filter(b => b && isFinite(b.lat) && isFinite(b.lng))
+  .map(b => ({ nazev: b.nazev || '', lat: Number(b.lat), lng: Number(b.lng) }));
+
+/* „soubor 3 míst" — počet bodů včetně hlavního */
+window.atlasSouborText = n => (window.atlasLang === 'en' ? `set of ${n} places` : `soubor ${n} míst`);
+
 /* načte zveřejněná místa přes RPC (souřadnice už rozložené) */
 window.atlasNactiMista = async () => {
   const db = window.atlasDb;

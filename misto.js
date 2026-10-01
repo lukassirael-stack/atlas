@@ -1,223 +1,1159 @@
-<!doctype html>
-<html lang="cs">
-  <head>
-    <link rel="preconnect" href="https://myybuesoourgpbouwwst.supabase.co" crossorigin />
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#16241d" />
-    <title>Tisícový kámen — Atlas energetických míst</title>
-    <link rel="icon" type="image/png" sizes="64x64" href="img/favicon-64.png" />
-    <link rel="apple-touch-icon" href="img/apple-touch-icon.png" />
-    <link rel="manifest" href="/manifest.webmanifest" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Atlas míst" />
-    <meta name="description" content="Živá mapa posvátných a energetických míst České republiky. Prameny, megality, portály a tiché brány. Objevuj, prožívej, sdílej." />
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Atlas energetických míst" />
-    <meta property="og:title" content="Atlas energetických míst" />
-    <meta property="og:description" content="Živá mapa posvátných a energetických míst České republiky. Prameny, megality, portály a tiché brány. Objevuj, prožívej, sdílej." />
-    <meta property="og:image" content="https://atlas.oaza-adamanthea.cz/img/og-image.jpg" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:url" content="https://atlas.oaza-adamanthea.cz/misto" />
-    <meta property="og:locale" content="cs_CZ" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Atlas energetických míst" />
-    <meta name="twitter:description" content="Živá mapa posvátných a energetických míst České republiky. Prameny, megality, portály a tiché brány. Objevuj, prožívej, sdílej." />
-    <meta name="twitter:image" content="https://atlas.oaza-adamanthea.cz/img/og-image.jpg" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=58" />
-    <style>
-      /* podnázvy pod hlavním názvem místa (oficiální / dle pocitu) */
-      .place-podnazev{font:italic 500 19px 'Cormorant Garamond',Georgia,serif;color:rgba(251,247,239,.72);margin:6px 0 0;letter-spacing:.01em}
-    </style>
-  </head>
-  <body>
-    <header class="topbar">
-      <a class="brand" href="/" aria-label="Atlas energetických míst">
-        <img class="brand-logo" src="img/logo.png" alt="" /><span>Atlas <em>energetických míst</em></span>
-      </a>
-      <nav aria-label="Hlavní navigace">
-        <a href="/#mapa">Mapa</a><a href="/#objevit">Objevuj</a><a href="/denik">Deník</a><a href="/o-projektu">O projektu</a><a href="/#komunita">Komunita</a>
-      </nav>
-      <div class="header-actions"><a class="add-cta" href="/#pridat">⊕<span>Přidat místo</span></a><button class="profile" aria-label="Přihlásit se">Přihlásit</button><button class="menu-button" aria-label="Menu" aria-expanded="false" aria-controls="mobile-nav">☰</button></div>
-      <nav class="mobile-nav" id="mobile-nav" hidden aria-label="Mobilní navigace"><a href="/#mapa">Mapa</a><a href="/#objevit">Objevuj</a><a href="/denik">Deník</a><a href="/#pridat">Přidat místo</a><a href="/o-projektu">O projektu</a><a href="/napoveda">Nápověda</a><a href="/#komunita">Komunita</a></nav>
-    </header>
+/* Profil místa — data z databáze podle ?m=slug */
 
-    <main>
-      <section class="place-hero">
-        <div class="place-hero-bg" id="place-hero-bg"></div><div class="place-hero-veil"></div>
-        <div class="place-hero-copy">
-          <a class="back-link" href="/#mapa">← Zpět na mapu</a>
-          <p class="eyebrow" id="place-souradnice">Načítám…</p>
-          <h1 id="place-nazev" data-i18n="off">Načítám místo…</h1>
-          <div class="tags" id="place-tags"></div>
-          <p class="place-meta" id="place-meta"></p>
-          <div class="place-navigace" id="place-navigace"></div>
-        </div>
-      </section>
+const SLUG = new URLSearchParams(location.search).get('m');
+let mistoData = null;
 
-      <section class="place-actions">
-        <button class="button primary" id="open-log">✦ Byl jsem tady</button>
-        <button class="button quiet" id="open-comment">✎ Přidat komentář</button>
-        <button class="button quiet" id="open-edit-place" hidden>⚙ Upravit místo</button>
-        <p class="actions-note">Návštěvou naladíš DNA místa — rovnou tady, nebo v klidu doma po cestě. Komentář může nechat kdokoli.</p>
-      </section>
+/* rychlé hero: cestu fotky předává odkaz z mapy/dlaždic (?f=...) — stahování začne okamžitě,
+   často už je obrázek v mezipaměti z náhledové karty; skutečná data ho pak případně tiše opraví */
+const FOTKA_Z_ODKAZU = new URLSearchParams(location.search).get('f');
+let heroCesta = null;
+if (FOTKA_Z_ODKAZU && /^[\w\-./]+$/.test(FOTKA_Z_ODKAZU) && window.atlasFotoUrl) {
+  heroCesta = FOTKA_Z_ODKAZU;
+  nastavHero(window.atlasFotoUrl(heroCesta));
+}
 
-      <section class="moje-navstevy" id="moje-navstevy" hidden></section>
+const RADAR = {cx:150, cy:115, r:76};
+function radarBod(index, hodnota){
+  const uhel = -Math.PI/2 + index * (2*Math.PI/5);
+  const d = (hodnota/100) * RADAR.r;
+  return [RADAR.cx + Math.cos(uhel)*d, RADAR.cy + Math.sin(uhel)*d];
+}
+function vykresliRadar(dna){
+  const osy = ['klid','energie','mystika','krasa','lecivost'];
+  if (!dna || !dna.zapisu){
+    osy.forEach(o=>{const el=document.querySelector('#val-'+o);if(el)el.textContent='–'});
+    return;
+  }
+  const body = osy.map((o,i)=>radarBod(i, dna[o]||0));
+  const bodyStr = body.map(b=>b.map(n=>n.toFixed(2)).join(',')).join(' ');
+  document.querySelector('#radar-area').setAttribute('points', bodyStr);
+  document.querySelector('#radar-shadow').setAttribute('points',
+    body.map(b=>[(b[0]-RADAR.cx)*1.02+RADAR.cx+2,(b[1]-RADAR.cy)*1.02+RADAR.cy+2].map(n=>n.toFixed(2)).join(',')).join(' '));
+  const vg = document.querySelector('#radar-vertices');
+  vg.innerHTML = body.map(b=>`<circle class="radar-vertex" cx="${b[0].toFixed(2)}" cy="${b[1].toFixed(2)}" r="3"/>`).join('');
+  osy.forEach(o=>{const el=document.querySelector('#val-'+o);if(el)el.textContent=(dna[o]??'–')+' %'});
+}
 
-      <section class="place-galerie" id="place-galerie" hidden>
-        <p class="eyebrow">Fotky místa</p>
-        <div class="galerie-grid" id="galerie-grid"></div>
-      </section>
+function fmtDatum(iso){
+  if(!iso)return'';
+  const d=new Date(iso);
+  return `${d.getDate()}. ${d.getMonth()+1}. ${d.getFullYear()}`;
+}
 
-      <div class="place-body">
-        <div class="place-text" id="place-text"></div>
+/* světelný sloup čaker: koruna nahoře, kořen dole; sytost bodu = podíl návštěv,
+   které čakru vnímaly. Ukáže se až s prvním hlasem — prázdný sloup by mátl. */
+function vykresliCakry(m){
+  const sloup=document.querySelector('#cakra-sloup'), pater=document.querySelector('#cakra-pater'), note=document.querySelector('#cakra-note');
+  if(!sloup||!pater||!window.ATLAS_CAKRY) return;
+  const hlasu = m && m.cakry_hlasu ? m.cakry_hlasu : 0;
+  if(!hlasu){ sloup.hidden=true; return; }
+  const pocty = m.cakry || [0,0,0,0,0,0,0];
+  sloup.hidden=false;
+  pater.innerHTML=[...window.ATLAS_CAKRY].reverse().map(k=>{
+    const n=pocty[k.c-1]||0, podil=n/hlasu;
+    return `<div class="cakra-radek" style="--ck:${k.barva};--sila:${podil.toFixed(3)}"><i></i><span>${k.nazev}</span><b>${n?Math.round(podil*100)+' %':'–'}</b></div>`;
+  }).join('');
+  note.textContent=`Uvedlo ${hlasu} z ${m.zapisu} ${m.zapisu===1?'návštěvy':'návštěv'}.`;
+}
+function escHtml(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML}
 
-        <aside class="place-aside">
-          <div class="dna-card" id="dna-card">
-            <p class="eyebrow">DNA místa</p>
-            <svg class="radar-svg" id="radar-svg" viewBox="0 0 300 250" role="img" aria-label="DNA místa">
-              <defs>
-                <radialGradient id="dnaFill" cx="50%" cy="46%" r="60%">
-                  <stop offset="0%" stop-color="#ffe9b0" stop-opacity=".9"/>
-                  <stop offset="58%" stop-color="#c9a14a" stop-opacity=".5"/>
-                  <stop offset="100%" stop-color="#7d5f22" stop-opacity=".28"/>
-                </radialGradient>
-                <filter id="dnaSoft" x="-45%" y="-45%" width="190%" height="190%"><feGaussianBlur stdDeviation="7"/></filter>
-                <filter id="dnaGlow" x="-45%" y="-45%" width="190%" height="190%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-              </defs>
-              <g class="radar-grid">
-                <polygon class="radar-ring" points="150,96 168.07,109.13 161.17,130.37 138.83,130.37 131.93,109.13"/>
-                <polygon class="radar-ring" points="150,77 186.14,103.26 172.34,145.74 127.66,145.74 113.86,103.26"/>
-                <polygon class="radar-ring" points="150,58 204.21,97.39 183.51,161.11 116.49,161.11 95.79,97.39"/>
-                <polygon class="radar-ring outer" points="150,39 222.28,91.52 194.67,176.48 105.33,176.48 77.72,91.52"/>
-                <line class="radar-axis" x1="150" y1="115" x2="150" y2="39"/>
-                <line class="radar-axis" x1="150" y1="115" x2="222.28" y2="91.52"/>
-                <line class="radar-axis" x1="150" y1="115" x2="194.67" y2="176.48"/>
-                <line class="radar-axis" x1="150" y1="115" x2="105.33" y2="176.48"/>
-                <line class="radar-axis" x1="150" y1="115" x2="77.72" y2="91.52"/>
-              </g>
-              <polygon class="radar-shadow" id="radar-shadow" points="150,115 150,115 150,115 150,115 150,115" filter="url(#dnaSoft)"/>
-              <polygon class="radar-area" id="radar-area" points="150,115 150,115 150,115 150,115 150,115"/>
-              <g filter="url(#dnaGlow)" id="radar-vertices"></g>
-              <circle class="radar-heart" cx="150" cy="115" r="2.6"/>
-              <g id="radar-labels">
-                <text class="radar-name" x="150" y="15" text-anchor="middle">Klid</text><text class="radar-value" id="val-klid" x="150" y="29" text-anchor="middle">–</text>
-                <text class="radar-name" x="240" y="82" text-anchor="start">Energie</text><text class="radar-value" id="val-energie" x="240" y="96" text-anchor="start">–</text>
-                <text class="radar-name" x="206" y="192" text-anchor="start">Mystika</text><text class="radar-value" id="val-mystika" x="206" y="206" text-anchor="start">–</text>
-                <text class="radar-name" x="94" y="192" text-anchor="end">Krása</text><text class="radar-value" id="val-krasa" x="94" y="206" text-anchor="end">–</text>
-                <text class="radar-name" x="60" y="82" text-anchor="end">Léčivost</text><text class="radar-value" id="val-lecivost" x="60" y="96" text-anchor="end">–</text>
-              </g>
-            </svg>
-            <p class="dna-note" id="dna-note">Zatím bez zápisů — DNA se objeví, jakmile někdo zapíše návštěvu.</p>
-            <div class="cakra-sloup" id="cakra-sloup" hidden>
-              <p class="eyebrow">Čakry místa</p>
-              <div class="cakra-pater" id="cakra-pater"></div>
-              <p class="dna-note" id="cakra-note"></p>
-            </div>
-          </div>
-        </aside>
-      </div>
+async function nactiMisto(){
+  const db = window.atlasDb;
+  if (!db || !SLUG){
+    document.querySelector('#place-nazev').textContent = 'Místo nenalezeno';
+    document.querySelector('#place-souradnice').textContent = '';
+    return;
+  }
+  const fotkyPromise = db.rpc('atlas_misto_fotky', { p_slug: SLUG });
+  const { data, error } = await db.rpc('atlas_misto_detail', { p_slug: SLUG });
+  const m = data && data[0];
+  if (error || !m){
+    document.querySelector('#place-nazev').textContent = 'Místo nenalezeno';
+    document.querySelector('#place-souradnice').textContent = 'Zkontroluj odkaz, nebo se vrať na mapu.';
+    return;
+  }
+  mistoData = m;
+  const tt = k => (window.t ? window.t(k) : k);
+  document.title = `${m.nazev} — ${tt('Atlas energetických míst')}`;
 
-      <section class="place-comments" id="komentare">
-        <div class="section-heading"><div><p class="eyebrow">Prožitky a poznámky</p><h2>Komentáře</h2></div><button class="text-button" id="open-comment-2">✎ Přidat komentář</button></div>
-        <ul class="log-list" id="comment-list"></ul>
-      </section>
-    </main>
+  document.querySelector('#place-nazev').textContent = m.nazev;
 
-    <footer id="komunita"><img class="brand-logo brand-logo-sm" src="img/logo.png" alt="" /><strong>Atlas energetických míst</strong><p>Objevuj. Prožívej. Sdílej.</p><p class="footer-legal">© 2026 Oáza Adamanthea · <a href="/podminky">Podmínky užití</a> · <a href="/napoveda">Nápověda</a></p></footer>
+  /* oficiální název jako podnázev pod hlavním (prefix se překládá, jméno ne) */
+  {
+    const h1 = document.querySelector('#place-nazev');
+    const stary = h1.nextElementSibling;
+    if (stary && stary.classList.contains('place-podnazev')) stary.remove();
+    if (m.nazev_oficialni) h1.insertAdjacentHTML('afterend',
+      '<p class="place-podnazev" data-i18n="off">' + escHtml(m.nazev_oficialni) + '</p>');
+  }
+  {
+    const sour = document.querySelector('#place-souradnice');
+    sour.textContent = window.atlasSouradnice(m.lat, m.lng);
+    if (Number(m.rozsah_m) >= 100 && window.atlasRozsahText)
+      sour.insertAdjacentHTML('beforeend', ` · <span class="place-rozsah">${window.atlasRozsahText(m.rozsah_m)}</span>`);
+    const nb = window.atlasBody(m).length;
+    if (nb) sour.insertAdjacentHTML('beforeend', ` · <span class="place-rozsah" data-i18n="off">✦ ${window.atlasSouborText(nb+1)}</span>`);
+  }
+  document.querySelector('#place-tags').innerHTML =
+    (m.stitky||[]).map(k=>`<span>${window.atlasStitek(k)}</span>`).join('');
 
-    <div class="modal-backdrop" id="log-modal" aria-hidden="true"><section class="add-modal" role="dialog" aria-modal="true" aria-labelledby="log-title"><button class="modal-close" data-close="log-modal" aria-label="Zavřít">×</button><p class="eyebrow">Návštěva</p><h2 id="log-title">Byl jsem tady</h2><p>Naladíš pět os — z nich žije DNA místa. Zapsat můžeš rovnou na místě i doma po návratu.</p>
-      <form id="log-form">
-        <p class="form-step">1 · Jak na tebe místo působilo <span>tvoje naladění tvoří DNA</span></p>
-        <div class="dna-sliders" id="dna-sliders">
-          <label class="slider-row"><span>Klid</span><input type="range" min="0" max="100" step="5" value="70" data-axis="Klid" /><output>70</output></label>
-          <label class="slider-row"><span>Energie</span><input type="range" min="0" max="100" step="5" value="70" data-axis="Energie" /><output>70</output></label>
-          <label class="slider-row"><span>Mystika</span><input type="range" min="0" max="100" step="5" value="70" data-axis="Mystika" /><output>70</output></label>
-          <label class="slider-row"><span>Krása</span><input type="range" min="0" max="100" step="5" value="70" data-axis="Krása" /><output>70</output></label>
-          <label class="slider-row"><span>Léčivost</span><input type="range" min="0" max="100" step="5" value="70" data-axis="Léčivost" /><output>70</output></label>
-        </div>
-        <div class="cakra-blok">
-          <p class="cakra-otazka">Kterou čakrou k tobě místo promlouvá? <span>nepovinné — klidně víc</span></p>
-          <div class="cakra-rada" id="log-cakry"></div>
-        </div>
-        <p class="form-step">2 · Pár slov a fotka <span>nepovinné — ukáže se na zdi místa</span></p>
-        <label>Co sis odnesl<textarea placeholder="Přišel jsem za rozbřesku…"></textarea></label>
-        <div class="photo-drop" id="log-photo-drop"><span class="photo-icon">⌾</span><span class="photo-text">Přidej fotku z návštěvy</span><small>Nepovinné — takhle to tu vypadalo</small>
-          <div class="photo-buttons"><label class="photo-btn" for="log-photo-cam">📷 Vyfotit</label><label class="photo-btn" for="log-photo-gal">🖼 Z galerie</label></div>
-        </div>
-        <input type="file" id="log-photo-cam" accept="image/*" capture="environment" hidden />
-        <input type="file" id="log-photo-gal" accept="image/*" hidden />
-        <img class="photo-preview" id="log-photo-preview" alt="Náhled fotky z návštěvy" hidden />
-        <p class="form-step">3 · Stojíš právě tady? <span>nepovinný bonus</span></p>
-        <div class="geo-capture" id="geo-capture"><button type="button" class="geo-button" id="geo-get">◎ Ověřit, že tu stojím</button><p class="geo-status" id="geo-status" role="status">Nepovinné — ověřená návštěva získá odznak ◎ ověřeno na místě.</p><p class="geo-hotovo" id="geo-hotovo" hidden>◎ Tohle místo už máš ověřené. Odznak platí napořád — další návštěvu zapíšeš rovnou.</p></div>
-        <div class="modal-actions" style="display:flex;gap:10px;flex-wrap:wrap">
-          <button class="button primary" type="submit">Uložit návštěvu</button>
-          <button class="button quiet" type="button" id="log-later" title="Uschová rozepsaný zápis v tomto zařízení — text, fotku i polohu">✎ Dokončit později</button>
-        </div>
-      </form></section></div>
+  const rys = window.atlasRys(m.zapisu ? m : null);
+  const metaCasti = [];
+  if (m.zapisu) metaCasti.push(`<b>${m.zapisu} ${m.zapisu===1?'návštěva':m.zapisu<5?'návštěvy':'návštěv'}</b>`);
+  if (rys) metaCasti.push(`nejsilnější rys <b>${rys}</b>`);
+  if (m.autor_nick) metaCasti.push(`přidal <span data-i18n="off">${escHtml(m.autor_nick)}</span>`);
+  document.querySelector('#place-meta').innerHTML = metaCasti.join(' · ');
 
-    <div class="modal-backdrop" id="comment-modal" aria-hidden="true"><section class="add-modal" role="dialog" aria-modal="true" aria-labelledby="comment-title"><button class="modal-close" data-close="comment-modal" aria-label="Zavřít">×</button><p class="eyebrow">Komentář</p><h2 id="comment-title">Poděl se o prožitek či zkušenost</h2><p>Komentář napíšeš odkudkoli — prožitek z dřívějška, upozornění na cestu, kus historie. Do DNA místa se nezapočítá; tu tvoří návštěvy.</p>
-      <form id="comment-form">
-        <label>Tvůj komentář<textarea required placeholder="Chodil jsem sem jako kluk…"></textarea></label>
-        <div class="photo-drop" id="com-photo-drop"><span class="photo-icon">⌾</span><span class="photo-text">Přidej fotku</span><small>Nepovinné</small>
-          <div class="photo-buttons"><label class="photo-btn" for="com-photo-cam">📷 Vyfotit</label><label class="photo-btn" for="com-photo-gal">🖼 Z galerie</label></div>
-        </div>
-        <input type="file" id="com-photo-cam" accept="image/*" capture="environment" hidden />
-        <input type="file" id="com-photo-gal" accept="image/*" hidden />
-        <img class="photo-preview" id="com-photo-preview" alt="Náhled fotky ke komentáři" hidden />
-        <button class="button primary" type="submit">Odeslat</button>
-      </form></section></div>
+  // navigace: předání souřadnic do mapové aplikace v telefonu
+  const nav = document.querySelector('#place-navigace');
+  if (nav && m.lat != null && m.lng != null) {
+    const g = `https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lng}`;
+    const mapy = `https://mapy.cz/zakladni?source=coor&id=${m.lng},${m.lat}&x=${m.lng}&y=${m.lat}&z=16`;
+    nav.innerHTML =
+      `<a class="nav-btn nav-primary" href="${g}" target="_blank" rel="noopener">🧭 Naviguj mě sem</a>` +
+      `<a class="nav-btn" href="${mapy}" target="_blank" rel="noopener">🗺 Mapy.cz</a>` +
+      `<button type="button" class="nav-btn nav-copy" data-gps="${m.lat}, ${m.lng}">⎘ GPS</button>`;
+    nav.querySelector('.nav-copy')?.addEventListener('click', async (e) => {
+      try {
+        await navigator.clipboard.writeText(e.currentTarget.dataset.gps);
+        notify('Souřadnice zkopírovány 🌿');
+      } catch (_) { notify('Kopírování se nepodařilo.'); }
+    });
+  }
 
-    <div class="modal-backdrop" id="edit-place-modal" aria-hidden="true"><section class="add-modal" role="dialog" aria-modal="true" aria-labelledby="edit-place-title"><button class="modal-close" data-close="edit-place-modal" aria-label="Zavřít">×</button><p class="eyebrow">Úprava místa</p><h2 id="edit-place-title">Uprav své místo</h2><p>Název, vyprávění i štítky můžeš měnit kdykoli. Poloha místa zůstává tam, kde jsi ji zanesl — s ní ti pomůže správce.</p>
-      <div class="ep-ladeni" id="ep-ladeni" hidden>
-        <span>Pět os a čakry místa ladíš svou návštěvou.</span>
-        <button type="button" class="button quiet" id="ep-ladeni-btn">✎ Upravit mé naladění</button>
-      </div>
-      <form id="edit-place-form">
-        <label>Název místa<small>Jméno, které místu odpovídá — podle toho, čím tu skutečně je.</small><input type="text" id="ep-nazev" maxlength="120" required placeholder="Např. Brána tichých vod" /></label>
-        <label>Oficiální název<small>Jak se místo jmenuje na mapě nebo v katastru — nepovinné.</small><input type="text" id="ep-nazev-oficialni" maxlength="120" placeholder="Např. Studánka Vrchovina" /></label>
-        <label>Vyprávěj o místě<small>Hlavně co tu cítíš a prožíváš. Klidně přidej i jak se sem dostat nebo kdy je tu nejkrásněji.</small><textarea id="ep-popis" rows="8" required placeholder="Zvláštní ticho, které tu padá s ránem… Od kapličky sem dojdeš po modré za dvacet minut."></textarea></label>
-        <div class="tag-field"><p class="tag-label">Štítky místa <small>vyber až tři</small></p><div class="tag-picker" id="ep-tagy"><button type="button" data-tag="klid" data-popis="🌿 Klid a regenerace">🌿 Klid a regenerace</button><button type="button" data-tag="energie" data-popis="⚡ Síla a energie">⚡ Síla a energie</button><button type="button" data-tag="srdce" data-popis="❤️ Místo srdce">❤️ Místo srdce</button><button type="button" data-tag="leciva" data-popis="🔥 Léčivá místa">🔥 Léčivá místa</button><button type="button" data-tag="prameny" data-popis="💧 Léčivé prameny">💧 Léčivé prameny</button><button type="button" data-tag="stromy" data-popis="🌳 Posvátné stromy">🌳 Posvátné stromy</button><button type="button" data-tag="megality" data-popis="🪨 Megality a posvátné skály">🪨 Megality a posvátné skály</button><button type="button" data-tag="hory" data-popis="⛰️ Hory a posvátné vrcholy">⛰️ Hory a posvátné vrcholy</button><button type="button" data-tag="mohyly" data-popis="🔺 Pyramidy a mohyly">🔺 Pyramidy a mohyly</button><button type="button" data-tag="meditace" data-popis="🧘 Meditační místa">🧘 Meditační místa</button><button type="button" data-tag="portaly" data-popis="✨ Portály">✨ Portály</button><button type="button" data-tag="magie" data-popis="🔮 Magická a rituální místa">🔮 Magická a rituální místa</button><button type="button" data-tag="historie" data-popis="🏛 Historická a posvátná místa">🏛 Historická a posvátná místa</button><button type="button" data-tag="pohanska" data-popis="🌙 Pohanská a keltská místa">🌙 Pohanská a keltská místa</button><button type="button" data-tag="kontakt" data-popis="👁 Kontaktní místa">👁 Kontaktní místa</button><button type="button" data-tag="stinova" data-popis="🌑 Stínová místa">🌑 Stínová místa</button><button type="button" data-tag="vyhledy" data-popis="🌅 Výhledy a krajinné scenérie">🌅 Výhledy a krajinné scenérie</button><button type="button" data-tag="anomalie" data-popis="🌀 Anomálie a záhady">🌀 Anomálie a záhady</button></div></div>
-        <div class="tag-field"><p class="tag-label">Rozsah místa <small>jak daleko místo sahá</small></p><div class="rozsah-rada" id="ep-rozsah"></div><small class="rozsah-pozn">Čím větší rozsah, tím dál od bodu ještě platí ◎ ověření návštěvy.</small></div>
-        <div class="modal-actions"><button type="submit" class="button primary">Uložit změny</button></div>
-      </form>
-    </section></div>
+  vykresliSoubor(m);
 
-    <div class="modal-backdrop" id="edit-log-modal" aria-hidden="true"><section class="add-modal" role="dialog" aria-modal="true" aria-labelledby="edit-log-title"><button class="modal-close" data-close="edit-log-modal" aria-label="Zavřít">×</button><p class="eyebrow">Úprava návštěvy</p><h2 id="edit-log-title">Uprav své naladění</h2><p>Změna pěti os se hned promítne do DNA místa. Datum návštěvy i ověření ◎ zůstávají.</p>
-      <form id="edit-log-form">
-        <div class="dna-sliders" id="edit-log-dna">
-          <label class="slider-row"><span>Klid</span><input type="range" min="0" max="100" step="5" value="70" data-k="klid" /><output>70</output></label>
-          <label class="slider-row"><span>Energie</span><input type="range" min="0" max="100" step="5" value="70" data-k="energie" /><output>70</output></label>
-          <label class="slider-row"><span>Mystika</span><input type="range" min="0" max="100" step="5" value="70" data-k="mystika" /><output>70</output></label>
-          <label class="slider-row"><span>Krása</span><input type="range" min="0" max="100" step="5" value="70" data-k="krasa" /><output>70</output></label>
-          <label class="slider-row"><span>Léčivost</span><input type="range" min="0" max="100" step="5" value="70" data-k="lecivost" /><output>70</output></label>
-        </div>
-        <div class="cakra-blok">
-          <p class="cakra-otazka">Kterou čakrou k tobě místo promlouvá? <span>nepovinné — klidně víc</span></p>
-          <div class="cakra-rada" id="edit-log-cakry"></div>
-        </div>
-        <button class="button primary" type="submit">Uložit změny</button>
-      </form></section></div>
+  const textEl = document.querySelector('#place-text');
+  const vypraveni = (m.popis||'').trim();
+  textEl.innerHTML = vypraveni
+    ? `<section class="place-section"><p class="eyebrow">O místě</p>${
+        vypraveni.split(/\n\s*\n/).map(o=>`<p data-i18n="off">${escHtml(o.trim()).replace(/\n/g,'<br />')}</p>`).join('')
+      }</section>`
+    : '<section class="place-section"><p>U tohoto místa zatím není žádný popis.</p></section>';
 
-    <div class="modal-backdrop" id="edit-comment-modal" aria-hidden="true"><section class="add-modal" role="dialog" aria-modal="true" aria-labelledby="edit-comment-title"><button class="modal-close" data-close="edit-comment-modal" aria-label="Zavřít">×</button><p class="eyebrow">Úprava komentáře</p><h2 id="edit-comment-title">Uprav svůj komentář</h2>
-      <form id="edit-comment-form">
-        <label>Tvůj komentář<textarea id="edit-comment-text" required></textarea></label>
-        <button class="button primary" type="submit">Uložit změny</button>
-      </form></section></div>
-    <div class="toast" id="toast" role="status"></div>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="header.js?v=11"></script>
-    <script src="i18n.js?v=29"></script>
-    <script src="auth.js?v=8"></script>
-    <script src="data.js?v=6"></script>
-    <script src="foto.js?v=1"></script>
-    <script src="koncepty.js?v=2"></script>
-    <script src="misto.js?v=37"></script>
-  </body>
-</html>
+  vykresliRadar(m.zapisu ? m : null);
+  const note = document.querySelector('#dna-note');
+  if (m.zapisu) note.innerHTML = `Průměr z <b>${m.zapisu} ${m.zapisu===1?'návštěvy':'návštěv'}</b> poutníků.`;
+  else note.textContent = 'Zatím bez návštěv — DNA se objeví s první zapsanou návštěvou.';
+  vykresliCakry(m);
+
+  await nactiFotky(m.autor_id, fotkyPromise);
+
+  nactiKomentare();
+  nactiMojeNavstevy();
+  nastavUpravuMista();
+}
+
+function nastavHero(url){
+  const el = document.querySelector('#place-hero-bg');
+  if (!el) return;
+  if (!url){ el.classList.add('zjevena'); return; }
+  if (el.dataset.url === url) return;
+  el.dataset.url = url;
+  const img = new Image();
+  img.onload = ()=>{ if(el.dataset.url!==url) return; el.style.backgroundImage = `url(${url})`; el.classList.add('zjevena'); };
+  img.onerror = ()=>{ if(el.dataset.url!==url) return; el.classList.add('zjevena'); };
+  img.src = url;
+}
+
+async function nactiFotky(autorId, hotovyDotaz){
+  const db = window.atlasDb;
+  const { data } = await (hotovyDotaz || db.rpc('atlas_misto_fotky', { p_slug: SLUG }));
+  const fotky = data || [];
+  // hlavní foto do hero — prolne se až po načtení (žádné probliknutí)
+  nastavHero(fotky.length ? window.atlasFotoUrl(fotky[0].cesta) : 'img/brana-svit.jpg');
+
+  // smí přeřazovat? autor místa nebo správce
+  const ucet = window.atlasUcet && window.atlasUcet();
+  const profil = window.atlasProfil && window.atlasProfil();
+  const jeSpravce = !!(profil && profil.spravce);
+  const jeAutor = !!(ucet && autorId && ucet.id === autorId);
+  const smiRadit = jeSpravce || jeAutor;   /* řadit a přidávat smí autor místa a správce; svou fotku smaže i ten, kdo ji nahrál */
+
+  // galerie zobraz jen když je víc fotek, nebo když smí správce/autor spravovat
+  const grid = document.querySelector('#galerie-grid');
+  const sekce = document.querySelector('#place-galerie');
+  if (!grid || !sekce) return;
+  const mamTuFotku = !!(ucet && fotky.some(f=>f.autor_id===ucet.id));
+  if (fotky.length < 2 && !smiRadit && !mamTuFotku) return;   /* poutníkovi se galerie ukáže až od dvou fotek; autor a správce ji vidí vždy (kvůli dlaždici ➕) */
+
+  sekce.hidden = false;
+  grid.innerHTML = fotky.map((f,i)=>{
+    const url = window.atlasFotoUrl(f.cesta) || '';
+    const hlavni = i===0;
+    /* koš rovnou na dlaždici — tam ho člověk hledá dřív než v otevřené fotce */
+    const smiSmazat = jeSpravce || !!(ucet && f.autor_id && ucet.id === f.autor_id);
+    return `<figure class="galerie-item${hlavni?' je-hlavni':''}" data-lb="${i}" style="cursor:zoom-in">
+      <img src="${url}" alt="Fotka místa" loading="lazy" />
+      ${hlavni ? '<span class="foto-odznak">Hlavní</span>' : ''}
+      ${smiSmazat ? `<button type="button" class="galerie-smaz" data-smaz-foto="${i}" title="Smazat fotku" aria-label="Smazat fotku">🗑</button>` : ''}
+    </figure>`;
+  }).join('');
+  grid.querySelectorAll('[data-lb]').forEach(el=>{
+    el.addEventListener('click',()=>otevriLightbox(fotky, Number(el.dataset.lb), smiRadit, autorId));
+  });
+  grid.querySelectorAll('[data-smaz-foto]').forEach(b=>b.addEventListener('click',event=>{
+    event.stopPropagation();          /* klepnutí na koš neotevírá fotku */
+    smazFoto(fotky[Number(b.dataset.smazFoto)], autorId);
+  }));
+
+  if (smiRadit) {
+    /* dlaždice pro dodatečné nahrání fotek (autor místa nebo správce) */
+    grid.insertAdjacentHTML('beforeend',
+      `<label class="galerie-item galerie-add" style="display:grid;place-items:center;cursor:pointer;`+
+      `border:1px dashed rgba(201,161,74,.6);border-radius:12px;min-height:96px;`+
+      `color:var(--gold-deep,#b98f38);font:600 13px 'Jost',sans-serif;text-align:center;padding:10px">`+
+      `➕ Přidat fotky<input type="file" accept="image/*" multiple hidden></label>`);
+    grid.querySelector('.galerie-add input').addEventListener('change', e=>pridejFotky(e.target, autorId, fotky));
+  }
+}
+
+/* ---- prohlížeč fotek (lightbox) ---- */
+let lbFotky=[], lbIndex=0, lbSmi=false, lbAutorId=null, lbZKomentare=false;
+function lightboxStylPridej(){
+  if(document.getElementById('lb-styl'))return;
+  const s=document.createElement('style'); s.id='lb-styl';
+  s.textContent=
+    '#foto-lb{position:fixed;inset:0;z-index:120;background:rgba(10,16,12,.94);display:none;'+
+      'align-items:center;justify-content:center;flex-direction:column;gap:14px;padding:16px}'+
+    '#foto-lb.open{display:flex}'+
+    '#foto-lb img{max-width:94vw;max-height:72vh;border-radius:10px;box-shadow:0 22px 60px rgba(0,0,0,.55);'+
+      'user-select:none;-webkit-user-drag:none}'+
+    '#foto-lb .lb-zavrit{position:absolute;top:14px;right:16px;width:42px;height:42px;border-radius:50%;'+
+      'border:1px solid rgba(201,161,74,.5);background:rgba(22,36,29,.7);color:#fbf7ef;font:400 20px/1 sans-serif;cursor:pointer}'+
+    '#foto-lb .lb-sipka{position:absolute;top:50%;transform:translateY(-50%);width:46px;height:46px;border-radius:50%;'+
+      'border:1px solid rgba(201,161,74,.5);background:rgba(22,36,29,.7);color:#c9a14a;font:400 22px/1 sans-serif;cursor:pointer}'+
+    '#foto-lb .lb-prev{left:12px}#foto-lb .lb-next{right:12px}'+
+    '#foto-lb .lb-pocet{color:#d9d3c2;font:500 13px "Jost",sans-serif;letter-spacing:.08em}'+
+    '#foto-lb .lb-akce{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}'+
+    '#foto-lb .lb-akce button{border:1px solid rgba(201,161,74,.55);background:rgba(22,36,29,.7);color:#fbf7ef;'+
+      'border-radius:99px;padding:9px 16px;font:600 13px "Jost",sans-serif;cursor:pointer}'+
+    '#foto-lb .lb-akce .lb-smaz:hover{border-color:#b5442d;color:#ffd9cf}';
+  document.head.appendChild(s);
+}
+function lightboxEl(){
+  let lb=document.querySelector('#foto-lb');
+  if(lb)return lb;
+  lightboxStylPridej();
+  lb=document.createElement('div');
+  lb.id='foto-lb';
+  lb.innerHTML=
+    `<button type="button" class="lb-zavrit" aria-label="Zavřít">×</button>`+
+    `<button type="button" class="lb-sipka lb-prev" aria-label="Předchozí fotka">‹</button>`+
+    `<img alt="Fotka místa" />`+
+    `<button type="button" class="lb-sipka lb-next" aria-label="Další fotka">›</button>`+
+    `<p class="lb-pocet"></p>`+
+    `<div class="lb-akce" hidden>`+
+      `<button type="button" class="lb-hlavni">Nastavit jako hlavní</button>`+
+      `<button type="button" class="lb-galerie">Do galerie</button>`+
+      `<button type="button" class="lb-smaz">Smazat fotku</button>`+
+    `</div>`;
+  document.body.appendChild(lb);
+  lb.querySelector('.lb-zavrit').addEventListener('click',zavriLightbox);
+  lb.addEventListener('click',e=>{if(e.target===lb)zavriLightbox()});
+  lb.querySelector('.lb-prev').addEventListener('click',()=>posunLightbox(-1));
+  lb.querySelector('.lb-next').addEventListener('click',()=>posunLightbox(1));
+  lb.querySelector('.lb-hlavni').addEventListener('click',async()=>{
+    const f=lbFotky[lbIndex]; if(!f)return;
+    const db=window.atlasDb;
+    const {error}=await db.rpc('atlas_foto_hlavni',{p_foto_id:f.id});
+    if(error){notify('Nepodařilo se: '+error.message);return}
+    zavriLightbox(); notify('Hlavní fotka změněna 🌿'); await nactiFotky(lbAutorId);
+  });
+  lb.querySelector('.lb-galerie').addEventListener('click',async()=>{
+    const f=lbFotky[lbIndex]; if(!f||!f.cesta)return;
+    const db=window.atlasDb, ucet=window.atlasUcet&&window.atlasUcet();
+    const {data:posl}=await db.from('atlas_fotky').select('poradi').eq('misto_id',mistoData.id).order('poradi',{ascending:false}).limit(1);
+    const poradi=((posl&&posl[0]&&posl[0].poradi)||0)+1;
+    const {error}=await db.from('atlas_fotky').insert({misto_id:mistoData.id,autor_id:ucet.id,cesta:f.cesta,poradi});
+    if(error){notify('Nepodařilo se: '+error.message);return}
+    zavriLightbox(); notify('Fotka povýšena do galerie 🌿'); await nactiFotky(mistoData.autor_id);
+  });
+  lb.querySelector('.lb-smaz').addEventListener('click',async()=>{
+    const f=lbFotky[lbIndex]; if(!f)return;
+    zavriLightbox();
+    await smazFoto(f, lbAutorId);
+  });
+  /* přejetí prstem */
+  let dotykX=null;
+  lb.addEventListener('touchstart',e=>{dotykX=e.touches[0].clientX},{passive:true});
+  lb.addEventListener('touchend',e=>{
+    if(dotykX===null)return;
+    const d=e.changedTouches[0].clientX-dotykX; dotykX=null;
+    if(Math.abs(d)>40)posunLightbox(d<0?1:-1);
+  },{passive:true});
+  document.addEventListener('keydown',e=>{
+    if(!lb.classList.contains('open'))return;
+    if(e.key==='Escape')zavriLightbox();
+    if(e.key==='ArrowLeft')posunLightbox(-1);
+    if(e.key==='ArrowRight')posunLightbox(1);
+  });
+  return lb;
+}
+function otevriLightbox(fotky,index,smi,autorId,zKomentare){
+  lbFotky=fotky; lbIndex=index; lbSmi=!!smi; lbAutorId=autorId; lbZKomentare=!!zKomentare;
+  const lb=lightboxEl();
+  lb.classList.add('open');
+  document.body.style.overflow='hidden';
+  vykresliLightbox();
+}
+function zavriLightbox(){
+  const lb=document.querySelector('#foto-lb');
+  if(lb)lb.classList.remove('open');
+  document.body.style.overflow='';
+}
+function posunLightbox(smer){
+  if(!lbFotky.length)return;
+  lbIndex=(lbIndex+smer+lbFotky.length)%lbFotky.length;
+  vykresliLightbox();
+}
+function vykresliLightbox(){
+  const lb=document.querySelector('#foto-lb');
+  const f=lbFotky[lbIndex];
+  if(!lb||!f)return;
+  lb.querySelector('img').src=window.atlasFotoUrl(f.cesta)||'';
+  lb.querySelector('.lb-pocet').textContent=`${lbIndex+1} / ${lbFotky.length}`;
+  const vic=lbFotky.length>1;
+  lb.querySelector('.lb-prev').hidden=!vic;
+  lb.querySelector('.lb-next').hidden=!vic;
+  const akce=lb.querySelector('.lb-akce');
+  const profil=window.atlasProfil&&window.atlasProfil();
+  const ucet=window.atlasUcet&&window.atlasUcet();
+  const spravce=!!(profil&&profil.spravce);
+  const mojeFotka=!!(ucet&&f.autor_id&&ucet.id===f.autor_id);
+  akce.hidden=!(lbSmi||mojeFotka||(lbZKomentare&&spravce));
+  akce.querySelector('.lb-hlavni').hidden=lbZKomentare||(lbIndex===0)||!lbSmi;
+  akce.querySelector('.lb-smaz').hidden=lbZKomentare||!(spravce||mojeFotka);   /* svou fotku smaže i poutník */
+  akce.querySelector('.lb-galerie').hidden=!(lbZKomentare&&spravce);
+}
+
+async function nactiKomentare(){
+  const db=window.atlasDb, box=document.querySelector('#comment-list');
+  const [komentare, navstevnici] = await Promise.all([
+    db.from('atlas_komentare')
+      .select('id,autor_id,text,lang,preklady,fotka,vytvoreno,atlas_profily(nick)')
+      .eq('misto_id', mistoData.id).eq('stav','zverejneny').order('vytvoreno',{ascending:false}).limit(50),
+    db.from('atlas_zapisy').select('autor_id,vzdalenost_m').eq('misto_id', mistoData.id)
+  ]);
+  const { data, error } = komentare;
+  if (error){
+    box.innerHTML = `<li class="log-prazdno">Komentáře se nepodařilo načíst. Zkus obnovit stránku.</li>`;
+    return;
+  }
+  if (!data || !data.length){
+    box.innerHTML = `<li class="log-prazdno">Zatím bez komentářů. Byl jsi tu? Poděl se o pár slov.</li>`;
+    return;
+  }
+  const bylTu = new Set((navstevnici.data||[]).map(z=>z.autor_id));
+  const overen = new Set((navstevnici.data||[]).filter(z=>z.vzdalenost_m!=null).map(z=>z.autor_id));
+  const ucet=window.atlasUcet&&window.atlasUcet(), profil=window.atlasProfil&&window.atlasProfil();
+  const jaz = window.atlasJazyk ? window.atlasJazyk() : 'cs';
+  box.innerHTML = data.map(k=>{
+    const nick = k.atlas_profily?.nick || 'poutník';
+    const odznak = overen.has(k.autor_id) ? '<span class="log-badge">◎ ověřeno na místě</span>'
+                 : (bylTu.has(k.autor_id) ? '<span class="log-badge">✦ byl tu</span>' : '');
+    const foto = k.fotka ? `<img class="koment-foto" data-cesta="${k.fotka}" src="${window.atlasFotoUrl(k.fotka)}" alt="Fotka od poutníka" loading="lazy" style="display:block;max-width:180px;max-height:140px;object-fit:cover;border-radius:10px;margin-top:8px;cursor:zoom-in" />` : '';
+    const smi = (profil&&profil.spravce) || (ucet&&ucet.id===k.autor_id);
+    const upr = smi ? `<button type="button" class="edit-link" data-edit-koment="${k.id}">✎ Upravit</button>` : '';
+    const maSlova = (k.text||'').trim().length>1 && (k.text||'').trim()!=='✦';
+    const prelozit = (maSlova && k.lang && k.lang!==jaz)
+      ? `<button type="button" class="edit-link preklad-btn" data-preklad="${k.id}">🌐 Přeložit</button><div class="preklad-blok" data-preklad-blok="${k.id}" hidden></div>`
+      : '';
+    return `<li class="log-item comment" data-koment="${k.id}"><div class="log-head"><span class="log-nick" data-i18n="off">${escHtml(nick)}</span>${odznak}<time>${fmtDatum(k.vytvoreno)}</time></div><p class="koment-text" data-i18n="off">${escHtml(k.text)}</p>${prelozit}${foto}${upr}</li>`;
+  }).join('');
+  box.querySelectorAll('.koment-foto').forEach(img=>{
+    img.addEventListener('click',()=>otevriLightbox([{id:null,cesta:img.dataset.cesta}],0,false,mistoData.autor_id,true));
+  });
+  if(ucet||profil) box.querySelectorAll('[data-edit-koment]').forEach(b=>{
+    const k=data.find(x=>String(x.id)===b.dataset.editKoment);
+    b.addEventListener('click',()=>otevriEditKoment(k));
+  });
+  box.querySelectorAll('[data-preklad]').forEach(b=>{
+    const k=data.find(x=>String(x.id)===b.dataset.preklad);
+    if(k) b.addEventListener('click',()=>prelozKoment(k,b));
+  });
+}
+
+/* ---- strojový překlad komentáře (Edge Function atlas-preklad, cache v atlas_komentare.preklady) ---- */
+async function prelozKoment(k, btn){
+  const blok=document.querySelector(`[data-preklad-blok="${k.id}"]`);
+  if(!blok) return;
+  if(!blok.hidden){ blok.hidden=true; btn.textContent='🌐 Přeložit'; return; }
+  if(blok.dataset.hotovo){ blok.hidden=false; btn.textContent='Skrýt překlad'; return; }
+  const jaz=window.atlasJazyk?window.atlasJazyk():'cs';
+  const ukaz=(text)=>{
+    blok.innerHTML='<p class="preklad-text" data-i18n="off"></p><small class="preklad-pozn">strojový překlad</small>';
+    blok.querySelector('.preklad-text').textContent=text;
+    blok.dataset.hotovo='1'; blok.hidden=false; btn.textContent='Skrýt překlad';
+  };
+  if(k.preklady && typeof k.preklady[jaz]==='string' && k.preklady[jaz]){ ukaz(k.preklady[jaz]); return; }
+  btn.disabled=true; const puvodni=btn.textContent; btn.textContent='Překládám…';
+  try{
+    const {data,error}=await window.atlasDb.functions.invoke('atlas-preklad',{body:{id:k.id,cil:jaz}});
+    if(error) throw error;
+    if(data && data.stejny){ blok.remove(); btn.remove(); return; }
+    if(!data || !data.preklad) throw new Error('prazdna odpoved');
+    k.preklady=Object.assign({},k.preklady||{},{[jaz]:data.preklad});
+    ukaz(data.preklad); btn.disabled=false;
+  }catch(_){
+    btn.disabled=false; btn.textContent=puvodni;
+    notify('Překlad se teď nepovedl. Zkus to za chvíli.');
+  }
+}
+
+/* ---- soubor míst: hlavní bod + další body, které k místu patří jako celek ---- */
+function vykresliSoubor(m){
+  const nav = document.querySelector('#place-navigace');
+  if (!nav) return;
+  nav.parentElement.querySelector('.place-soubor')?.remove();
+  const body = window.atlasBody(m);
+  if (!body.length) return;
+  const tt = k => (window.t ? window.t(k) : k);
+  const radek = (nazev, lat, lng, hlavni) => {
+    const g = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+    return `<li class="${hlavni?'ps-hlavni':''}">
+      <div class="ps-bod"><b data-i18n="off">${escHtml(nazev)}</b><small data-i18n="off">${window.atlasSouradnice(lat, lng)}</small></div>
+      <div class="ps-akce"><a class="nav-btn" href="${g}" target="_blank" rel="noopener" aria-label="${tt('Naviguj mě sem')}">🧭</a><button type="button" class="nav-btn nav-copy" data-gps="${lat}, ${lng}">⎘ GPS</button></div>
+    </li>`;
+  };
+  const sekce = document.createElement('section');
+  sekce.className = 'place-soubor';
+  sekce.innerHTML = `<p class="eyebrow">${tt('Soubor míst')}</p>
+    <p class="ps-uvod">${tt('Tohle místo tvoří několik bodů, které spolu souvisí jako jeden celek.')}</p>
+    <ol>${radek(tt('Hlavní bod'), m.lat, m.lng, true)}${body.map((b,i)=>radek(b.nazev || `${tt('Bod')} ${i+2}`, b.lat, b.lng, false)).join('')}</ol>`;
+  sekce.querySelectorAll('.nav-copy').forEach(b => b.addEventListener('click', async e => {
+    try { await navigator.clipboard.writeText(e.currentTarget.dataset.gps); notify('Souřadnice zkopírovány 🌿'); }
+    catch (_) { notify('Kopírování se nepodařilo.'); }
+  }));
+  nav.after(sekce);
+}
+
+/* editor bodů souboru (jen správce — poloha je v DB zmrazená pro ostatní) */
+const epBody = document.querySelector('#ep-body');
+function epBodRadek(b){
+  const r = document.createElement('div');
+  r.className = 'ep-bod';
+  r.innerHTML = `<input type="text" class="ep-bod-nazev" maxlength="80" placeholder="Název bodu" />
+    <input type="text" class="ep-bod-gps" inputmode="decimal" placeholder="43.972575, 18.180903" />
+    <button type="button" class="ep-bod-pryc" aria-label="Odebrat bod">×</button>`;
+  if (b){ r.querySelector('.ep-bod-nazev').value = b.nazev || ''; r.querySelector('.ep-bod-gps').value = `${b.lat}, ${b.lng}`; }
+  r.querySelector('.ep-bod-pryc').addEventListener('click', () => r.remove());
+  epBody?.appendChild(r);
+  return r;
+}
+document.querySelector('#ep-body-pridat')?.addEventListener('click', () => epBodRadek().querySelector('.ep-bod-nazev').focus());
+/* „43.972575, 18.180903" i „43,972575 18,180903" (čárka jako desetinná) */
+function epParseGps(t){
+  t = (t||'').trim();
+  let n = t.match(/-?\d+(?:\.\d+)?/g);
+  if (!n || n.length !== 2) n = t.split(/[\s;]+/).filter(Boolean).map(x => x.replace(',', '.'));
+  if (!n || n.length !== 2) return null;
+  const lat = parseFloat(n[0]), lng = parseFloat(n[1]);
+  if (!isFinite(lat) || !isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) return null;
+  return { lat: Math.round(lat*1e6)/1e6, lng: Math.round(lng*1e6)/1e6 };
+}
+function epBodyVyber(){
+  const vysledek = [];
+  for (const r of (epBody ? epBody.querySelectorAll('.ep-bod') : [])){
+    const nazev = r.querySelector('.ep-bod-nazev').value.trim();
+    const gpsText = r.querySelector('.ep-bod-gps').value.trim();
+    if (!gpsText && !nazev) continue;
+    const gps = epParseGps(gpsText);
+    if (!gps){ r.querySelector('.ep-bod-gps').focus(); return { chyba: `Souřadnice bodu ${nazev ? '„'+nazev+'" ' : ''}vlož ve tvaru 43.972575, 18.180903.` }; }
+    vysledek.push({ nazev: nazev || null, ...gps });
+  }
+  if (vysledek.length > 12) return { chyba: 'Soubor pojme nejvýš 12 dalších bodů.' };
+  return { body: vysledek };
+}
+
+/* ---- úprava místa: smí autor a správce (poloha, štítky a stav jsou zmrazené v DB) ---- */
+function nastavUpravuMista(){
+  const btn=document.querySelector('#open-edit-place');
+  if(!btn||!mistoData) return;
+  const ucet=window.atlasUcet&&window.atlasUcet();
+  const profil=window.atlasProfil&&window.atlasProfil();
+  const smi=!!(profil&&profil.spravce) || !!(ucet&&ucet.id===mistoData.autor_id);
+  btn.hidden=!smi;
+}
+const epTagy=document.querySelector('#ep-tagy');
+epTagy?.addEventListener('click',event=>{
+  const chip=event.target.closest('button');
+  if(!chip)return;
+  if(!chip.classList.contains('on')&&epTagy.querySelectorAll('.on').length>=3){notify('Vyber nejvýš tři štítky — ať zůstane jasné, čím místo je.');return}
+  chip.classList.toggle('on');
+});
+document.querySelector('#open-edit-place')?.addEventListener('click',()=>{
+  if(!mistoData) return;
+  const dej=(id,hodnota)=>{const el=document.querySelector(id); if(el) el.value=hodnota||''};
+  dej('#ep-nazev',mistoData.nazev);
+  dej('#ep-nazev-oficialni',mistoData.nazev_oficialni);
+  dej('#ep-popis',mistoData.popis);
+  const vybrane=new Set(mistoData.stitky||[]);
+  epTagy?.querySelectorAll('button').forEach(chip=>chip.classList.toggle('on', vybrane.has(chip.dataset.tag)));
+  /* rozsah místa: bod / okolí / krajina — mění autor i správce */
+  const epRozsah=document.querySelector('#ep-rozsah');
+  if(epRozsah&&window.atlasRozsahRada){ window.atlasRozsahRada(epRozsah, mistoData.rozsah_m); window.atlasRozsahNastav(epRozsah, mistoData.rozsah_m); }
+  const bodyPole=document.querySelector('#ep-body-pole');
+  const jeSpravce=!!(window.atlasProfil&&window.atlasProfil()&&window.atlasProfil().spravce);
+  if(bodyPole){
+    bodyPole.hidden=!jeSpravce;
+    if(epBody){ epBody.innerHTML=''; if(jeSpravce) window.atlasBody(mistoData).forEach(b=>epBodRadek(b)); }
+  }
+  const lista=document.querySelector('#ep-ladeni');
+  if(lista) lista.hidden=false;   /* s návštěvou vede na úpravu naladění, bez ní na nový zápis */
+  openModal('#edit-place-modal');
+});
+/* rychlá cesta: z úpravy místa rovnou k pěti osám a čakrám */
+document.querySelector('#ep-ladeni-btn')?.addEventListener('click',()=>{
+  closeModal(document.querySelector('#edit-place-modal'));
+  if(mojeZapisyData.length) otevriEditZapis(mojeZapisyData[0]);
+  else otevriSUctem('#log-modal');
+});
+document.querySelector('#edit-place-form')?.addEventListener('submit',async event=>{
+  event.preventDefault();
+  const db=window.atlasDb;
+  const nazev=document.querySelector('#ep-nazev').value.trim();
+  if(!nazev){notify('Název nemůže zůstat prázdný.');return}
+  const stitky=[...(epTagy?epTagy.querySelectorAll('.on'):[])].map(chip=>chip.dataset.tag);
+  if(epTagy&&!stitky.length){notify('Vyber alespoň jeden štítek místa.');return}
+  const bodyPole=document.querySelector('#ep-body-pole');
+  let noveBody=null;
+  if(bodyPole&&!bodyPole.hidden){
+    const v=epBodyVyber();
+    if(v.chyba){notify(v.chyba);return}
+    noveBody=v.body;
+  }
+  const btn=event.currentTarget.querySelector('button[type=submit]');
+  btn.disabled=true; const puvodni=btn.textContent; btn.textContent='Ukládám…';
+  const zmeny={
+    nazev,
+    nazev_oficialni:document.querySelector('#ep-nazev-oficialni').value.trim()||null,
+    popis:document.querySelector('#ep-popis').value.trim()||null,
+    stitky
+  };
+  const epRozsahEl=document.querySelector('#ep-rozsah');
+  if(epRozsahEl&&window.atlasRozsahVyber) zmeny.rozsah_m=window.atlasRozsahVyber(epRozsahEl);
+  if(noveBody) zmeny.body=noveBody;
+  const {data:ulozeno,error}=await db.from('atlas_mista').update(zmeny).eq('id',mistoData.id).select('id');
+  btn.disabled=false; btn.textContent=puvodni;
+  if(error){notify('Uložení se nepodařilo: '+error.message);return}
+  if(!ulozeno||!ulozeno.length){notify('Změny se neuložily — nemáš k nim oprávnění, nebo vypršelo přihlášení.');return}
+  closeModal(document.querySelector('#edit-place-modal'));
+  notify('Místo upraveno 🌿');
+  nactiMisto();
+});
+
+/* ---- tvé návštěvy: přehled pod akcemi a úprava naladění (pět os DNA) ---- */
+let mojeZapisyData = [];   /* poslední načtené vlastní zápisy — pro rychlou cestu z úpravy místa */
+async function nactiMojeNavstevy(){
+  const box=document.querySelector('#moje-navstevy');
+  if(!box) return;
+  const db=window.atlasDb, ucet=window.atlasUcet&&window.atlasUcet();
+  if(!db||!ucet||!mistoData){ box.hidden=true; mojeZapisyData=[]; return; }
+  const { data, error } = await db.from('atlas_zapisy')
+    .select('id,vytvoreno,vzdalenost_m,klid,energie,mystika,krasa,lecivost,cakry')
+    .eq('misto_id', mistoData.id).eq('autor_id', ucet.id)
+    .order('vytvoreno',{ascending:false}).limit(20);
+  if(error||!data||!data.length){ box.hidden=true; mamOvereno=false; mojeZapisyData=[]; nastavGeoKrok(); return; }
+  mojeZapisyData = data;
+  mamOvereno = data.some(z=>z.vzdalenost_m!=null);
+  nastavGeoKrok();
+  box.hidden=false;
+  const posledni=fmtDatum(data[0].vytvoreno);
+  const shrnuti = data.length===1
+    ? posledni
+    : `${data.length}× · <span class="mn-slovo">naposledy</span> ${posledni}`;
+  const odznak  = mamOvereno ? ' <span class="log-badge">◎ ověřeno</span>' : '';
+  box.innerHTML =
+    '<div class="mn-box">'+
+      `<button type="button" class="mn-souhrn" aria-expanded="false" aria-controls="mn-detail">`+
+        `<span class="mn-titul">★ ${data.length===1?'Tvá návštěva':'Tvé návštěvy'}</span>`+
+        `<span class="mn-shrnuti">${shrnuti}</span>${odznak}`+
+        `<span class="mn-sipka" aria-hidden="true">▾</span>`+
+      `</button>`+
+      `<div class="mn-detail" id="mn-detail" hidden>`+
+        data.map(z=>
+          `<span class="mn-radek">${fmtDatum(z.vytvoreno)}`+
+            (z.vzdalenost_m!=null?' <span class="log-badge">◎ ověřeno na místě</span>':'')+
+            `<button type="button" class="mn-upravit" data-zapis="${z.id}">✎ Upravit naladění</button>`+
+            `<button type="button" class="mn-smazat" data-smaz="${z.id}" title="Smazat návštěvu" aria-label="Smazat návštěvu">🗑</button>`+
+          `</span>`).join('')+
+      `</div>`+
+    '</div>';
+  const souhrn=box.querySelector('.mn-souhrn'), detail=box.querySelector('.mn-detail');
+  souhrn.addEventListener('click',()=>{
+    const otevreno = souhrn.getAttribute('aria-expanded')==='true';
+    souhrn.setAttribute('aria-expanded', String(!otevreno));
+    detail.hidden = otevreno;
+  });
+  box.querySelectorAll('[data-zapis]').forEach(b=>{
+    const z=data.find(x=>String(x.id)===b.dataset.zapis);
+    b.addEventListener('click',()=>otevriEditZapis(z));
+  });
+  box.querySelectorAll('[data-smaz]').forEach(b=>b.addEventListener('click',async()=>{
+    if(!confirm('Smazat tuhle návštěvu? Její naladění odejde z DNA místa.'))return;
+    b.disabled=true;
+    const {data:smazano,error:chyba}=await db.from('atlas_zapisy').delete().eq('id',b.dataset.smaz).select('id');
+    if(chyba||!smazano||!smazano.length){notify('Návštěvu se nepodařilo smazat'+(chyba?': '+chyba.message:'.'));b.disabled=false;return}
+    notify('Návštěva smazána.');
+    nactiMisto();
+  }));
+}
+function otevriEditZapis(z){
+  const m=document.querySelector('#edit-log-modal'); if(!m||!z) return;
+  m.querySelectorAll('#edit-log-dna input[type=range]').forEach(r=>{
+    r.value=z[r.dataset.k]; r.closest('.slider-row').querySelector('output').textContent=r.value;
+  });
+  window.atlasCakraNastav&&window.atlasCakraNastav(document.querySelector('#edit-log-cakry'), z.cakry);
+  m.dataset.id=z.id;
+  openModal('#edit-log-modal');
+}
+document.querySelector('#edit-log-dna')?.addEventListener('input',e=>{
+  if(e.target.type==='range') e.target.closest('.slider-row').querySelector('output').textContent=e.target.value;
+});
+document.querySelector('#edit-log-form')?.addEventListener('submit',async event=>{
+  event.preventDefault();
+  const m=document.querySelector('#edit-log-modal'), db=window.atlasDb;
+  const dna={}; m.querySelectorAll('#edit-log-dna input[type=range]').forEach(r=>{dna[r.dataset.k]=Number(r.value)});
+  dna.cakry=window.atlasCakraVyber?window.atlasCakraVyber(document.querySelector('#edit-log-cakry')):null;
+  const btn=event.currentTarget.querySelector('button[type=submit]'); btn.disabled=true; const p=btn.textContent; btn.textContent='Ukládám…';
+  const {data:upraveno,error}=await db.from('atlas_zapisy').update(dna).eq('id',m.dataset.id).select('id');
+  btn.disabled=false; btn.textContent=p;
+  if(error){notify('Úprava se nepodařila: '+error.message);return}
+  if(!upraveno||!upraveno.length){notify('Úprava se neuložila — nemáš k ní oprávnění, nebo vypršelo přihlášení.');return}
+  closeModal(m); notify('Naladění upraveno 🌿'); nactiMisto();
+});
+
+/* ---- editace komentáře (text) ---- */
+function otevriEditKoment(k){
+  const m=document.querySelector('#edit-comment-modal'); if(!m||!k) return;
+  m.querySelector('#edit-comment-text').value=k.text;
+  m.dataset.id=k.id;
+  openModal('#edit-comment-modal');
+}
+document.querySelector('#edit-comment-form')?.addEventListener('submit',async event=>{
+  event.preventDefault();
+  const m=document.querySelector('#edit-comment-modal'), db=window.atlasDb;
+  const text=m.querySelector('#edit-comment-text').value.trim();
+  if(!text){notify('Komentář nemůže být prázdný.');return}
+  const btn=event.currentTarget.querySelector('button[type=submit]'); btn.disabled=true; const p=btn.textContent; btn.textContent='Ukládám…';
+  const {data:upraveno,error}=await db.from('atlas_komentare').update({text}).eq('id',m.dataset.id).select('id');
+  btn.disabled=false; btn.textContent=p;
+  if(error){notify('Úprava se nepodařila: '+error.message);return}
+  if(!upraveno||!upraveno.length){notify('Úprava se neuložila — nemáš k ní oprávnění, nebo vypršelo přihlášení.');return}
+  closeModal(m); notify('Komentář upraven 🌿'); nactiKomentare();
+});
+
+/* ---- modály ---- */
+function openModal(id){const m=document.querySelector(id);if(!m)return;m.classList.add('open');m.setAttribute('aria-hidden','false');m.querySelector('textarea,input,button')?.focus()}
+function closeModal(m){if(!m)return;m.classList.remove('open');m.setAttribute('aria-hidden','true')}
+function otevriSUctem(id){if(window.vyzadujUcet&&!window.vyzadujUcet())return;openModal(id)}
+document.querySelector('#open-log')?.addEventListener('click',()=>otevriSUctem('#log-modal'));
+document.querySelector('#open-comment')?.addEventListener('click',()=>otevriSUctem('#comment-modal'));
+document.querySelector('#open-comment-2')?.addEventListener('click',()=>otevriSUctem('#comment-modal'));
+document.querySelectorAll('.modal-close').forEach(button=>button.addEventListener('click',()=>closeModal(document.querySelector('#'+button.dataset.close))));
+document.querySelectorAll('.modal-backdrop').forEach(backdrop=>backdrop.addEventListener('click',event=>{if(event.target===backdrop)closeModal(backdrop)}));
+document.addEventListener('keydown',event=>{if(event.key==='Escape')document.querySelectorAll('.modal-backdrop.open').forEach(closeModal)});
+
+/* ---- poloha ---- */
+const geoCapture=document.querySelector('#geo-capture');
+const geoButton=document.querySelector('#geo-get');
+const geoStatus=document.querySelector('#geo-status');
+const geoHotovoText=document.querySelector('#geo-hotovo');
+let geoFix=null;
+let mamOvereno=false;   // odznak ◎ u tohoto místa už mám — ověřovat znovu nejde
+
+/* krok 3 se u už ověřeného místa promění v prosté konstatování */
+function nastavGeoKrok(){
+  if(!geoCapture||!geoButton)return;
+  geoButton.hidden=mamOvereno;
+  if(geoStatus) geoStatus.hidden=mamOvereno;
+  if(geoHotovoText) geoHotovoText.hidden=!mamOvereno;
+  geoCapture.classList.toggle('ready', mamOvereno || !!geoFix);
+}
+/* Dvoufázové hledání polohy.
+   1) přesně z GNSS (enableHighAccuracy) — venku, s výhledem na oblohu
+   2) když to nevyjde, hrubě ze sítě (Wi-Fi + BTS) — funguje i uvnitř budov a na počítači
+   Zamítnuté oprávnění (kód 1) druhý pokus přeskakuje, nemá smysl. */
+/* Trpělivé hledání polohy.
+   getCurrentPosition vezme první fix, co dorazí — často hrubý odhad ze sítě.
+   watchPosition místo toho poslouchá dál: přesnost se s přibývajícími družicemi
+   zlepšuje (±500 m → ±80 m → ±6 m). Držíme nejlepší dosažený fix.
+     cilM   — jakmile je fix takhle přesný, končíme dřív, nemá smysl čekat
+     prahM  — horší než tohle nepřijmeme vůbec (chyba s kódem 4)
+     limitMs— dokdy nejdéle hledáme */
+window.atlasSledujPolohu = window.atlasSledujPolohu || function(n){
+  const cil = n.cilM || 20, prah = n.prahM || 100, limit = n.limitMs || 35000;
+  const krok = n.krok || function(){};
+  if(!navigator.geolocation){ n.chyba({code:0}); return function(){}; }
+
+  let nej = null, id = null, casovac = null, dobehlo = false;
+  const zacatek = Date.now();
+
+  const stop = function(){
+    if(dobehlo) return;
+    dobehlo = true;
+    if(id !== null) navigator.geolocation.clearWatch(id);
+    if(casovac) clearTimeout(casovac);
+  };
+  const dokonci = function(){
+    stop();
+    if(nej && nej.coords.accuracy <= prah) n.hotovo(nej);
+    else n.chyba({ code:4, nejlepsi: nej ? nej.coords.accuracy : null });
+  };
+
+  casovac = setTimeout(dokonci, limit);
+  id = navigator.geolocation.watchPosition(function(p){
+    if(dobehlo) return;
+    if(!nej || p.coords.accuracy < nej.coords.accuracy) nej = p;
+    krok(nej.coords.accuracy, Math.round((Date.now() - zacatek) / 1000));
+    if(nej.coords.accuracy <= cil){ stop(); n.hotovo(nej); }
+  }, function(e){
+    if(dobehlo) return;
+    if(e && e.code === 1){ stop(); n.chyba(e); return; }
+    /* kód 2/3 během sledování ignorujeme — družice se můžou chytit později,
+       o konci rozhodne časovač */
+  }, { enableHighAccuracy:true, timeout:limit, maximumAge:0 });
+
+  return stop;
+};
+
+window.atlasNajdiPolohu = window.atlasNajdiPolohu || function(hotovo, chyba){
+  if(!navigator.geolocation){ chyba({code:0}); return; }
+  navigator.geolocation.getCurrentPosition(hotovo, prvni=>{
+    if(prvni && prvni.code === 1){ chyba(prvni); return; }
+    navigator.geolocation.getCurrentPosition(hotovo, chyba,
+      { enableHighAccuracy:false, timeout:20000, maximumAge:120000 });
+  }, { enableHighAccuracy:true, timeout:15000, maximumAge:0 });
+};
+
+/* hrubší fix než ±50 m na odznak ◎ nestačí — Wi-Fi trilaterace by uznala i souseda */
+const GEO_MAX_PRESNOST = 50;
+
+function geoChybaText(err){
+  if(err&&err.code===4)
+    return err.nejlepsi
+      ? `Nejlepší poloha byla za půl minuty jen ±${Math.round(err.nejlepsi)} m, potřebujeme ±50 m. Vypadá to, že jsi uvnitř budovy — beton a střecha družicový signál nepustí. Vyjdi prosím ven pod otevřené nebe a zkus to znovu.`
+      : 'Poloha se za půl minuty vůbec nenačetla. Vypadá to, že jsi uvnitř budovy — vyjdi prosím ven pod otevřené nebe a zkus to znovu.';
+  if(/FBAN|FBAV|FB_IAB|Instagram/i.test(navigator.userAgent))
+    return 'Prohlížeč uvnitř aplikace (Facebook, Instagram…) polohu neumí. Návštěvu můžeš uložit i bez ověření.';
+  if(err&&err.code===1)
+    return 'Přístup k poloze je zablokovaný — povol ho přes ikonu vedle adresy. Návštěvu ale můžeš uložit i bez ověření.';
+  if(!window.isSecureContext)
+    return 'Stránka neběží přes zabezpečené spojení, prohlížeč proto polohu nepovolí.';
+  if(err&&err.code===0)
+    return 'Tvůj prohlížeč polohu nepodporuje.';
+  if(err&&err.code===2)
+    return 'Zařízení polohu nedokáže určit. Na telefonu zapni polohu (GPS), na počítači bývá poloha často nedostupná úplně.';
+  if(err&&err.code===3)
+    return 'Hledání polohy trvá moc dlouho. Zkus to prosím znovu.';
+  return 'Polohu se nepodařilo načíst. Máš v telefonu zapnutou polohu (GPS)?';
+}
+function geoVychozi(){
+  if(!geoButton)return;
+  geoButton.textContent='◎ Ověřit, že tu stojím';
+  geoButton.classList.remove('hotovo');
+  geoButton.removeAttribute('title');
+  geoButton.disabled=false;
+}
+function geoHotovo(){
+  if(!geoButton)return;
+  geoButton.textContent='✓ Ověřeno na místě';
+  geoButton.classList.add('hotovo');
+  geoButton.title='Načíst polohu znovu';
+  geoButton.disabled=false;
+}
+function geoReset(){
+  geoFix=null;
+  geoCapture?.classList.remove('ready');
+  if(geoStatus){ geoStatus.className='geo-status'; geoStatus.textContent='Nepovinné — ověřená návštěva získá odznak ◎ ověřeno na místě.'; }
+  geoVychozi(); nastavGeoKrok();
+}
+geoButton?.addEventListener('click',()=>{
+  if(mamOvereno)return;   /* odznak je jednorázový — tlačítko už není vidět */
+  if(!navigator.geolocation){geoStatus.className='geo-status err';geoStatus.textContent='Tvůj prohlížeč polohu nepodporuje.';return}
+  geoStatus.className='geo-status';geoStatus.textContent='Hledám tvou polohu…';
+  geoButton.textContent='◎ Hledám polohu…';geoButton.classList.remove('hotovo');geoButton.disabled=true;
+  window.atlasSledujPolohu({
+    cilM:25, prahM:GEO_MAX_PRESNOST, limitMs:35000,
+    krok:(presnost,sekund)=>{
+      geoButton.textContent=`◎ Hledám… ${sekund} s`;
+      geoStatus.className='geo-status';
+      geoStatus.innerHTML=`Zatím ±${Math.round(presnost)} m — zpřesňuji…`;
+    },
+    hotovo:position=>{
+    const{latitude,longitude,accuracy}=position.coords;
+    geoFix={lat:latitude,lng:longitude,accuracy};
+    geoCapture.classList.add('ready');
+    geoStatus.className='geo-status ok';
+    geoStatus.innerHTML=`<b>${latitude.toFixed(5)} N, ${longitude.toFixed(5)} E</b><br>přesnost ±${Math.round(accuracy)} m<br><span>Návštěva ponese odznak ◎ ověřeno na místě.</span>`;
+    geoHotovo();
+  },chyba:error=>{
+    geoStatus.className='geo-status err';
+    geoStatus.textContent=geoChybaText(error);
+    /* nepovedlo se znovu, ale předchozí ověření pořád platí */
+    if(geoFix) geoHotovo(); else geoVychozi();
+  }});
+});
+
+/* ---- fotka ze zápisu ---- */
+const logPhotoInputs=[document.querySelector('#log-photo-cam'),document.querySelector('#log-photo-gal')].filter(Boolean);
+const logPhotoPreview=document.querySelector('#log-photo-preview');
+const logPhotoText=document.querySelector('#log-photo-drop .photo-text');
+let logPhotoFile=null;
+logPhotoInputs.forEach(input=>input.addEventListener('change',()=>{
+  const file=input.files[0];
+  if(!file)return;
+  logPhotoFile=file;
+  if(logPhotoPreview.src&&logPhotoPreview.src.startsWith('blob:'))URL.revokeObjectURL(logPhotoPreview.src);
+  logPhotoPreview.src=URL.createObjectURL(file);
+  logPhotoPreview.hidden=false;
+  if(logPhotoText) logPhotoText.textContent='Fotka připravena — klepni pro změnu';
+  input.value='';
+}));
+function logPhotoReset(){logPhotoFile=null;if(!logPhotoPreview)return;if(logPhotoPreview.src&&logPhotoPreview.src.startsWith('blob:'))URL.revokeObjectURL(logPhotoPreview.src);logPhotoPreview.hidden=true;logPhotoPreview.removeAttribute('src');if(logPhotoText)logPhotoText.textContent='Přidej fotku z návštěvy'}
+
+/* ---- posuvníky DNA ---- */
+document.querySelectorAll('.slider-row input[type=range]').forEach(slider=>{
+  const out=slider.parentElement.querySelector('output');
+  const sync=()=>{out.textContent=slider.value};
+  slider.addEventListener('input',sync);sync();
+});
+
+/* ---- čakrové řady (nepovinný výběr) ---- */
+window.atlasCakraRada&&window.atlasCakraRada(document.querySelector('#log-cakry'));
+window.atlasCakraRada&&window.atlasCakraRada(document.querySelector('#edit-log-cakry'));
+
+/* ---- dodatečné fotky galerie (autor místa nebo správce) ---- */
+async function pridejFotky(input, autorId, stavajici){
+  const db=window.atlasDb, ucet=window.atlasUcet&&window.atlasUcet();
+  const soubory=[...input.files].slice(0,6);
+  const dlazdice=input.closest('.galerie-add');
+  input.value='';
+  if(!soubory.length||!ucet||!mistoData)return;
+  if((stavajici?.length||0)+soubory.length>12){notify('Galerie má strop 12 fotek.');return}
+  if(!navigator.onLine){notify('Jsi mimo signál — fotky do galerie nahraj, až se připojíš.');return}
+
+  /* dlaždice se promění v ukazatel průběhu, ať je vidět, že se něco děje */
+  if(dlazdice){
+    dlazdice.style.pointerEvents='none';
+    dlazdice.innerHTML='<span>Nahrávám…</span>&nbsp;<b class="up-cit">0/'+soubory.length+'</b>';
+  }
+  const citac=n=>{const b=dlazdice&&dlazdice.querySelector('.up-cit');if(b)b.textContent=n+'/'+soubory.length};
+
+  let maxPoradi=0;(stavajici||[]).forEach(f=>{if(f.poradi>maxPoradi)maxPoradi=f.poradi});
+  const radky=[];
+  for(let i=0;i<soubory.length;i++){
+    citac(i+1);
+    let blob=soubory[i], pripona='jpg';
+    if(window.atlasZpracujFoto){const z=await window.atlasZpracujFoto(soubory[i]);blob=z.blob;pripona=z.pripona}
+    const cesta=`mista/${mistoData.id}/${Date.now()}-${i}.${pripona}`;
+    const {error:fe}=await db.storage.from('atlas').upload(cesta,blob,{contentType:blob.type||'image/jpeg',upsert:false});
+    if(!fe)radky.push({misto_id:mistoData.id,autor_id:ucet.id,cesta,poradi:++maxPoradi});
+  }
+  if(!radky.length){
+    notify('Fotky se nepodařilo nahrát. Zkontroluj připojení a zkus to znovu.');
+    await nactiFotky(autorId);   /* překreslí galerii a vrátí dlaždici do původního stavu */
+    return;
+  }
+  const {error}=await db.from('atlas_fotky').insert(radky);
+  if(error){
+    radky.forEach(r=>db.storage.from('atlas').remove([r.cesta]));
+    notify('Fotky se nepodařilo uložit: '+error.message);
+    await nactiFotky(autorId);
+    return;
+  }
+  notify(radky.length===1?'Fotka přidána 🌿':'Fotky přidány 🌿');
+  await nactiFotky(autorId);
+}
+
+async function smazFoto(f, autorId){
+  if(!f)return;
+  const db=window.atlasDb;
+  const otazka=(window.t?window.t('Opravdu smazat tuhle fotku?'):'Opravdu smazat tuhle fotku?');
+  if(!confirm(otazka))return;
+  const {data:smazano,error}=await db.from('atlas_fotky').delete().eq('id',f.id).select('id');
+  if(error||!smazano||!smazano.length){notify('Fotku se nepodařilo smazat'+(error?': '+error.message:'.'));return}
+  const {error:se}=await db.storage.from('atlas').remove([f.cesta]);
+  if(se) console.warn('Fotka smazána z galerie, soubor v úložišti zůstal:', se.message);
+  notify('Fotka smazána.');
+  await nactiFotky(autorId);
+}
+
+/* ---- offline fronta zápisů ----
+   Bez signálu se zápis (včetně fotky a polohy z místa) uschová v telefonu
+   a odešle se sám, jakmile se síť vrátí. Poloha i časové razítko jsou z okamžiku návštěvy. */
+function frontaDb(){
+  return new Promise((res,rej)=>{
+    const r=indexedDB.open('atlas-fronta',2);
+    r.onupgradeneeded=()=>{
+      const d=r.result;
+      if(!d.objectStoreNames.contains('zapisy'))d.createObjectStore('zapisy',{autoIncrement:true});
+      if(!d.objectStoreNames.contains('koncepty'))d.createObjectStore('koncepty');
+    };
+    r.onsuccess=()=>res(r.result);
+    r.onerror=()=>rej(r.error);
+  });
+}
+async function frontaPridej(polozka){
+  const d=await frontaDb();
+  return new Promise((res,rej)=>{
+    const t=d.transaction('zapisy','readwrite');
+    t.objectStore('zapisy').add(polozka);
+    t.oncomplete=()=>res();
+    t.onerror=()=>rej(t.error);
+  });
+}
+async function frontaVse(){
+  const d=await frontaDb();
+  return new Promise((res,rej)=>{
+    const t=d.transaction('zapisy','readonly').objectStore('zapisy').openCursor();
+    const out=[];
+    t.onsuccess=()=>{const c=t.result;if(c){out.push({klic:c.key,z:c.value});c.continue()}else res(out)};
+    t.onerror=()=>rej(t.error);
+  });
+}
+async function frontaSmaz(klic){
+  const d=await frontaDb();
+  return new Promise((res,rej)=>{
+    const t=d.transaction('zapisy','readwrite');
+    t.objectStore('zapisy').delete(klic);
+    t.oncomplete=()=>res();
+    t.onerror=()=>rej(t.error);
+  });
+}
+function jeSitovaChyba(e){
+  if(!navigator.onLine)return true;
+  if(!e)return false;
+  if(e instanceof TypeError)return true;
+  return /failed to fetch|networkerror|network request failed|load failed|fetch failed/i.test(e.message||'');
+}
+let frontaBezi=false;
+async function zpracujFrontu(){
+  if(frontaBezi||!navigator.onLine)return;
+  const db=window.atlasDb;
+  if(!db)return;
+  frontaBezi=true;
+  try{
+    const cekajici=await frontaVse();
+    for(const {klic,z} of cekajici){
+      try{
+        const zaznam=z.zaznam;
+        const {error}=await db.from('atlas_zapisy').insert(zaznam);
+        if(error){
+          if(jeSitovaChyba(error))throw error;
+          await frontaSmaz(klic);
+          notify(error.code==='23505'?'Uschovaná návštěva nebyla přijata — tohle místo už máš ověřené.'
+            :'Uschovaná návštěva nebyla přijata: '+error.message);
+          continue;
+        }
+        if(z.komentarText||z.fotoBlob){
+          const koment={misto_id:zaznam.misto_id,autor_id:zaznam.autor_id,text:z.komentarText||'✦',lang:z.lang||'cs'};
+          if(z.fotoBlob){
+            const cesta=`komentare/${zaznam.misto_id}/${Date.now()}.${z.pripona||'jpg'}`;
+            const {error:fe}=await db.storage.from('atlas').upload(cesta,z.fotoBlob,{contentType:z.fotoTyp||'image/jpeg'});
+            if(!fe) koment.fotka=cesta;
+          }
+          await db.from('atlas_komentare').insert(koment);
+        }
+        await frontaSmaz(klic);
+        notify('Uschovaná návštěva se právě odeslala 🌿');
+        if(mistoData&&mistoData.id===zaznam.misto_id)nactiMisto();
+            }catch(e){break}   /* síť zase vypadla — zbytek fronty počká */
+    }
+  }catch(_){}finally{frontaBezi=false}
+}
+window.addEventListener('online',zpracujFrontu);
+if(window.atlasAuthReady)zpracujFrontu();
+else window.addEventListener('atlas-auth-ready',zpracujFrontu,{once:true});
+
+/* ---- odeslání návštěvy ---- */
+document.querySelector('#log-form')?.addEventListener('submit',async event=>{
+  event.preventDefault();
+  const form=event.currentTarget;
+  if(!window.vyzadujUcet||!window.vyzadujUcet())return;
+  if(!mistoData){notify('Místo se ještě nenačetlo, zkus to za okamžik.');return}
+  const slova=form.querySelector('textarea').value.trim();
+
+  const db=window.atlasDb, ucet=window.atlasUcet();
+  const odeslat=form.querySelector('button[type=submit]');
+  const puvodni=odeslat.textContent; odeslat.disabled=true; odeslat.textContent='Ukládám…';
+
+  const hodnota=axis=>Number(document.querySelector(`.slider-row input[data-axis="${axis}"]`).value);
+  const zaznam={
+    misto_id:mistoData.id,
+    autor_id:ucet.id,
+    text:'',
+    klid:hodnota('Klid'), energie:hodnota('Energie'), mystika:hodnota('Mystika'),
+    krasa:hodnota('Krása'), lecivost:hodnota('Léčivost'),
+    lang:window.atlasJazyk()
+  };
+  const cakryVyber=window.atlasCakraVyber?window.atlasCakraVyber(document.querySelector('#log-cakry')):null;
+  if(cakryVyber) zaznam.cakry=cakryVyber;
+  if(geoFix){ zaznam.poloha=`SRID=4326;POINT(${geoFix.lng} ${geoFix.lat})`; zaznam.presnost_m=Math.round(geoFix.accuracy); }
+
+  /* společný šťastný konec */
+  const uklid=zprava=>{
+    odeslat.disabled=false; odeslat.textContent=puvodni;
+    closeModal(document.querySelector('#log-modal'));
+    form.reset(); geoReset(); logPhotoReset();
+    window.atlasCakraNastav&&window.atlasCakraNastav(document.querySelector('#log-cakry'),null);
+    document.querySelectorAll('#log-modal .slider-row input[type=range]').forEach(x=>x.dispatchEvent(new Event('input')));
+    if(window.atlasKoncepty) window.atlasKoncepty.smaz('navsteva:'+mistoData.id).then(konceptProuzek).catch(()=>{});
+    notify(zprava);
+  };
+  const uschovej=async blob=>{
+    try{
+      await frontaPridej({zaznam,komentarText:slova,lang:window.atlasJazyk(),fotoBlob:blob||null,fotoTyp:blob?(blob.type||'image/jpeg'):null,pripona:blob?pripona:null,vytvoreno:Date.now()});
+      uklid('Jsi mimo signál — návštěva je uschovaná v telefonu a odešle se sama, až se připojíš.');
+    }catch(e){
+      odeslat.disabled=false; odeslat.textContent=puvodni;
+      notify('Návštěvu se nepodařilo uschovat. Zůstává vyplněná — zkus Uložit, až chytíš signál.');
+    }
+  };
+
+  let pripona='jpg', fotoBlob=null;
+  if(logPhotoFile){
+    fotoBlob=logPhotoFile;
+    if(window.atlasZpracujFoto){ const z=await window.atlasZpracujFoto(logPhotoFile); fotoBlob=z.blob; pripona=z.pripona; }
+  }
+
+  if(!navigator.onLine){ await uschovej(fotoBlob); return; }
+
+  const {error}=await db.from('atlas_zapisy').insert(zaznam);
+  if(error){
+    if(jeSitovaChyba(error)){ await uschovej(fotoBlob); return; }
+    odeslat.disabled=false; odeslat.textContent=puvodni;
+    console.error(error);
+    notify(/m od místa|už máš ověřené/.test(error.message) ? error.message
+      : (error.code==='23505' ? 'Tohle místo už máš ověřené. Další návštěvu zapiš bez ověřování polohy.'
+      : 'Návštěvu se nepodařilo uložit: '+error.message));
+    return;
+  }
+
+  /* slova a fotka putují na zeď jako komentář */
+  if(slova||fotoBlob){
+    const koment={misto_id:mistoData.id,autor_id:ucet.id,text:slova||'✦',lang:window.atlasJazyk()};
+    if(fotoBlob){
+      const cesta=`komentare/${mistoData.id}/${Date.now()}.${pripona}`;
+      const {error:fe}=await db.storage.from('atlas').upload(cesta,fotoBlob,{contentType:fotoBlob.type||'image/jpeg'});
+      if(!fe) koment.fotka=cesta;
+    }
+    await db.from('atlas_komentare').insert(koment);
+  }
+  uklid(geoFix?'Návštěva zapsána s ověřením ◎ Tvé naladění vstoupilo do DNA místa.':'Návštěva zapsána ✦ Tvé naladění vstoupilo do DNA místa.');
+  nactiMisto();
+});
+
+/* ---- odeslání komentáře ---- */
+const comPhotoInputs=[document.querySelector('#com-photo-cam'),document.querySelector('#com-photo-gal')].filter(Boolean);
+const comPhotoPreview=document.querySelector('#com-photo-preview');
+const comPhotoText=document.querySelector('#com-photo-drop .photo-text');
+let comPhotoFile=null;
+comPhotoInputs.forEach(input=>input.addEventListener('change',()=>{
+  const file=input.files[0]; if(!file)return;
+  comPhotoFile=file;
+  if(comPhotoPreview.src&&comPhotoPreview.src.startsWith('blob:'))URL.revokeObjectURL(comPhotoPreview.src);
+  comPhotoPreview.src=URL.createObjectURL(file); comPhotoPreview.hidden=false;
+  if(comPhotoText) comPhotoText.textContent='Fotka připravena — klepni pro změnu';
+  input.value='';
+}));
+function comPhotoReset(){comPhotoFile=null;if(!comPhotoPreview)return;if(comPhotoPreview.src&&comPhotoPreview.src.startsWith('blob:'))URL.revokeObjectURL(comPhotoPreview.src);comPhotoPreview.hidden=true;comPhotoPreview.removeAttribute('src');if(comPhotoText)comPhotoText.textContent='Přidej fotku'}
+
+document.querySelector('#comment-form')?.addEventListener('submit',async event=>{
+  event.preventDefault();
+  const form=event.currentTarget;
+  if(!window.vyzadujUcet||!window.vyzadujUcet())return;
+  if(!mistoData){notify('Místo se ještě nenačetlo, zkus to za okamžik.');return}
+  const textKomentare=form.querySelector('textarea').value.trim();
+  if(!textKomentare){notify('Komentář nemůže být prázdný.');return}
+
+  const db=window.atlasDb, ucet=window.atlasUcet();
+  const odeslat=form.querySelector('button[type=submit]');
+  odeslat.disabled=true;
+  const koment={misto_id:mistoData.id,autor_id:ucet.id,text:textKomentare,lang:window.atlasJazyk()};
+  if(comPhotoFile){
+    let blob=comPhotoFile, pripona='jpg';
+    if(window.atlasZpracujFoto){const z=await window.atlasZpracujFoto(comPhotoFile);blob=z.blob;pripona=z.pripona}
+    const cesta=`komentare/${mistoData.id}/${Date.now()}.${pripona}`;
+    const {error:fe}=await db.storage.from('atlas').upload(cesta,blob,{contentType:blob.type||'image/jpeg'});
+    if(fe){notify('Fotku se nepodařilo nahrát — komentář uložím bez ní.');}
+    else koment.fotka=cesta;
+  }
+  const {error}=await db.from('atlas_komentare').insert(koment);
+  odeslat.disabled=false;
+  if(error){console.error(error);notify('Komentář se nepodařilo uložit: '+error.message);return}
+  closeModal(document.querySelector('#comment-modal'));
+  form.reset(); comPhotoReset();
+  const profilK=window.atlasProfil&&window.atlasProfil();
+  notify(profilK&&profilK.spravce?'Komentář je na zdi 🌿':'Děkujeme! Komentář se ukáže po schválení.');
+  nactiKomentare();
+});
+
+/* ---- rozepsaný zápis (koncept): uschovat teď, dopsat později ----
+   Uloží se text, fotka, čakry, posuvníky i sejmutá poloha — do tohoto zařízení.
+   Poloha z místa zůstává platná: ◎ ověření dostaneš, i když text dopíšeš doma. */
+function konceptProuzek(){
+  if(!window.atlasKonceptyProuzek||!mistoData)return;
+  window.atlasKonceptyProuzek({jenMisto:mistoData.id, onOtevrit:obnovKoncept});
+}
+async function ulozKoncept(){
+  if(!mistoData||!window.atlasKoncepty){notify('Místo se ještě nenačetlo, zkus to za okamžik.');return}
+  const dna={}; document.querySelectorAll('#log-modal .slider-row input[type=range]').forEach(r=>{dna[r.dataset.axis]=Number(r.value)});
+  const k={
+    typ:'navsteva', misto_id:mistoData.id, slug:SLUG, nazev:mistoData.nazev,
+    text:document.querySelector('#log-form textarea').value,
+    dna, cakry:window.atlasCakraVyber?window.atlasCakraVyber(document.querySelector('#log-cakry')):null,
+    geoFix: geoFix?{...geoFix}:null,
+    fotoBlob: logPhotoFile||null, fotoTyp: logPhotoFile?(logPhotoFile.type||'image/jpeg'):null
+  };
+  try{ await window.atlasKoncepty.uloz('navsteva:'+mistoData.id, k); }
+  catch(e){ notify('Zápis se nepodařilo uschovat: '+(e&&e.message||e)); return; }
+  closeModal(document.querySelector('#log-modal'));
+  document.querySelector('#log-form').reset(); geoReset(); logPhotoReset();
+  window.atlasCakraNastav&&window.atlasCakraNastav(document.querySelector('#log-cakry'),null);
+  document.querySelectorAll('#log-modal .slider-row input[type=range]').forEach(x=>x.dispatchEvent(new Event('input')));
+  notify('Zápis uschován ✎ Najdeš ho nahoře na stránce, až budeš chtít dopsat.');
+  konceptProuzek();
+}
+document.querySelector('#log-later')?.addEventListener('click',ulozKoncept);
+
+function obnovKoncept(k){
+  if(!k) return;
+  if(window.vyzadujUcet&&!window.vyzadujUcet())return;
+  const form=document.querySelector('#log-form');
+  form.querySelector('textarea').value=k.text||'';
+  document.querySelectorAll('#log-modal .slider-row input[type=range]').forEach(r=>{
+    if(k.dna&&k.dna[r.dataset.axis]!=null){ r.value=k.dna[r.dataset.axis]; r.dispatchEvent(new Event('input')); }
+  });
+  window.atlasCakraNastav&&window.atlasCakraNastav(document.querySelector('#log-cakry'), k.cakry);
+  if(k.fotoBlob){
+    logPhotoFile=k.fotoBlob;
+    if(logPhotoPreview.src&&logPhotoPreview.src.startsWith('blob:'))URL.revokeObjectURL(logPhotoPreview.src);
+    logPhotoPreview.src=URL.createObjectURL(k.fotoBlob);
+    logPhotoPreview.hidden=false;
+    if(logPhotoText) logPhotoText.textContent='Fotka připravena — klepni pro změnu';
+  }
+  if(k.geoFix&&!mamOvereno){
+    geoFix={...k.geoFix};
+    geoCapture&&geoCapture.classList.add('ready');
+    if(geoStatus){
+      geoStatus.className='geo-status ok';
+      geoStatus.innerHTML=`<b>${geoFix.lat.toFixed(5)} N, ${geoFix.lng.toFixed(5)} E</b><br>přesnost ±${Math.round(geoFix.accuracy)} m<br><span>Poloha sejmutá na místě — ◎ ověření platí.</span>`;
+    }
+    geoHotovo(); nastavGeoKrok();
+  }
+  openModal('#log-modal');
+}
+async function startKoncept(){
+  if(!mistoData||!window.atlasKoncepty) return;
+  konceptProuzek();
+  if(new URLSearchParams(location.search).get('koncept')==='otevrit'){
+    try{ const k=await window.atlasKoncepty.nacti('navsteva:'+mistoData.id); if(k) obnovKoncept(k); }catch(_){}
+  }
+}
+
+/* ---- start ---- */
+function mistoStart(){ nactiMisto().then(startKoncept); }
+if (window.atlasAuthReady) mistoStart();
+else window.addEventListener('atlas-auth-ready', mistoStart, {once:true});
