@@ -421,7 +421,7 @@ a.place-tile{text-decoration:none;color:inherit;display:block}
    Kapka: čtverec se třemi zaoblenými rohy, otočený o 45° — čtvrtý roh tvoří hrot.
    Červená = čeká na objevení, zelená = tvá návštěva. Obě barvy jsou proti
    béžovo-olivovému satelitu cizí, takže značka nikdy nesplyne s krajinou. */
-.atlas-spendlik{background:none;border:0;cursor:pointer;position:relative}
+.atlas-spendlik{background:none;border:0;cursor:pointer}
 .atlas-spendlik i{position:absolute;left:50%;top:2px;margin-left:-9px;
   width:18px;height:18px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);
   border:1.5px solid rgba(255,250,240,.9);
