@@ -1177,3 +1177,53 @@ html{overflow-x:clip}
   background:rgba(201,161,74,.14);color:var(--gold-lume);font:500 13px 'Jost',sans-serif;cursor:pointer;transition:background .2s,color .2s}
 .fronta-pruh button:hover,.misto-stav button:hover{background:var(--gold);color:var(--forest)}
 .misto-stav button:disabled{opacity:.5;cursor:default}
+
+/* ===== „Dvě role, jedna cesta": věta + kroky; na telefonu se kroky rozbalují ===== */
+.cesta h3{margin-bottom:8px}
+.cesta-veta{margin:0 0 18px;color:var(--cream-soft);font-size:15px;line-height:1.6}
+.cesta-vic{display:none}
+.cesta-kroky[hidden]{display:grid}          /* na širokém displeji jsou kroky vidět vždy */
+@media(max-width:760px){
+  .cesta h3{margin-bottom:6px}
+  .cesta-veta{margin-bottom:14px}
+  .cesta-vic{display:inline-flex;align-items:center;gap:9px;min-height:42px;padding:9px 18px;border:1px solid var(--gold);
+    border-radius:99px;background:rgba(201,161,74,.1);color:var(--gold-lume);font:500 13.5px 'Jost',sans-serif;letter-spacing:.03em;cursor:pointer}
+  .cesta-vic .cv-sipka{transition:transform .25s;font-size:14px}
+  .cesta-vic[aria-expanded="true"] .cv-sipka{transform:rotate(180deg)}
+  .cesta-kroky[hidden]{display:none}
+  .cesta-kroky{margin-top:18px}
+}
+
+/* ===== nové místo ve třech krocích ===== */
+.krok[hidden]{display:none}
+.kroky-postup{display:flex;align-items:center;gap:14px;margin:2px 0 18px}
+.kp-text{font:600 11px 'Jost',sans-serif;letter-spacing:.13em;text-transform:uppercase;color:var(--gold-deep);white-space:nowrap}
+.kp-pruh{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.kp-pruh i{height:4px;border-radius:99px;background:#e6dcc4;transition:background .25s}
+.kp-pruh i.on{background:linear-gradient(90deg,#d9b25c,#b98f38)}
+.krok .form-step{margin-top:0;border-top:0;padding-top:0}
+/* úvodní odstavec okna patří prvnímu kroku — dál už je místo pro formulář */
+#place-modal[data-krok="2"] .add-modal>p:not(.eyebrow),
+#place-modal[data-krok="3"] .add-modal>p:not(.eyebrow){display:none}
+/* tlačítka kroků drží u spodního okraje okna, ať jsou stále po ruce */
+#place-modal .krok-akce{position:sticky;bottom:-32px;z-index:3;display:flex;flex-wrap:wrap;align-items:center;gap:10px;
+  margin:22px -32px -32px;padding:14px 32px 20px;background:var(--paper-lift);border-top:1px solid #e6dcc4;border-radius:0 0 20px 20px}
+#place-modal .krok-akce .button{flex:1 1 0;justify-content:center;text-align:center;min-height:46px}
+#place-modal .krok-akce .button[hidden],#place-modal .krok-akce [hidden]{display:none}
+#place-modal .krok-akce #krok-zpet{flex:0 0 auto}
+.krok-pozdeji{flex:1 1 100%;border:0;background:none;padding:8px 6px 2px;color:#7a5c1e;font:500 13.5px 'Jost',sans-serif;
+  letter-spacing:.02em;cursor:pointer;text-decoration:underline;text-decoration-color:rgba(185,143,56,.5);text-underline-offset:4px}
+.krok-pozdeji:hover{color:#5f4716}
+@media(max-width:560px){
+  #place-modal .krok-akce{bottom:-24px;margin:18px -18px -24px;padding:12px 18px 16px}
+}
+.krok .form-step{margin:0 0 10px}
+/* tlačítka přesného zaměření se ukazují až během měření */
+.geo-presne-akce[hidden]{display:none}
+@media(max-width:560px){
+  #place-modal .krok-akce .button{padding-left:14px;padding-right:14px;white-space:nowrap}
+}
+/* při otevřeném formuláři se oznámení ukazuje nahoře, tlačítka dole zůstávají volná */
+body:has(.modal-backdrop.open) .toast{bottom:auto;top:calc(14px + env(safe-area-inset-top,0px));translate:-50% calc(-100% - 80px)}
+body:has(.modal-backdrop.open) .toast.show{translate:-50% 0}
+body:has(.modal-backdrop.open) .ainst-pill{display:none!important}

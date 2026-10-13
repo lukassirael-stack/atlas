@@ -407,7 +407,11 @@ function najdiPolohu(){
   });
 }
 const modal=document.querySelector('#place-modal');
-function openModal(){modal.classList.add('open');modal.setAttribute('aria-hidden','false');document.querySelector('#place-form input[type="text"]').focus()}
+function openModal(){
+  ukazKrok(prvniNeuplnyKrok(), true);   /* čistý formulář začíná krokem 1, rozepsaný tam, kde ještě něco chybí */
+  modal.classList.add('open');modal.setAttribute('aria-hidden','false');
+  const sekce=modal.querySelector('.add-modal'); if(sekce) sekce.scrollTop=0;
+}
 function closeModal(){modal.classList.remove('open');modal.setAttribute('aria-hidden','true')}
 document.querySelector('#add-place')?.addEventListener('click',()=>{if(window.vyzadujUcet&&!window.vyzadujUcet())return;openModal()});
 document.querySelectorAll('a[href="#pridat"]').forEach(link=>link.addEventListener('click',event=>{event.preventDefault();if(window.vyzadujUcet&&!window.vyzadujUcet())return;openModal()}));
@@ -415,6 +419,58 @@ if(location.hash==='#pridat')setTimeout(()=>{if(!window.vyzadujUcet||window.vyza
 document.querySelector('#modal-close')?.addEventListener('click',closeModal);
 modal?.addEventListener('click',event=>{if(event.target===modal)closeModal()});
 document.addEventListener('keydown',event=>{if(event.key==='Escape')closeModal()});
+/* ---- formulář nového místa ve třech krocích: poloha a fotka → co to je → první naladění ---- */
+const KROKU=3;
+let krokNyni=1;
+const krokyEl=[...document.querySelectorAll('#place-form .krok')];
+const krokZpetBtn=document.querySelector('#krok-zpet'), krokDalsiBtn=document.querySelector('#krok-dalsi'), krokOdeslatBtn=document.querySelector('#krok-odeslat');
+function ukazKrok(n, bezPosunu){
+  if(!krokyEl.length) return;
+  krokNyni=Math.min(KROKU,Math.max(1,n));
+  krokyEl.forEach(el=>{ el.hidden=Number(el.dataset.krok)!==krokNyni; });
+  const postup=document.querySelector('#kroky-postup');
+  if(postup){
+    postup.querySelector('.kp-text').textContent=`Krok ${krokNyni} ze ${KROKU}`;
+    postup.querySelectorAll('.kp-pruh i').forEach((i,idx)=>i.classList.toggle('on',idx<krokNyni));
+  }
+  if(krokZpetBtn) krokZpetBtn.hidden=krokNyni===1;
+  if(krokDalsiBtn) krokDalsiBtn.hidden=krokNyni===KROKU;
+  if(krokOdeslatBtn) krokOdeslatBtn.hidden=krokNyni!==KROKU;
+  if(modal) modal.dataset.krok=String(krokNyni);
+  if(!bezPosunu){ const sekce=modal&&modal.querySelector('.add-modal'); if(sekce) sekce.scrollTop=0; }
+}
+/* co kroku ještě chybí — vrací větu pro člověka, nebo null, když je krok úplný */
+function krokChybi(n){
+  const text=id=>{const el=document.querySelector(id);return el?el.value.trim():''};
+  if(n===1){
+    if(!geoFix) return 'Nejdřív načti svou polohu — místo lze zanést jen přímo na místě.';
+    if(!photos.length) return 'Přidej aspoň jednu fotku — ať ostatní vidí, kam jdou.';
+  }
+  if(n===2){
+    if(!text('#misto-nazev')) return 'Dej místu jméno.';
+    if(!tagPicker.querySelector('.on')) return 'Vyber alespoň jeden štítek místa.';
+    if(!text('#misto-popis')) return 'Vyprávěj pár slovy o místě — co tu cítíš a prožíváš.';
+  }
+  if(n===3){
+    if(!text('#misto-zapis')) return 'Napiš pár slov o tom, co tu prožíváš — každé místo se rodí se svým prvním zápisem.';
+  }
+  return null;
+}
+function prvniNeuplnyKrok(){
+  for(let n=1;n<=KROKU;n++) if(krokChybi(n)) return n;
+  return KROKU;
+}
+krokDalsiBtn?.addEventListener('click',()=>{
+  const chybi=krokChybi(krokNyni);
+  if(chybi){ notify(chybi); return; }
+  ukazKrok(krokNyni+1);
+});
+krokZpetBtn?.addEventListener('click',()=>ukazKrok(krokNyni-1));
+/* Enter v textovém poli vede na další krok (odeslání patří až poslednímu kroku) */
+document.querySelector('#place-form')?.addEventListener('keydown',e=>{
+  if(e.key==='Enter' && e.target.matches('input[type="text"]') && krokNyni<KROKU){ e.preventDefault(); krokDalsiBtn?.click(); }
+});
+
 const geoCapture=document.querySelector('#geo-capture');
 const geoButton=document.querySelector('#geo-get');
 const geoStatus=document.querySelector('#geo-status');
@@ -579,6 +635,7 @@ photoInputs.forEach(input=>input.addEventListener('change',()=>{
 }));
 function formReset(){
   geoReset();
+  ukazKrok(1,true);
   photos=[];renderPhotos();
   tagPicker.querySelectorAll('.on').forEach(chip=>chip.classList.remove('on'));
   window.atlasCakraNastav&&window.atlasCakraNastav(document.querySelector('#misto-cakry'),null);
@@ -622,11 +679,12 @@ async function nahrajFotky(mistoId){
 document.querySelector('#place-form')?.addEventListener('submit',async event=>{
   event.preventDefault();
   const form=event.currentTarget;
-  if(!geoFix){notify('Nejdřív načti svou polohu — místo lze zanést jen přímo na místě.');geoButton?.focus();return}
-  if(!photos.length){notify('Přidej aspoň jednu fotku — ať ostatní vidí, kam jdou.');return}
-  if(!tagPicker.querySelector('.on')){notify('Vyber alespoň jeden štítek místa.');return}
+  /* projít všechny tři kroky; kde něco chybí, tam formulář přejde a řekne co */
+  for(let n=1;n<=KROKU;n++){
+    const chybi=krokChybi(n);
+    if(chybi){ ukazKrok(n); notify(chybi); return; }
+  }
   const nazev=document.querySelector('#misto-nazev').value.trim();
-  if(!nazev){notify('Dej místu jméno.');return}
   if(!window.vyzadujUcet||!window.vyzadujUcet())return;
 
   const db=window.atlasDb, ucet=window.atlasUcet();
@@ -827,6 +885,16 @@ async function startKonceptIndex(){
 }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',startKonceptIndex);
 else startKonceptIndex();
+/* ---- „Dvě role, jedna cesta": na telefonu se kroky každé cesty rozbalují klepnutím ---- */
+document.querySelectorAll('.cesta-vic').forEach(b=>b.addEventListener('click',()=>{
+  const kroky=document.getElementById(b.getAttribute('aria-controls'));
+  if(!kroky) return;
+  const otevrit=kroky.hidden;
+  kroky.hidden=!otevrit;
+  b.setAttribute('aria-expanded',String(otevrit));
+  b.querySelector('.cv-text').textContent=otevrit?'Skrýt kroky':'Zobrazit čtyři kroky';
+}));
+
 /* ---- instalace aplikace na plochu (PWA) ---- */
 let _installPrompt=null;
 window.addEventListener('beforeinstallprompt',(e)=>{

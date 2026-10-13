@@ -31,7 +31,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-    <link rel="stylesheet" href="styles.css?v=65" />
+    <link rel="stylesheet" href="styles.css?v=66" />
   </head>
   <body>
     <header class="topbar">
@@ -88,7 +88,9 @@
           <article class="cesta cesta-tvurce">
             <p class="cesta-role">⊕ Jsi první, kdo sem přichází</p>
             <h3>Cesta tvůrce</h3>
-            <ol class="cesta-kroky">
+            <p class="cesta-veta">Staneš u místa, pojmenuješ ho, dáš mu první naladění a předáš ho dál.</p>
+            <button type="button" class="cesta-vic" aria-expanded="false" aria-controls="kroky-tvurce"><span class="cv-text">Zobrazit čtyři kroky</span><span class="cv-sipka" aria-hidden="true">▾</span></button>
+            <ol class="cesta-kroky" id="kroky-tvurce" hidden>
               <li><b>Staneš u něj.</b> Místo zaneseš jen tehdy, když u něj skutečně stojíš — poloha se načte přímo z místa.</li>
               <li><b>Pojmenuješ, čím je.</b> Přidáš jméno, fotky a vybereš z osmnácti kategorií, co nejlíp vystihuje jeho povahu.</li>
               <li><b>Dáš mu první naladění.</b> Napíšeš, co cítíš, a naladíš pět os — místu tak vdechneš DNA hned od zrodu.</li>
@@ -98,7 +100,9 @@
           <article class="cesta cesta-poutnik">
             <p class="cesta-role">✦ Přicházíš za místem, které někdo otevřel</p>
             <h3>Cesta poutníka</h3>
-            <ol class="cesta-kroky">
+            <p class="cesta-veta">Objevíš místo, vydáš se k němu, procítíš ho a zapíšeš svou návštěvu.</p>
+            <button type="button" class="cesta-vic" aria-expanded="false" aria-controls="kroky-poutnika"><span class="cv-text">Zobrazit čtyři kroky</span><span class="cv-sipka" aria-hidden="true">▾</span></button>
+            <ol class="cesta-kroky" id="kroky-poutnika" hidden>
               <li><b>Objevuješ.</b> Projdeš mapu podle sebe, nebo se necháš vést seznamem míst — a čteš, co o nich napsali ti před tebou.</li>
               <li><b>Vydáváš se.</b> Zvolíš místo, které tě přitahuje, a navigace tě dovede až k němu.</li>
               <li><b>Procítíš.</b> Až tam budeš stát, zastavíš se. Ztišíš mysl, nadechneš se toho místa, dopřeješ si čas.</li>
@@ -121,7 +125,9 @@
 
     <footer><img class="brand-logo brand-logo-sm" src="img/logo.png" alt="" /><strong>Atlas energetických míst</strong><p>Objevuj. Prožívej. Sdílej.</p><p class="footer-legal">© 2026 Oáza Adamanthea · <a href="/podminky">Podmínky užití</a> · <a href="/napoveda">Nápověda</a></p></footer>
 
-    <div class="modal-backdrop" id="place-modal" aria-hidden="true"><section class="add-modal" role="dialog" aria-modal="true" aria-labelledby="add-title"><button class="modal-close" id="modal-close" aria-label="Zavřít">×</button><p class="eyebrow">Komunitní atlas</p><h2 id="add-title">Přidej energetické místo</h2><p>Místo zaneseš jen tehdy, když u něj stojíš — každý bod v atlasu tak někdo skutečně navštívil. Návrh před zveřejněním zkontroluje správce.</p><form id="place-form">
+    <div class="modal-backdrop" id="place-modal" aria-hidden="true"><section class="add-modal" role="dialog" aria-modal="true" aria-labelledby="add-title"><button class="modal-close" id="modal-close" aria-label="Zavřít">×</button><p class="eyebrow">Komunitní atlas</p><h2 id="add-title">Přidej energetické místo</h2><p>Místo zaneseš jen tehdy, když u něj stojíš — každý bod v atlasu tak někdo skutečně navštívil. Návrh před zveřejněním zkontroluje správce.</p><form id="place-form" novalidate>
+        <div class="kroky-postup" id="kroky-postup" aria-live="polite"><span class="kp-text">Krok 1 ze 3</span><span class="kp-pruh" aria-hidden="true"><i class="on"></i><i></i><i></i></span></div>
+        <div class="krok" data-krok="1">
         <p class="form-step">1 · Poloha a fotka</p>
         <div class="geo-capture" id="geo-capture"><button type="button" class="geo-button" id="geo-get">◎ Načíst mou polohu</button><button type="button" class="geo-button presne" id="geo-presne">⌖ Zaměřit přesně</button><div class="geo-presne-akce" id="geo-presne-akce" hidden><button type="button" class="geo-button" id="geo-presne-pouzit" disabled>✓ Použít</button><button type="button" class="geo-button presne" id="geo-presne-zrus">× Zrušit</button></div><p class="geo-status" id="geo-status" role="status">Poloha zatím nenačtena. Musíš stát přímo na místě.</p></div>
         <div class="tag-field rozsah-field"><p class="tag-label">Rozsah místa <small>jak daleko místo sahá</small></p><div class="rozsah-rada" id="misto-rozsah"></div><small class="rozsah-pozn">Čím větší rozsah, tím dál od bodu ještě platí ◎ ověření návštěvy.</small></div>
@@ -132,12 +138,16 @@
         <input type="file" id="place-photo-gal" accept="image/*" multiple hidden />
         <div class="photo-grid" id="photo-grid" hidden></div>
 
+        </div>
+        <div class="krok" data-krok="2" hidden>
         <p class="form-step">2 · Co to je</p>
         <label>Název místa<small>Jméno, které místu odpovídá — podle toho, čím tu skutečně je. Pod ním ho lidé najdou.</small><input type="text" id="misto-nazev" required maxlength="120" placeholder="Např. Brána tichých vod" /></label>
         <label>Oficiální název<small>Jak se místo jmenuje na mapě nebo v katastru — nepovinné.</small><input type="text" id="misto-nazev-oficialni" maxlength="120" placeholder="Např. Studánka Vrchovina" /></label>
         <div class="tag-field"><p class="tag-label">Štítky místa <small>vyber až tři</small></p><div class="tag-picker" id="tag-picker"><button type="button" data-tag="klid" data-popis="🌿 Klid a regenerace">🌿 Klid a regenerace</button><button type="button" data-tag="energie" data-popis="⚡ Síla a energie">⚡ Síla a energie</button><button type="button" data-tag="srdce" data-popis="❤️ Místo srdce">❤️ Místo srdce</button><button type="button" data-tag="leciva" data-popis="🔥 Léčivá místa">🔥 Léčivá místa</button><button type="button" data-tag="prameny" data-popis="💧 Léčivé prameny">💧 Léčivé prameny</button><button type="button" data-tag="stromy" data-popis="🌳 Posvátné stromy">🌳 Posvátné stromy</button><button type="button" data-tag="megality" data-popis="🪨 Megality a posvátné skály">🪨 Megality a posvátné skály</button><button type="button" data-tag="hory" data-popis="⛰️ Hory a posvátné vrcholy">⛰️ Hory a posvátné vrcholy</button><button type="button" data-tag="mohyly" data-popis="🔺 Pyramidy a mohyly">🔺 Pyramidy a mohyly</button><button type="button" data-tag="meditace" data-popis="🧘 Meditační místa">🧘 Meditační místa</button><button type="button" data-tag="portaly" data-popis="✨ Portály">✨ Portály</button><button type="button" data-tag="magie" data-popis="🔮 Magická a rituální místa">🔮 Magická a rituální místa</button><button type="button" data-tag="historie" data-popis="🏛 Historická a posvátná místa">🏛 Historická a posvátná místa</button><button type="button" data-tag="pohanska" data-popis="🌙 Pohanská a keltská místa">🌙 Pohanská a keltská místa</button><button type="button" data-tag="kontakt" data-popis="👁 Kontaktní místa">👁 Kontaktní místa</button><button type="button" data-tag="stinova" data-popis="🌑 Stínová místa">🌑 Stínová místa</button><button type="button" data-tag="vyhledy" data-popis="🌅 Výhledy a krajinné scenérie">🌅 Výhledy a krajinné scenérie</button><button type="button" data-tag="anomalie" data-popis="🌀 Anomálie a záhady">🌀 Anomálie a záhady</button></div></div>
         <label>Vyprávěj o místě<small>Hlavně co tu cítíš a prožíváš. Klidně přidej i jak se sem dostat nebo kdy je tu nejkrásněji.</small><textarea id="misto-popis" required placeholder="Zvláštní ticho, které tu padá s ránem… Od kapličky sem dojdeš po modré za dvacet minut."></textarea></label>
 
+        </div>
+        <div class="krok" data-krok="3" hidden>
         <p class="form-step">3 · Tvé první naladění <span>utvoří DNA místa hned od zrodu</span></p>
         <label>Co tu právě prožíváš<small>Stojíš na místě — vyplň a vznikne první zápis, který místu dá DNA hned od zrodu.</small><textarea id="misto-zapis" required placeholder="Stojím tady a cítím…"></textarea></label>
         <div class="dna-sliders" id="misto-dna">
@@ -151,9 +161,12 @@
           <p class="cakra-otazka">Kterou čakrou k tobě místo promlouvá? <span>nepovinné — klidně víc</span></p>
           <div class="cakra-rada" id="misto-cakry"></div>
         </div>
-        <div class="modal-actions" style="display:flex;gap:10px;flex-wrap:wrap">
-          <button class="button primary" type="submit">Odeslat ke schválení →</button>
-          <button class="button quiet" type="button" id="place-later" title="Uschová rozepsané místo v tomto zařízení — text, fotky i polohu">✎ Dokončit později</button>
+        </div>
+        <div class="modal-actions krok-akce">
+          <button class="button quiet" type="button" id="krok-zpet" hidden>← Zpět</button>
+          <button class="button primary" type="button" id="krok-dalsi">Další →</button>
+          <button class="button primary" type="submit" id="krok-odeslat" hidden>Odeslat ke schválení →</button>
+          <button class="krok-pozdeji" type="button" id="place-later" title="Uschová rozepsané místo v tomto zařízení — text, fotky i polohu">✎ Dokončit později</button>
         </div>
       </form></section></div>
 
@@ -342,7 +355,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="header.js?v=14"></script>
-    <script src="i18n.js?v=35"></script>
+    <script src="i18n.js?v=36"></script>
     <script src="auth.js?v=9"></script>
     <script src="data.js?v=11"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
@@ -350,7 +363,7 @@
     <script src="geo.js?v=1"></script>
     <script src="foto.js?v=1"></script>
     <script src="koncepty.js?v=2"></script>
-    <script src="app.js?v=46"></script>
+    <script src="app.js?v=47"></script>
     <script src="kotvy.js?v=1" defer></script>
     <script src="instalace-fallback.js?v=1" defer></script>
   </body>
