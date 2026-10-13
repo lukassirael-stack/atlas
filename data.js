@@ -22,11 +22,11 @@ const ATLAS_STITKY = {
 };
 window.ATLAS_STITKY = ATLAS_STITKY;
 
-/* štítek s emoji: 'megality' → '🪨 Megality a posvátné skály' */
-window.atlasStitek = (kod, kratky=false) => {
+/* štítek s emoji a celým názvem: 'megality' → '🪨 Megality a posvátné skály' */
+window.atlasStitek = (kod) => {
   const s = ATLAS_STITKY[kod];
-  if (!s) return kod;
-  return kratky ? `${s.emoji} ${s.nazev.split(' ')[0]}` : `${s.emoji} ${s.nazev}`;
+  if (!s) return String(kod == null ? '' : kod).replace(/[<>&"']/g, '');
+  return `${s.emoji} ${s.nazev}`;
 };
 
 /* veřejná URL fotky ze Storage — čistá konkatenace, funguje hned (bez čekání na klienta) */
@@ -44,8 +44,16 @@ window.atlasRys = (dna) => {
 };
 
 /* kraj z hrubých souřadnic — hover popisek u dlaždice bez reverzního geokódování */
-window.atlasSouradnice = (lat, lng) =>
-  `${lat.toFixed(4)} N, ${lng.toFixed(4)} E`;
+window.atlasSouradnice = (lat, lng, mist = 4) =>
+  `${Math.abs(lat).toFixed(mist)} ${lat >= 0 ? 'N' : 'S'}, ${Math.abs(lng).toFixed(mist)} ${lng >= 0 ? 'E' : 'W'}`;
+
+/* kraj celým jménem: 'Zlínský' → 'Zlínský kraj', 'Vysočina' → 'Kraj Vysočina', 'Praha' → 'Praha' */
+window.atlasKrajText = (kraj) => {
+  if (!kraj) return '';
+  if (kraj === 'Praha') return 'Praha';
+  if (kraj === 'Vysočina') return 'Kraj Vysočina';
+  return /ý$/.test(kraj) ? `${kraj} kraj` : kraj;
+};
 
 /* body souboru míst: [{nazev, lat, lng}] — bezpečně i pro starší data */
 window.atlasBody = m => (Array.isArray(m && m.body) ? m.body : [])

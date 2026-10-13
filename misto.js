@@ -786,7 +786,7 @@ geoButton?.addEventListener('click',()=>{
     geoFix={lat:latitude,lng:longitude,accuracy};
     geoCapture.classList.add('ready');
     geoStatus.className='geo-status ok';
-    geoStatus.innerHTML=`<b>${latitude.toFixed(5)} N, ${longitude.toFixed(5)} E</b><br>přesnost ±${Math.round(accuracy)} m<br><span>Návštěva ponese odznak ◎ ověřeno na místě.</span>`;
+    geoStatus.innerHTML=`<b>${window.atlasSouradnice(latitude,longitude,5)}</b><br>přesnost ±${Math.round(accuracy)} m<br><span>Návštěva ponese odznak ◎ ověřeno na místě.</span>`;
     geoHotovo();
   },chyba:error=>{
     geoStatus.className='geo-status err';
@@ -1139,7 +1139,7 @@ function obnovKoncept(k){
     geoCapture&&geoCapture.classList.add('ready');
     if(geoStatus){
       geoStatus.className='geo-status ok';
-      geoStatus.innerHTML=`<b>${geoFix.lat.toFixed(5)} N, ${geoFix.lng.toFixed(5)} E</b><br>přesnost ±${Math.round(geoFix.accuracy)} m<br><span>Poloha sejmutá na místě — ◎ ověření platí.</span>`;
+      geoStatus.innerHTML=`<b>${window.atlasSouradnice(geoFix.lat,geoFix.lng,5)}</b><br>přesnost ±${Math.round(geoFix.accuracy)} m<br><span>Poloha sejmutá na místě — ◎ ověření platí.</span>`;
     }
     geoHotovo(); nastavGeoKrok();
   }

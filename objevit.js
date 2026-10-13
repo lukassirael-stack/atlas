@@ -23,7 +23,7 @@ function dlazdice(m){
   const url = window.atlasFotoUrl(m.fotka);
   const rys = window.atlasRys(m.dna);
   const stitek = (m.stitky && m.stitky[0]) ? window.atlasStitek(m.stitky[0]) : '';
-  const misto = m.kraj || m.zeme || '';
+  const misto = m.kraj ? window.atlasKrajText(m.kraj) : (m.zeme || '');
   const horni = [stitek, misto].filter(Boolean).join(' · ');
   const spodek = rys ? `<b>${rys}</b>` : '<b>Nové místo</b>';
   const podnazev = m.nazev_oficialni ? `<p class="tile-podnazev" data-i18n="off">${escHtml(m.nazev_oficialni)}</p>` : '';
@@ -111,7 +111,14 @@ function nactiLeaflet(){
     s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
     s.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
     s.crossOrigin = '';
-    s.onload = () => hotovo();
+    /* po mapě ještě seskupování značek; kdyby se nenačetlo, mapa běží dál s jednotlivými značkami */
+    s.onload = () => {
+      const sh = document.createElement('script');
+      sh.src = 'markercluster.js?v=1';
+      sh.onload = () => hotovo();
+      sh.onerror = () => hotovo();
+      document.head.appendChild(sh);
+    };
     s.onerror = () => { leafletSlib = null; s.remove(); chyba(new Error('leaflet')); };
     document.head.appendChild(s);
   });
@@ -138,13 +145,24 @@ function mapaInit(){
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
     maxZoom: 19, opacity: 0.9
   }).addTo(mapa);
-  mapaVrstva = L.layerGroup().addTo(mapa);
+  /* blízká místa se při oddálení spojí do kroužku s počtem */
+  mapaVrstva = L.markerClusterGroup ? L.markerClusterGroup({
+    maxClusterRadius: 44, showCoverageOnHover: false, spiderfyOnMaxZoom: true, zoomToBoundsOnClick: true,
+    spiderLegPolylineOptions: { weight: 1.5, color: '#e8c877', opacity: .8 },
+    iconCreateFunction: shluk => {
+      const deti = shluk.getAllChildMarkers(), n = shluk.getChildCount();
+      const vse = deti.length && deti.every(z => z.options.navstiveno);
+      const d = n < 10 ? 38 : (n < 100 ? 44 : 50);
+      return L.divIcon({ html: `<b>${n}</b>`, className: 'atlas-shluk' + (vse ? ' navstiveno' : ''), iconSize: [d, d] });
+    }
+  }) : L.layerGroup();
+  mapaVrstva.addTo(mapa);
 }
 
 function bublina(m){
   const rys = window.atlasRys(m.dna);
   const stitek = (m.stitky && m.stitky[0]) ? window.atlasStitek(m.stitky[0]) : '';
-  const kde = m.kraj || m.zeme || '';
+  const kde = m.kraj ? window.atlasKrajText(m.kraj) : (m.zeme || '');
   const spodek = [rys ? `<b>${rys}</b>` : '<b>Nové místo</b>', escHtml(kde)].filter(Boolean).join(' · ');
   return (stitek ? `<span class="ap-stitek">${escHtml(stitek)}</span>` : '') +
     `<span class="ap-nazev" data-i18n="off">${escHtml(m.nazev)}</span>` +
@@ -165,7 +183,7 @@ function mapaZnacky(){
       className: 'atlas-spendlik ' + (navstiveno ? 'navstiveno' : 'ceka'),
       html: '<i></i>', iconSize: [26,28], iconAnchor: [13,24], popupAnchor: [0,-22]
     });
-    L.marker([m.lat, m.lng], { icon: ikona, title: m.nazev })
+    L.marker([m.lat, m.lng], { icon: ikona, title: m.nazev, navstiveno })
       .bindPopup(bublina(m), { className: 'atlas-popup', maxWidth: 270, autoPanPadding: [22,22] })
       .addTo(mapaVrstva);
     body.push([m.lat, m.lng]);

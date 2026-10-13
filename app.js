@@ -28,7 +28,7 @@ function kartaZobraz(m){
   }
   document.querySelector('#place-description').textContent = m.popis_kratky || '';
   document.querySelector('#place-tags').innerHTML =
-    (m.stitky||[]).map(k=>`<span>${window.atlasStitek(k,true)}</span>`).join('');
+    (m.stitky||[]).map(k=>`<span>${window.atlasStitek(k)}</span>`).join('');
   const dnaEl = document.querySelector('#place-dna');
   const rys = window.atlasRys(m.dna);
   if (rys){
@@ -67,7 +67,7 @@ function dlazdiceVykresli(){
     const rys = window.atlasRys(m.dna);
     const stitek = (m.stitky&&m.stitky[0]) ? window.atlasStitek(m.stitky[0]) : '';
     /* kde to je: u českých míst kraj, u zahraničních země */
-    const kdeJe = m.kraj ? `${m.kraj} kraj` : (m.zeme || '');
+    const kdeJe = m.kraj ? window.atlasKrajText(m.kraj) : (m.zeme || '');
     const spodek = [rys ? `<b>${rys}</b>` : '<b>Nové místo</b>', kdeJe].filter(Boolean).join(' · ');
     const podnazev = m.nazev_oficialni ? `<p class="tile-podnazev" data-i18n="off">${String(m.nazev_oficialni).replace(/</g,'&lt;')}</p>` : '';
     return `<a class="place-tile" href="/misto?m=${m.slug}${m.fotka?`&f=${encodeURIComponent(m.fotka)}`:''}">
@@ -80,6 +80,31 @@ function dlazdiceVykresli(){
 /* ==== Leaflet mapa (satelit) ==== */
 let atlasMap = null;
 let atlasZnacky = [];
+let atlasShluky = null;      // skupina hlavních značek — blízká místa se při oddálení spojí do kroužku s počtem
+let atlasPodrobnosti = null; // rozsahy a body souborů míst — ukazují se až při přiblížení
+const PODROBNOSTI_OD_ZOOMU = 11;
+/* kroužek s počtem míst: zlatý, navštívená skupina zelená */
+window.atlasShlukIkona = function(shluk){
+  const deti = shluk.getAllChildMarkers();
+  const vse = deti.length && deti.every(z => z.options.navstiveno);
+  const n = shluk.getChildCount();
+  const d = n < 10 ? 38 : (n < 100 ? 44 : 50);
+  return L.divIcon({ html: `<b>${n}</b>`, className: 'atlas-shluk' + (vse ? ' navstiveno' : ''), iconSize: [d, d] });
+};
+window.atlasShlukySkupina = function(){
+  if (!L.markerClusterGroup) return L.layerGroup();
+  return L.markerClusterGroup({
+    maxClusterRadius: 44, showCoverageOnHover: false, spiderfyOnMaxZoom: true,
+    zoomToBoundsOnClick: true, chunkedLoading: false, iconCreateFunction: window.atlasShlukIkona,
+    spiderLegPolylineOptions: { weight: 1.5, color: '#e8c877', opacity: .8 }
+  });
+};
+function podrobnostiPodleZoomu(){
+  if (!atlasMap || !atlasPodrobnosti) return;
+  const ukazat = atlasMap.getZoom() >= PODROBNOSTI_OD_ZOOMU;
+  if (ukazat && !atlasMap.hasLayer(atlasPodrobnosti)) atlasPodrobnosti.addTo(atlasMap);
+  if (!ukazat && atlasMap.hasLayer(atlasPodrobnosti)) atlasMap.removeLayer(atlasPodrobnosti);
+}
 let mojePoloha = null;
 let locateBtn = null;
 let mojeNavstevy = new Set();   // misto_id míst, která mám navštívená (mám u nich zápis)
@@ -158,40 +183,46 @@ function znackyVykresli(){
   if (!atlasMap) return;
   atlasZnacky.forEach(z=>z.remove());
   atlasZnacky = [];
+  if (!atlasShluky){ atlasShluky = window.atlasShlukySkupina().addTo(atlasMap); }
+  if (!atlasPodrobnosti){ atlasPodrobnosti = L.layerGroup(); atlasMap.on('zoomend', podrobnostiPodleZoomu); }
+  atlasShluky.clearLayers();
+  atlasPodrobnosti.clearLayers();
   const body = [];
   atlasMista.forEach(m=>{
     if (m.lat==null || m.lng==null) return;
     if (Number(m.rozsah_m) >= 100){
-      const kruh = L.circle([m.lat, m.lng], {
+      L.circle([m.lat, m.lng], {
         radius: Number(m.rozsah_m), color: '#c9a14a', weight: 1, opacity: .6,
         fillColor: '#c9a14a', fillOpacity: .14, interactive: false, className: 'atlas-rozsah'
-      }).addTo(atlasMap);
-      atlasZnacky.push(kruh);
+      }).addTo(atlasPodrobnosti);
     }
-    const ikona = mojeNavstevy.has(m.id) ? navstivenaIkona : znackaIkona;
-    const znacka = L.marker([m.lat, m.lng], {icon: ikona, title: m.nazev}).addTo(atlasMap);
+    const navstiveno = mojeNavstevy.has(m.id);
+    const ikona = navstiveno ? navstivenaIkona : znackaIkona;
+    const znacka = L.marker([m.lat, m.lng], {icon: ikona, title: m.nazev, navstiveno});
     znacka.on('click', ()=>{ kartaZobraz(m); atlasMap.panTo([m.lat, m.lng]); });
-    atlasZnacky.push(znacka);
+    atlasShluky.addLayer(znacka);
     body.push([m.lat, m.lng]);
     /* soubor míst: další body spojené jemnou zlatou linkou s hlavním bodem */
-    const navstiveno = mojeNavstevy.has(m.id);
     window.atlasBody(m).forEach(b=>{
-      const linka = L.polyline([[m.lat, m.lng],[b.lat, b.lng]], {
+      L.polyline([[m.lat, m.lng],[b.lat, b.lng]], {
         color: '#e8c877', weight: 1.5, opacity: .75, dashArray: '3 6', interactive: false, className: 'atlas-soubor-linka'
-      }).addTo(atlasMap);
-      atlasZnacky.push(linka);
+      }).addTo(atlasPodrobnosti);
       const bz = L.marker([b.lat, b.lng], {
         icon: navstiveno ? bodNavstivenyIkona : bodIkona,
         title: b.nazev ? `${m.nazev} · ${b.nazev}` : m.nazev
-      }).addTo(atlasMap);
+      });
       bz.on('click', ()=>{ kartaZobraz(m); atlasMap.panTo([b.lat, b.lng]); });
-      atlasZnacky.push(bz);
+      bz.addTo(atlasPodrobnosti);
       body.push([b.lat, b.lng]);
     });
   });
-  // srovnat pohled na všechna místa
-  if (body.length === 1){ atlasMap.setView(body[0], 12); }
-  else if (body.length > 1){ atlasMap.fitBounds(body, {padding:[50,50], maxZoom:12}); }
+  // srovnat pohled na všechna místa — jen poprvé, ať se mapa po načtení návštěv nevrací zpět
+  if (!znackyVykresli.srovnano){
+    if (body.length === 1){ atlasMap.setView(body[0], 12); }
+    else if (body.length > 1){ atlasMap.fitBounds(body, {padding:[50,50], maxZoom:12}); }
+    if (body.length) znackyVykresli.srovnano = true;
+  }
+  podrobnostiPodleZoomu();
 }
 
 async function atlasStart(){
@@ -425,7 +456,7 @@ geoButton?.addEventListener('click',()=>{
     geoFix={lat:latitude,lng:longitude,accuracy};
     geoCapture.classList.add('ready');
     geoStatus.className='geo-status ok';
-    geoStatus.innerHTML=`<b>${latitude.toFixed(5)} N, ${longitude.toFixed(5)} E</b><br>přesnost ±${Math.round(accuracy)} m`;
+    geoStatus.innerHTML=`<b>${window.atlasSouradnice(latitude,longitude,5)}</b><br>přesnost ±${Math.round(accuracy)} m`;
     geoHotovo();
   },chyba:error=>{
     geoStatus.className='geo-status err';
@@ -441,7 +472,7 @@ function geoStavPodleFixu(){
   if(geoFix){
     geoCapture.classList.add('ready');
     geoStatus.className='geo-status ok';
-    geoStatus.innerHTML=`<b>${geoFix.lat.toFixed(5)} N, ${geoFix.lng.toFixed(5)} E</b><br>přesnost ±${Math.round(geoFix.accuracy)} m`;
+    geoStatus.innerHTML=`<b>${window.atlasSouradnice(geoFix.lat,geoFix.lng,5)}</b><br>přesnost ±${Math.round(geoFix.accuracy)} m`;
     geoHotovo();
   } else geoReset();
 }
@@ -468,7 +499,7 @@ geoPresneBtn?.addEventListener('click',()=>{
       geoFix={lat:vysledek.lat,lng:vysledek.lng,accuracy:vysledek.accuracy};
       geoCapture.classList.add('ready');
       geoStatus.className='geo-status ok';
-      geoStatus.innerHTML=`<b>${geoFix.lat.toFixed(5)} N, ${geoFix.lng.toFixed(5)} E</b><br>přesnost ±${Math.round(geoFix.accuracy)} m · průměr z ${vysledek.mereni} měření`;
+      geoStatus.innerHTML=`<b>${window.atlasSouradnice(geoFix.lat,geoFix.lng,5)}</b><br>přesnost ±${Math.round(geoFix.accuracy)} m · průměr z ${vysledek.mereni} měření`;
       geoHotovo();
     },
     chyba:error=>{
@@ -714,7 +745,7 @@ function obnovKonceptMista(k,klic){
     geoCapture&&geoCapture.classList.add('ready');
     if(geoStatus){
       geoStatus.className='geo-status ok';
-      geoStatus.innerHTML=`<b>${geoFix.lat.toFixed(5)} N, ${geoFix.lng.toFixed(5)} E</b><br>přesnost ±${Math.round(geoFix.accuracy)} m`;
+      geoStatus.innerHTML=`<b>${window.atlasSouradnice(geoFix.lat,geoFix.lng,5)}</b><br>přesnost ±${Math.round(geoFix.accuracy)} m`;
     }
     geoHotovo();
   }
