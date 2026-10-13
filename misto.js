@@ -1197,6 +1197,8 @@ async function startKoncept(){
   if(!mistoData||!window.atlasKoncepty) return;
   konceptProuzek();
   if(new URLSearchParams(location.search).get('koncept')==='otevrit'){
+    /* odkaz na rozepsanou návštěvu platí jednou — z adresy ho odebrat, ať se formulář neotvírá při každém načtení */
+    try{ const u=new URL(location.href); u.searchParams.delete('koncept'); history.replaceState(history.state,'',u.pathname+u.search+u.hash); }catch(_){}
     try{ const k=await window.atlasKoncepty.nacti('navsteva:'+mistoData.id); if(k) obnovKoncept(k); }catch(_){}
   }
 }

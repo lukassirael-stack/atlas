@@ -407,7 +407,13 @@ function openModal(){
 function closeModal(){modal.classList.remove('open');modal.setAttribute('aria-hidden','true')}
 document.querySelector('#add-place')?.addEventListener('click',()=>{if(window.vyzadujUcet&&!window.vyzadujUcet())return;openModal()});
 document.querySelectorAll('a[href="#pridat"]').forEach(link=>link.addEventListener('click',event=>{event.preventDefault();if(window.vyzadujUcet&&!window.vyzadujUcet())return;openModal()}));
-if(location.hash==='#pridat')setTimeout(()=>{if(!window.vyzadujUcet||window.vyzadujUcet())openModal()},600);
+/* příchod z jiné stránky přes „Přidat místo" (/#pridat): formulář se otevře jednou.
+   Značka se z adresy hned odebere — po obnovení stránky, návratu tlačítkem Zpět nebo
+   novém spuštění aplikace se formulář sám znovu neotvírá. */
+if(location.hash==='#pridat'){
+  try{ history.replaceState(history.state,'',location.pathname+location.search); }catch(_){}
+  setTimeout(()=>{if(!window.vyzadujUcet||window.vyzadujUcet())openModal()},600);
+}
 document.querySelector('#modal-close')?.addEventListener('click',closeModal);
 modal?.addEventListener('click',event=>{if(event.target===modal)closeModal()});
 document.addEventListener('keydown',event=>{if(event.key==='Escape')closeModal()});
@@ -864,6 +870,10 @@ async function startKonceptIndex(){
   if(!window.atlasKonceptyProuzek) return;
   await window.atlasKonceptyProuzek(indexProuzekFiltr);
   const param=new URLSearchParams(location.search).get('koncept');
+  if(param){
+    /* odkaz na rozepsané místo platí jednou — z adresy ho odebrat, ať se formulář neotvírá při každém načtení */
+    try{ const u=new URL(location.href); u.searchParams.delete('koncept'); history.replaceState(history.state,'',u.pathname+u.search+u.hash); }catch(_){}
+  }
   if(param&&param.split(':')[0]==='misto'){
     try{
       let klic=param, k=null;
