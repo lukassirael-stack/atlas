@@ -1234,3 +1234,8 @@ html{overflow-x:clip}
 body:has(.modal-backdrop.open) .toast{bottom:auto;top:calc(14px + env(safe-area-inset-top,0px));translate:-50% calc(-100% - 80px)}
 body:has(.modal-backdrop.open) .toast.show{translate:-50% 0}
 body:has(.modal-backdrop.open) .ainst-pill{display:none!important}
+
+/* ===== úvod: „Náhodné tipy" — tlačítko na všechna místa je nahoře u nadpisu ===== */
+.discover .section-heading{flex-wrap:wrap;align-items:center}
+.discover .section-heading .vsechna-odkaz{margin:0;flex:none;align-self:center}
+.discover .add-invite{margin-top:26px}

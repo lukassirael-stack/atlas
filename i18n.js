@@ -175,6 +175,7 @@
     /* — sekce Objevuj (na úvodní straně) — */
     'Objevuj po svém': 'Discover your own way',
     'Kam tě to vede?': 'Where does it lead you?',
+    'Náhodné tipy': 'Random picks',
     'Energetické filtry': 'Energetic filters',
     'Doporučená místa': 'Recommended places',
     'Nejblíž mně': 'Nearest to me',
