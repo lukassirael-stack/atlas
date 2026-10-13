@@ -224,7 +224,7 @@ function mapaInit(){
     iconCreateFunction: shluk => {
       const deti = shluk.getAllChildMarkers(), n = shluk.getChildCount();
       const vse = deti.length && deti.every(z => z.options.navstiveno);
-      const d = n < 10 ? 38 : (n < 100 ? 44 : 50);
+      const d = n < 10 ? 26 : (n < 100 ? 30 : 34);   // o málo větší než špendlík
       return L.divIcon({ html: `<b>${n}</b>`, className: 'atlas-shluk' + (vse ? ' navstiveno' : ''), iconSize: [d, d] });
     }
   }) : L.layerGroup();

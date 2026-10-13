@@ -1110,12 +1110,12 @@ html{overflow-x:clip}
 .leaflet-cluster-spider-leg{transition:stroke-dashoffset .3s ease-out,stroke-opacity .3s ease-in}
 .atlas-shluk{display:grid;place-items:center;border-radius:50%;cursor:pointer;
   background:radial-gradient(circle at 34% 28%,#f6dfa6 0%,#d9b25c 52%,#b98f38 100%);
-  border:2px solid rgba(255,250,235,.92);
-  box-shadow:0 0 0 5px rgba(201,161,74,.26),0 8px 20px rgba(5,12,8,.55);
+  border:1.5px solid rgba(255,250,235,.92);
+  box-shadow:0 0 0 3px rgba(201,161,74,.24),0 4px 12px rgba(5,12,8,.5);
   transition:box-shadow .2s}
-.atlas-shluk b{font:600 15px/1 'Jost',sans-serif;color:var(--forest);letter-spacing:.01em}
-.atlas-shluk:hover{box-shadow:0 0 0 7px rgba(201,161,74,.36),0 10px 24px rgba(5,12,8,.6)}
-.atlas-shluk.navstiveno{background:radial-gradient(circle at 34% 28%,#b8ecc6 0%,#5cc47c 52%,#2b7f46 100%);box-shadow:0 0 0 5px rgba(92,196,124,.26),0 8px 20px rgba(5,12,8,.55)}
+.atlas-shluk b{font:600 12.5px/1 'Jost',sans-serif;color:var(--forest);letter-spacing:0}
+.atlas-shluk:hover{box-shadow:0 0 0 4px rgba(201,161,74,.34),0 6px 14px rgba(5,12,8,.55)}
+.atlas-shluk.navstiveno{background:radial-gradient(circle at 34% 28%,#b8ecc6 0%,#5cc47c 52%,#2b7f46 100%);box-shadow:0 0 0 3px rgba(92,196,124,.24),0 4px 12px rgba(5,12,8,.5)}
 
 /* ===== mapa na telefonu o kousek nižší — nad ní i pod ní zůstává kus stránky na posun prstem ===== */
 @media(max-width:560px){

@@ -91,7 +91,7 @@ window.atlasShlukIkona = function(shluk){
   const deti = shluk.getAllChildMarkers();
   const vse = deti.length && deti.every(z => z.options.navstiveno);
   const n = shluk.getChildCount();
-  const d = n < 10 ? 38 : (n < 100 ? 44 : 50);
+  const d = n < 10 ? 26 : (n < 100 ? 30 : 34);   // o málo větší než špendlík
   return L.divIcon({ html: `<b>${n}</b>`, className: 'atlas-shluk' + (vse ? ' navstiveno' : ''), iconSize: [d, d] });
 };
 window.atlasShlukySkupina = function(){
