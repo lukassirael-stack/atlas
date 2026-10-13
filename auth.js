@@ -15,8 +15,35 @@ let profil = null;    // atlas_profily (nick)
 let profilZnamy = false;   // true = víme jistě, zda profil existuje (ne jen výpadek sítě)
 const PROFIL_CACHE = 'atlas_profil_cache';
 
+/* účet uložený v telefonu z posledního přihlášení — známe ho i bez signálu.
+   Knihovna ho ze skladu sama odstraní při odhlášení nebo neplatném přihlášení. */
+function ulozenyUcet() {
+  try {
+    const ref = new URL(ATLAS_URL).hostname.split('.')[0];
+    const s = JSON.parse(localStorage.getItem('sb-' + ref + '-auth-token') || 'null');
+    if (!s) return null;
+    if (s.user && s.user.id) return s.user;
+    if (s.access_token) {
+      const p = JSON.parse(atob(s.access_token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+      if (p && p.sub) return { id: p.sub, email: p.email || null };
+    }
+  } catch (_) {}
+  return null;
+}
+function profilZTelefonu() {
+  try {
+    const c = JSON.parse(localStorage.getItem(PROFIL_CACHE) || 'null');
+    return c && ucet && c.id === ucet.id ? c : null;
+  } catch (_) { return null; }
+}
+
 async function nactiProfil() {
   if (!db || !ucet) { profil = null; profilZnamy = true; return; }
+  if (!navigator.onLine) {           /* bez signálu se neptáme sítě — stačí, co si telefon pamatuje */
+    profilZnamy = false;
+    if (!profil) profil = profilZTelefonu();
+    return;
+  }
   const { data, error } = await db.from('atlas_profily').select('id,nick,spravce').eq('id', ucet.id).maybeSingle();
   if (error) {
     /* bez signálu: nezahazovat, co víme — držet stávající profil, případně vzít mezipaměť */
@@ -105,8 +132,15 @@ function vykresliStav() {
 
 async function nactiSession() {
   if (!db) return;
-  const { data: { session } } = await db.auth.getSession();
-  ucet = session?.user || null;
+  if (!navigator.onLine) {           /* bez signálu: účet z telefonu hned, ověří se po návratu spojení */
+    ucet = ulozenyUcet();
+    await nactiProfil();
+    vykresliStav();
+    return;
+  }
+  let session = null;
+  try { const r = await db.auth.getSession(); session = r && r.data ? r.data.session : null; } catch (_) {}
+  ucet = (session && session.user) || ulozenyUcet();
   await nactiProfil();
   vykresliStav();
   if (ucet && !profil && profilZnamy) otevri('#nick-modal');
@@ -359,7 +393,8 @@ document.querySelector('#nick-form')?.addEventListener('submit', async event => 
 
 /* reakce na návrat z magic linku */
 db?.auth.onAuthStateChange(async (event, session) => {
-  ucet = session?.user || null;
+  /* výpadek spojení při obnově přihlášení neznamená odhlášení — platí účet uložený v telefonu */
+  ucet = (session && session.user) || (event === 'SIGNED_OUT' ? null : ulozenyUcet());
   await nactiProfil();
   vykresliStav();
   if (event === 'SIGNED_IN') {
@@ -375,8 +410,20 @@ db?.auth.onAuthStateChange(async (event, session) => {
 window.addEventListener('online', () => {
   if (ucet && !profilZnamy) nactiProfil().then(vykresliStav);
 });
+window.addEventListener('offline', () => { if (ucet) profilZnamy = false; });
 
-nactiSession().then(()=>{
+/* stránka se rozběhne, jakmile je jasno o účtu — a při vlekoucím se spojení nejpozději za pár vteřin
+   s účtem, který si telefon pamatuje (místa a mapa na přihlášení nečekají) */
+let authOznameno = false;
+function oznamAuth() {
+  if (authOznameno) return;
+  authOznameno = true;
   window.atlasAuthReady = true;
   window.dispatchEvent(new Event('atlas-auth-ready'));
-});
+}
+const authPojistka = setTimeout(() => {
+  if (authOznameno) return;
+  if (!ucet) { ucet = ulozenyUcet(); if (ucet && !profil) { profil = profilZTelefonu(); profilZnamy = false; } vykresliStav(); }
+  oznamAuth();
+}, 3500);
+nactiSession().then(() => { clearTimeout(authPojistka); oznamAuth(); }, () => { clearTimeout(authPojistka); oznamAuth(); });

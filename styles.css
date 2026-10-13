@@ -1166,3 +1166,14 @@ html{overflow-x:clip}
   .filtr-pas button{flex:none;scroll-snap-align:start}
 }
 .grid-prazdno .button{margin-top:16px}
+
+/* ===== slabý signál: proužky se stavem pod hlavičkou ===== */
+.fronta-pruh,.misto-stav{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px 14px;
+  padding:9px 18px;background:linear-gradient(180deg,rgba(201,161,74,.24),rgba(201,161,74,.13));
+  border-bottom:1px solid var(--line);color:var(--cream);font:400 13.5px/1.4 'Jost',sans-serif;text-align:center}
+.fronta-pruh{position:sticky;top:74px;z-index:900;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);background-color:rgba(15,27,21,.86)}
+@media(max-width:560px){.fronta-pruh{top:62px}}
+.fronta-pruh button,.misto-stav button{flex:none;min-height:36px;padding:6px 16px;border:1px solid var(--gold);border-radius:99px;
+  background:rgba(201,161,74,.14);color:var(--gold-lume);font:500 13px 'Jost',sans-serif;cursor:pointer;transition:background .2s,color .2s}
+.fronta-pruh button:hover,.misto-stav button:hover{background:var(--gold);color:var(--forest)}
+.misto-stav button:disabled{opacity:.5;cursor:default}

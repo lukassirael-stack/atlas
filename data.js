@@ -108,16 +108,42 @@ window.atlasBody = m => (Array.isArray(m && m.body) ? m.body : [])
 /* „soubor 3 míst" — počet bodů včetně hlavního */
 window.atlasSouborText = n => (window.atlasLang === 'en' ? `set of ${n} places` : `soubor ${n} míst`);
 
-/* načte zveřejněná místa přes RPC (souřadnice už rozložené) */
+/* načte zveřejněná místa přes RPC (souřadnice už rozložené).
+   Poslední načtený seznam zůstává v telefonu — při slabém signálu se ukáže on. */
+const MISTA_CACHE = 'atlas_mista_cache';
+window.atlasMistaChyba = false;        // seznam se nenačetl a v telefonu žádný uložený není
+window.atlasMistaZMezipameti = false;  // právě se ukazuje naposledy uložený seznam
+window.atlasMistaUlozena = () => {
+  try { const c = JSON.parse(localStorage.getItem(MISTA_CACHE) || 'null'); return c && Array.isArray(c.mista) ? c.mista : null; }
+  catch (_) { return null; }
+};
+/* dotaz s časovým stropem — při slabém signálu nenechá stránku čekat donekonečna */
+window.atlasSCasem = (dotaz, ms = 15000) => {
+  if (!dotaz || typeof dotaz.abortSignal !== 'function' || !window.AbortController) return dotaz;
+  const ac = new AbortController();
+  const t = setTimeout(() => ac.abort(), ms);
+  return dotaz.abortSignal(ac.signal).then(r => { clearTimeout(t); return r; }, e => { clearTimeout(t); return { data: null, error: e }; });
+};
 window.atlasNactiMista = async () => {
   const db = window.atlasDb;
-  if (!db) return [];
-  const { data, error } = await db.rpc('atlas_mista_verejna');
-  if (error) { console.error('Načtení míst selhalo:', error); return []; }
-  return (data||[]).map(m => ({
+  const zTelefonu = () => {
+    const c = window.atlasMistaUlozena();
+    window.atlasMistaZMezipameti = !!c;
+    window.atlasMistaChyba = !c;
+    return c || [];
+  };
+  if (!db || !navigator.onLine) return zTelefonu();
+  let data = null, error = null;
+  try { ({ data, error } = await window.atlasSCasem(db.rpc('atlas_mista_verejna'))); } catch (e) { error = e; }
+  if (error) { console.error('Načtení míst selhalo:', error); return zTelefonu(); }
+  window.atlasMistaChyba = false;
+  window.atlasMistaZMezipameti = false;
+  const mista = (data||[]).map(m => ({
     ...m,
     dna: m.zapisu ? {zapisu:m.zapisu, klid:m.klid, energie:m.energie, mystika:m.mystika, krasa:m.krasa, lecivost:m.lecivost} : null
   }));
+  try { localStorage.setItem(MISTA_CACHE, JSON.stringify({ kdy: Date.now(), mista })); } catch (_) {}
+  return mista;
 };
 
 /* Jazyk, ve kterém člověk právě píše — ukládá se k obsahu, aby šlo později

@@ -1,6 +1,13 @@
 /* společné pro všechny stránky: toast, mobilní menu, service worker */
 const toast = document.querySelector('#toast');
-function notify(message){if(!toast)return;toast.textContent=message;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2800)}
+/* delší zpráva zůstane vidět déle; nová zpráva nenechá tu předchozí, aby ji předčasně schovala */
+let toastCasovac=null;
+function notify(message){
+  if(!toast)return;
+  toast.textContent=message;toast.classList.add('show');
+  clearTimeout(toastCasovac);
+  toastCasovac=setTimeout(()=>toast.classList.remove('show'),Math.min(9000,Math.max(2800,String(message).length*55)));
+}
 
 /* ---- mobilní menu ---- */
 /* menu i překryv přesunout VEN z hlavičky přímo do <body>:
@@ -130,6 +137,152 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') zavriMenu(
     zavri(el);
     if(jeOtevrena(el)) zavirane.delete(el);            // okno se zavřít nedalo — nic nepředstírat
   });
+})();
+
+/* ---- návštěvy uschované bez signálu: společná fronta pro všechny stránky ----
+   Návštěva zapsaná mimo signál čeká v telefonu (IndexedDB). Odesílá se sama z kterékoli stránky,
+   jakmile je spojení — a dokud čeká, je to vidět v proužku pod hlavičkou. */
+window.atlasFronta=(function(){
+  function otevri(){
+    return new Promise((res,rej)=>{
+      const r=indexedDB.open('atlas-fronta',2);
+      r.onupgradeneeded=()=>{
+        const d=r.result;
+        if(!d.objectStoreNames.contains('zapisy'))d.createObjectStore('zapisy',{autoIncrement:true});
+        if(!d.objectStoreNames.contains('koncepty'))d.createObjectStore('koncepty');
+      };
+      r.onsuccess=()=>res(r.result);
+      r.onerror=()=>rej(r.error);
+    });
+  }
+  function zapis(prace){
+    return otevri().then(d=>new Promise((res,rej)=>{
+      const t=d.transaction('zapisy','readwrite');
+      prace(t.objectStore('zapisy'));
+      t.oncomplete=()=>res();
+      t.onerror=()=>rej(t.error);
+    }));
+  }
+  const pridej=polozka=>zapis(s=>s.add(polozka)).then(obnovPruh);
+  const uloz=(klic,polozka)=>zapis(s=>s.put(polozka,klic));
+  const smaz=klic=>zapis(s=>s.delete(klic));
+  function vse(){
+    return otevri().then(d=>new Promise((res,rej)=>{
+      const t=d.transaction('zapisy','readonly').objectStore('zapisy').openCursor();
+      const out=[];
+      t.onsuccess=()=>{const c=t.result;if(c){out.push({klic:c.key,z:c.value});c.continue()}else res(out)};
+      t.onerror=()=>rej(t.error);
+    }));
+  }
+  function jeSitovaChyba(e){
+    if(!navigator.onLine)return true;
+    if(!e)return false;
+    if(e instanceof TypeError)return true;
+    return /failed to fetch|networkerror|network request failed|load failed|fetch failed|aborted|timeout/i.test(e.message||'');
+  }
+  /* chyba, kterou opakování nespraví (pravidla databáze) — všechno ostatní zkusíme později znovu */
+  function jeTrvalaChyba(e){
+    const kod=String((e&&e.code)||'');
+    return /^(22|23)/.test(kod)||kod==='P0001'||kod==='42501';
+  }
+  const overeniOdmitnuto=e=>!!e&&(e.code==='23505'||/m od místa|už máš ověřené/.test(e.message||''));
+
+  /* proužek pod hlavičkou: kolik návštěv čeká */
+  let pruh=null;
+  async function obnovPruh(){
+    let n=0;
+    try{
+      const ucet=window.atlasUcet&&window.atlasUcet();
+      const v=await vse();
+      n=v.filter(x=>!ucet||!x.z.zaznam||x.z.zaznam.autor_id===ucet.id).length;
+    }catch(_){}
+    if(!n){ if(pruh){pruh.remove();pruh=null;} return; }
+    if(!pruh){
+      const topbar=document.querySelector('.topbar');
+      if(!topbar) return;
+      pruh=document.createElement('div');
+      pruh.className='fronta-pruh';
+      pruh.setAttribute('role','status');
+      pruh.innerHTML='<span class="fp-text"></span><button type="button" class="fp-odeslat">Odeslat teď</button>';
+      pruh.querySelector('.fp-odeslat').addEventListener('click',()=>{
+        if(!navigator.onLine){ notify('Jsi mimo signál — návštěva se odešle sama, jakmile se připojíš.'); return; }
+        if(!(window.atlasUcet&&window.atlasUcet())){ notify('Přihlas se, ať se uschovaná návštěva může odeslat.'); return; }
+        zpracuj(true);
+      });
+      topbar.insertAdjacentElement('afterend',pruh);
+    }
+    pruh.querySelector('.fp-text').textContent=
+      n===1?'◷ 1 návštěva čeká na odeslání':(n<5?`◷ ${n} návštěvy čekají na odeslání`:`◷ ${n} návštěv čeká na odeslání`);
+  }
+
+  let bezi=false;
+  async function zpracuj(rucne){
+    if(bezi||!navigator.onLine)return;
+    const db=window.atlasDb, ucet=window.atlasUcet&&window.atlasUcet();
+    if(!db||!ucet){ obnovPruh(); return; }
+    bezi=true;
+    let zbylo=false;
+    try{
+      const cekajici=await vse();
+      for(const {klic,z} of cekajici){
+        if(!z||!z.zaznam){ await smaz(klic); continue; }
+        if(z.zaznam.autor_id!==ucet.id) continue;               /* návštěva jiného účtu v tomhle telefonu */
+        try{
+          /* 1) návštěva sama */
+          if(!z.zapisHotov){
+            let {error}=await db.from('atlas_zapisy').insert(z.zaznam);
+            if(error&&z.zaznam.poloha&&overeniOdmitnuto(error)){
+              /* ověření polohy neprošlo — návštěva i slova se uloží, jen bez odznaku ◎ */
+              const bez={...z.zaznam}; delete bez.poloha; delete bez.presnost_m;
+              const r=await db.from('atlas_zapisy').insert(bez);
+              error=r.error;
+              if(!error){ z.zaznam=bez; z.bezOvereni=true; }
+            }
+            if(error){
+              if(jeSitovaChyba(error)||!jeTrvalaChyba(error))throw error;
+              await smaz(klic);
+              notify('Uschovaná návštěva nebyla přijata: '+error.message);
+              continue;
+            }
+            z.zapisHotov=true;
+            await uloz(klic,z);
+          }
+          /* 2) slova a fotka na zeď místa */
+          if(z.komentarText||z.fotoBlob){
+            if(z.fotoBlob&&!z.fotkaCesta&&!z.fotoChyba){
+              const cesta=`komentare/${z.zaznam.misto_id}/${Date.now()}.${z.pripona||'jpg'}`;
+              const {error:fe}=await db.storage.from('atlas').upload(cesta,z.fotoBlob,{contentType:z.fotoTyp||'image/jpeg'});
+              if(fe){ if(jeSitovaChyba(fe))throw fe; z.fotoChyba=true; }
+              else z.fotkaCesta=cesta;
+              await uloz(klic,z);
+            }
+            const koment={misto_id:z.zaznam.misto_id,autor_id:z.zaznam.autor_id,text:z.komentarText||'✦',lang:z.lang||'cs'};
+            if(z.fotkaCesta)koment.fotka=z.fotkaCesta;
+            const {error:ke}=await db.from('atlas_komentare').insert(koment);
+            if(ke){
+              if(jeSitovaChyba(ke)||!jeTrvalaChyba(ke))throw ke;
+              await smaz(klic);
+              notify('Návštěva je zapsaná. Tvá slova se uložit nepodařilo: '+ke.message);
+              window.dispatchEvent(new CustomEvent('atlas-fronta-odeslano',{detail:{misto_id:z.zaznam.misto_id}}));
+              continue;
+            }
+          }
+          await smaz(klic);
+          notify(z.bezOvereni?'Uschovaná návštěva se odeslala — tentokrát bez ověření polohy.'
+            :(z.jenSlova?'Tvá slova z návštěvy se právě odeslala 🌿':'Uschovaná návštěva se právě odeslala 🌿'));
+          window.dispatchEvent(new CustomEvent('atlas-fronta-odeslano',{detail:{misto_id:z.zaznam.misto_id}}));
+        }catch(e){ zbylo=true; break; }                          /* spojení zase vypadlo — zbytek počká */
+      }
+    }catch(_){}finally{ bezi=false; obnovPruh(); }
+    if(rucne&&zbylo) notify('Spojení je teď slabé — zkusím to znovu, jakmile se zlepší.');
+  }
+
+  window.addEventListener('online',()=>zpracuj());
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden) zpracuj(); });
+  const start=()=>{ obnovPruh(); zpracuj(); };
+  if(window.atlasAuthReady) start(); else window.addEventListener('atlas-auth-ready',start,{once:true});
+
+  return {pridej,vse,smaz,zpracuj,obnovPruh,jeSitovaChyba,jeTrvalaChyba,overeniOdmitnuto};
 })();
 
 /* ---- zvoneček: vzkazy od správce + (pro správce) místa čekající na schválení ---- */

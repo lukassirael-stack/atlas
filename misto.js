@@ -57,21 +57,105 @@ function vykresliCakry(m){
 }
 function escHtml(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML}
 
+/* ---- mezipaměť míst: naposledy viděná podoba místa je po ruce i při slabém signálu ---- */
+const MISTO_CACHE = 'atlas_misto:', MISTO_INDEX = 'atlas_misto_index', MISTO_CACHE_MAX = 30;
+function mistoCacheUloz(m, fotky){
+  try {
+    localStorage.setItem(MISTO_CACHE + m.slug, JSON.stringify({ kdy: Date.now(), m, fotky: fotky || [] }));
+    let index = [];
+    try { index = JSON.parse(localStorage.getItem(MISTO_INDEX) || '[]') || []; } catch (_) {}
+    index = [m.slug, ...index.filter(x => x !== m.slug)];
+    index.splice(MISTO_CACHE_MAX).forEach(stary => localStorage.removeItem(MISTO_CACHE + stary));
+    localStorage.setItem(MISTO_INDEX, JSON.stringify(index));
+  } catch (_) {}
+}
+function mistoCacheNacti(slug){
+  try { const c = JSON.parse(localStorage.getItem(MISTO_CACHE + slug) || 'null'); return c && c.m ? c : null; }
+  catch (_) { return null; }
+}
+/* místo, které člověk ještě neotevřel: základ ze seznamu (název, poloha, štítky, DNA, hlavní fotka) */
+function mistoZeSeznamu(slug){
+  const seznam = window.atlasMistaUlozena && window.atlasMistaUlozena();
+  const z = seznam && seznam.find(x => x.slug === slug);
+  if (!z) return null;
+  return { m: { ...z, castecne: true }, fotky: z.fotka ? [{ id: null, cesta: z.fotka, poradi: 0, autor_id: null }] : [] };
+}
+
+/* proužek se stavem spojení na stránce místa */
+function mistoStav(text){
+  let el = document.querySelector('#misto-stav');
+  if (!text){ if (el) el.remove(); return; }
+  if (!el){
+    el = document.createElement('div');
+    el.id = 'misto-stav'; el.className = 'misto-stav'; el.setAttribute('role', 'status');
+    el.innerHTML = '<span class="ms-text"></span><button type="button" class="ms-znovu">Zkusit znovu</button>';
+    el.querySelector('.ms-znovu').addEventListener('click', () => { el.querySelector('.ms-znovu').disabled = true; nactiMisto(); });
+    const hero = document.querySelector('.place-hero');
+    if (hero) hero.insertAdjacentElement('beforebegin', el); else document.body.prepend(el);
+  }
+  el.querySelector('.ms-text').textContent = text;
+  el.querySelector('.ms-znovu').disabled = false;
+}
+function mistoNenalezeno(){
+  mistoStav(null);
+  document.querySelector('#place-nazev').textContent = 'Místo nenalezeno';
+  document.querySelector('#place-souradnice').textContent = SLUG ? 'Zkontroluj odkaz, nebo se vrať na mapu.' : '';
+}
+/* spojení chybí nebo je slabé: ukázat, co je v telefonu, a nabídnout nový pokus */
+let mistoZive = false;      // true = místo je v téhle návštěvě načtené čerstvě z databáze
+function mistoBezSignalu(){
+  mistoZive = false;
+  if (mistoData){
+    mistoStav('Spojení je teď slabé — vidíš podobu místa uloženou v telefonu. Návštěvu můžeš zapsat i tak.');
+    const box = document.querySelector('#comment-list');
+    if (box && !box.querySelector('.log-item.comment'))
+      box.innerHTML = '<li class="log-prazdno">Komentáře se načtou, jakmile budeš na signálu.</li>';
+  } else {
+    document.querySelector('#place-nazev').textContent = 'Místo se teď nenačetlo';
+    document.querySelector('#place-souradnice').textContent = '';
+    mistoStav('Spojení je teď slabé. Jakmile chytíš signál, místo se načte.');
+  }
+}
+
 async function nactiMisto(){
   const db = window.atlasDb;
-  if (!db || !SLUG){
-    document.querySelector('#place-nazev').textContent = 'Místo nenalezeno';
-    document.querySelector('#place-souradnice').textContent = '';
-    return;
+  if (!SLUG){ mistoNenalezeno(); return; }
+  /* 1) hned ukázat podobu uloženou v telefonu — čerstvá data ji vzápětí vystřídají */
+  if (!mistoData){
+    const ulozene = mistoCacheNacti(SLUG) || mistoZeSeznamu(SLUG);
+    if (ulozene){ vykresliMisto(ulozene.m); vykresliFotky(ulozene.fotky, ulozene.m.autor_id); }
   }
-  const fotkyPromise = db.rpc('atlas_misto_fotky', { p_slug: SLUG });
-  const { data, error } = await db.rpc('atlas_misto_detail', { p_slug: SLUG });
-  const m = data && data[0];
-  if (error || !m){
-    document.querySelector('#place-nazev').textContent = 'Místo nenalezeno';
-    document.querySelector('#place-souradnice').textContent = 'Zkontroluj odkaz, nebo se vrať na mapu.';
-    return;
-  }
+  if (!db || !navigator.onLine){ mistoBezSignalu(); return; }
+  /* 2) čerstvá data z databáze */
+  let detail, fotkyOdp;
+  try {
+    [detail, fotkyOdp] = await Promise.all([
+      window.atlasSCasem(db.rpc('atlas_misto_detail', { p_slug: SLUG })),
+      window.atlasSCasem(db.rpc('atlas_misto_fotky', { p_slug: SLUG }))
+    ]);
+  } catch (e) { detail = { data: null, error: e }; }
+  if (!detail || detail.error){ mistoBezSignalu(); return; }
+  const m = detail.data && detail.data[0];
+  if (!m){ mistoData = null; mistoNenalezeno(); return; }
+  mistoZive = true;
+  mistoStav(null);
+  const fotky = (fotkyOdp && fotkyOdp.data) || [];
+  vykresliMisto(m);
+  vykresliFotky(fotky, m.autor_id);
+  if (!fotkyOdp || !fotkyOdp.error) mistoCacheUloz(m, fotky);
+
+  nactiKomentare();
+  nactiMojeNavstevy();
+  nastavUpravuMista();
+}
+/* po návratu signálu se místo samo načte čerstvě */
+window.addEventListener('online', () => { if (!mistoZive && window.atlasAuthReady) nactiMisto(); });
+/* uschovaná návštěva se odeslala → překreslit DNA a zeď tohoto místa */
+window.addEventListener('atlas-fronta-odeslano', e => {
+  if (mistoData && e.detail && e.detail.misto_id === mistoData.id && navigator.onLine) nactiMisto();
+});
+
+function vykresliMisto(m){
   mistoData = m;
   const tt = k => (window.t ? window.t(k) : k);
   document.title = `${m.nazev} — ${tt('Atlas energetických míst')}`;
@@ -129,7 +213,9 @@ async function nactiMisto(){
     ? `<section class="place-section"><p class="eyebrow">O místě</p>${
         vypraveni.split(/\n\s*\n/).map(o=>`<p data-i18n="off">${escHtml(o.trim()).replace(/\n/g,'<br />')}</p>`).join('')
       }</section>`
-    : '<section class="place-section"><p>U tohoto místa zatím není žádný popis.</p></section>';
+    : (m.castecne
+        ? '<section class="place-section"><p>Vyprávění o místě se načte, jakmile budeš na signálu.</p></section>'
+        : '<section class="place-section"><p>U tohoto místa zatím není žádný popis.</p></section>');
 
   vykresliRadar(m.zapisu ? m : null);
   const note = document.querySelector('#dna-note');
@@ -137,11 +223,6 @@ async function nactiMisto(){
   else note.textContent = 'Zatím bez návštěv — DNA se objeví s první zapsanou návštěvou.';
   vykresliCakry(m);
 
-  await nactiFotky(m.autor_id, fotkyPromise);
-
-  nactiKomentare();
-  nactiMojeNavstevy();
-  nastavUpravuMista();
 }
 
 /* hero z fotky místa: hned malý náhled (bývá v mezipaměti z dlaždice), po něm ostrá verze */
@@ -169,10 +250,14 @@ function nastavHero(url){
   img.src = url;
 }
 
-async function nactiFotky(autorId, hotovyDotaz){
+async function nactiFotky(autorId){
   const db = window.atlasDb;
-  const { data } = await (hotovyDotaz || db.rpc('atlas_misto_fotky', { p_slug: SLUG }));
-  const fotky = data || [];
+  const { data, error } = await db.rpc('atlas_misto_fotky', { p_slug: SLUG });
+  if (error){ notify('Fotky se teď nepodařilo načíst. Zkus to za chvíli.'); return; }
+  vykresliFotky(data || [], autorId);
+  if (mistoData) mistoCacheUloz(mistoData, data || []);
+}
+function vykresliFotky(fotky, autorId){
   // hlavní foto do hero — prolne se až po načtení (žádné probliknutí)
   if (fotky.length) nastavHeroFoto(fotky[0].cesta);
   else nastavHero('img/brana-svit.jpg');
@@ -189,7 +274,7 @@ async function nactiFotky(autorId, hotovyDotaz){
   const sekce = document.querySelector('#place-galerie');
   if (!grid || !sekce) return;
   const mamTuFotku = !!(ucet && fotky.some(f=>f.autor_id===ucet.id));
-  if (fotky.length < 2 && !smiRadit && !mamTuFotku) return;   /* poutníkovi se galerie ukáže až od dvou fotek; autor a správce ji vidí vždy (kvůli dlaždici ➕) */
+  if (fotky.length < 2 && !smiRadit && !mamTuFotku){ sekce.hidden = true; return; }   /* poutníkovi se galerie ukáže až od dvou fotek; autor a správce ji vidí vždy (kvůli dlaždici ➕) */
 
   sekce.hidden = false;
   grid.innerHTML = fotky.map((f,i)=>{
@@ -894,92 +979,10 @@ async function smazFoto(f, autorId){
   await nactiFotky(autorId);
 }
 
-/* ---- offline fronta zápisů ----
-   Bez signálu se zápis (včetně fotky a polohy z místa) uschová v telefonu
-   a odešle se sám, jakmile se síť vrátí. Poloha i časové razítko jsou z okamžiku návštěvy. */
-function frontaDb(){
-  return new Promise((res,rej)=>{
-    const r=indexedDB.open('atlas-fronta',2);
-    r.onupgradeneeded=()=>{
-      const d=r.result;
-      if(!d.objectStoreNames.contains('zapisy'))d.createObjectStore('zapisy',{autoIncrement:true});
-      if(!d.objectStoreNames.contains('koncepty'))d.createObjectStore('koncepty');
-    };
-    r.onsuccess=()=>res(r.result);
-    r.onerror=()=>rej(r.error);
-  });
-}
-async function frontaPridej(polozka){
-  const d=await frontaDb();
-  return new Promise((res,rej)=>{
-    const t=d.transaction('zapisy','readwrite');
-    t.objectStore('zapisy').add(polozka);
-    t.oncomplete=()=>res();
-    t.onerror=()=>rej(t.error);
-  });
-}
-async function frontaVse(){
-  const d=await frontaDb();
-  return new Promise((res,rej)=>{
-    const t=d.transaction('zapisy','readonly').objectStore('zapisy').openCursor();
-    const out=[];
-    t.onsuccess=()=>{const c=t.result;if(c){out.push({klic:c.key,z:c.value});c.continue()}else res(out)};
-    t.onerror=()=>rej(t.error);
-  });
-}
-async function frontaSmaz(klic){
-  const d=await frontaDb();
-  return new Promise((res,rej)=>{
-    const t=d.transaction('zapisy','readwrite');
-    t.objectStore('zapisy').delete(klic);
-    t.oncomplete=()=>res();
-    t.onerror=()=>rej(t.error);
-  });
-}
-function jeSitovaChyba(e){
-  if(!navigator.onLine)return true;
-  if(!e)return false;
-  if(e instanceof TypeError)return true;
-  return /failed to fetch|networkerror|network request failed|load failed|fetch failed/i.test(e.message||'');
-}
-let frontaBezi=false;
-async function zpracujFrontu(){
-  if(frontaBezi||!navigator.onLine)return;
-  const db=window.atlasDb;
-  if(!db)return;
-  frontaBezi=true;
-  try{
-    const cekajici=await frontaVse();
-    for(const {klic,z} of cekajici){
-      try{
-        const zaznam=z.zaznam;
-        const {error}=await db.from('atlas_zapisy').insert(zaznam);
-        if(error){
-          if(jeSitovaChyba(error))throw error;
-          await frontaSmaz(klic);
-          notify(error.code==='23505'?'Uschovaná návštěva nebyla přijata — tohle místo už máš ověřené.'
-            :'Uschovaná návštěva nebyla přijata: '+error.message);
-          continue;
-        }
-        if(z.komentarText||z.fotoBlob){
-          const koment={misto_id:zaznam.misto_id,autor_id:zaznam.autor_id,text:z.komentarText||'✦',lang:z.lang||'cs'};
-          if(z.fotoBlob){
-            const cesta=`komentare/${zaznam.misto_id}/${Date.now()}.${z.pripona||'jpg'}`;
-            const {error:fe}=await db.storage.from('atlas').upload(cesta,z.fotoBlob,{contentType:z.fotoTyp||'image/jpeg'});
-            if(!fe) koment.fotka=cesta;
-          }
-          await db.from('atlas_komentare').insert(koment);
-        }
-        await frontaSmaz(klic);
-        notify('Uschovaná návštěva se právě odeslala 🌿');
-        if(mistoData&&mistoData.id===zaznam.misto_id)nactiMisto();
-            }catch(e){break}   /* síť zase vypadla — zbytek fronty počká */
-    }
-  }catch(_){}finally{frontaBezi=false}
-}
-window.addEventListener('online',zpracujFrontu);
-if(window.atlasAuthReady)zpracujFrontu();
-else window.addEventListener('atlas-auth-ready',zpracujFrontu,{once:true});
+/* ---- návštěvy zapsané bez signálu ----
+   Zápis (včetně fotky a polohy z místa) se uschová v telefonu a odešle se sám z kterékoli stránky,
+   jakmile je spojení. Fronta je společná — viz header.js (window.atlasFronta). */
+const jeSitovaChyba = e => window.atlasFronta.jeSitovaChyba(e);
 
 /* ---- odeslání návštěvy ---- */
 document.querySelector('#log-form')?.addEventListener('submit',async event=>{
@@ -1018,7 +1021,7 @@ document.querySelector('#log-form')?.addEventListener('submit',async event=>{
   };
   const uschovej=async blob=>{
     try{
-      await frontaPridej({zaznam,komentarText:slova,lang:window.atlasJazyk(),fotoBlob:blob||null,fotoTyp:blob?(blob.type||'image/jpeg'):null,pripona:blob?pripona:null,vytvoreno:Date.now()});
+      await window.atlasFronta.pridej({zaznam,komentarText:slova,lang:window.atlasJazyk(),fotoBlob:blob||null,fotoTyp:blob?(blob.type||'image/jpeg'):null,pripona:blob?pripona:null,vytvoreno:Date.now()});
       uklid('Jsi mimo signál — návštěva je uschovaná v telefonu a odešle se sama, až se připojíš.');
     }catch(e){
       odeslat.disabled=false; odeslat.textContent=puvodni;
@@ -1034,28 +1037,58 @@ document.querySelector('#log-form')?.addEventListener('submit',async event=>{
 
   if(!navigator.onLine){ await uschovej(fotoBlob); return; }
 
-  const {error}=await db.from('atlas_zapisy').insert(zaznam);
+  let zapisOdp;
+  try{ zapisOdp=await db.from('atlas_zapisy').insert(zaznam); }catch(e){ zapisOdp={error:e}; }
+  const error=zapisOdp.error;
   if(error){
     if(jeSitovaChyba(error)){ await uschovej(fotoBlob); return; }
     odeslat.disabled=false; odeslat.textContent=puvodni;
     console.error(error);
-    notify(/m od místa|už máš ověřené/.test(error.message) ? error.message
-      : (error.code==='23505' ? 'Tohle místo už máš ověřené. Další návštěvu zapiš bez ověřování polohy.'
-      : 'Návštěvu se nepodařilo uložit: '+error.message));
+    if(geoFix && window.atlasFronta.overeniOdmitnuto(error)){
+      /* ověření polohy neprošlo — formulář zůstává vyplněný a návštěvu jde hned uložit bez odznaku */
+      const uzOvereno=error.code==='23505'||/už máš ověřené/.test(error.message||'');
+      if(uzOvereno) mamOvereno=true;
+      geoReset();
+      notify(uzOvereno ? 'Tohle místo už máš ověřené. Klepni znovu na Uložit — návštěva se zapíše bez nového ověřování.'
+        : error.message+' Klepni znovu na Uložit — návštěva se zapíše bez odznaku ◎.');
+      return;
+    }
+    notify('Návštěvu se nepodařilo uložit: '+error.message);
     return;
   }
 
   /* slova a fotka putují na zeď jako komentář */
+  let slovaCekaji=false, fotkaVypadla=false;
   if(slova||fotoBlob){
     const koment={misto_id:mistoData.id,autor_id:ucet.id,text:slova||'✦',lang:window.atlasJazyk()};
-    if(fotoBlob){
-      const cesta=`komentare/${mistoData.id}/${Date.now()}.${pripona}`;
-      const {error:fe}=await db.storage.from('atlas').upload(cesta,fotoBlob,{contentType:fotoBlob.type||'image/jpeg'});
-      if(!fe) koment.fotka=cesta;
+    let ke=null;
+    try{
+      if(fotoBlob){
+        const cesta=`komentare/${mistoData.id}/${Date.now()}.${pripona}`;
+        const {error:fe}=await db.storage.from('atlas').upload(cesta,fotoBlob,{contentType:fotoBlob.type||'image/jpeg'});
+        if(fe){ if(jeSitovaChyba(fe)) throw fe; fotkaVypadla=true; }
+        else koment.fotka=cesta;
+      }
+      ({error:ke}=await db.from('atlas_komentare').insert(koment));
+    }catch(e){ ke=e; }
+    if(ke){
+      /* návštěva je zapsaná; slova a fotka počkají v telefonu a odešlou se samy */
+      try{
+        await window.atlasFronta.pridej({zaznam,zapisHotov:true,jenSlova:true,komentarText:slova,lang:window.atlasJazyk(),
+          fotoBlob:koment.fotka?null:(fotoBlob||null),fotkaCesta:koment.fotka||null,
+          fotoTyp:fotoBlob?(fotoBlob.type||'image/jpeg'):null,pripona:fotoBlob?pripona:null,vytvoreno:Date.now()});
+        slovaCekaji=true;
+      }catch(_){
+        odeslat.disabled=false; odeslat.textContent=puvodni;
+        notify('Návštěva je zapsaná, ale tvá slova se uložit nepodařilo. Zůstávají ve formuláři — pošli je jako komentář.');
+        nactiMisto();
+        return;
+      }
     }
-    await db.from('atlas_komentare').insert(koment);
   }
-  uklid(geoFix?'Návštěva zapsána s ověřením ◎ Tvé naladění vstoupilo do DNA místa.':'Návštěva zapsána ✦ Tvé naladění vstoupilo do DNA místa.');
+  uklid(slovaCekaji ? 'Návštěva zapsána ✦ Tvá slova a fotka se odešlou, jakmile bude lepší signál.'
+    : (fotkaVypadla ? 'Návštěva zapsána ✦ Fotku se nahrát nepodařilo — přidej ji prosím znovu v komentáři.'
+    : (geoFix?'Návštěva zapsána s ověřením ◎ Tvé naladění vstoupilo do DNA místa.':'Návštěva zapsána ✦ Tvé naladění vstoupilo do DNA místa.')));
   nactiMisto();
 });
 

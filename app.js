@@ -52,7 +52,12 @@ function dlazdiceVykresli(){
   const grid = document.querySelector('.place-grid');
   if (!grid) return;
   if (!atlasMista.length){
-    grid.innerHTML = `<p class="grid-prazdno">Zatím tu není žádné zveřejněné místo. Buď první — zanes to svoje.</p>`;
+    if (window.atlasMistaChyba){
+      grid.innerHTML = `<div class="grid-prazdno"><p>Místa se teď nenačetla — nejspíš kvůli slabému signálu.</p><button type="button" class="button primary" id="mista-znovu">Zkusit znovu</button></div>`;
+      document.querySelector('#mista-znovu')?.addEventListener('click', nactiMistaZnovu);
+    } else {
+      grid.innerHTML = `<p class="grid-prazdno">Zatím tu není žádné zveřejněné místo. Buď první — zanes to svoje.</p>`;
+    }
     return;
   }
   /* čtyři náhodná místa — při každém načtení stránky jiná čtveřice */
@@ -236,6 +241,17 @@ async function atlasStart(){
 }
 if (window.atlasAuthReady) atlasStart();
 else window.addEventListener('atlas-auth-ready', atlasStart, {once:true});
+
+/* nový pokus o načtení míst — ručně tlačítkem i sám po návratu signálu */
+async function nactiMistaZnovu(){
+  if (typeof window.atlasNactiMista !== 'function') return;
+  atlasMista = await window.atlasNactiMista();
+  dlazdiceVykresli();
+  znackyVykresli();
+}
+window.addEventListener('online', () => {
+  if (window.atlasAuthReady && (window.atlasMistaChyba || window.atlasMistaZMezipameti)) nactiMistaZnovu();
+});
 
 document.querySelector('#card-close')?.addEventListener('click',()=>{
   document.querySelector('#place-card')?.classList.remove('show');
@@ -568,19 +584,39 @@ function formReset(){
   window.atlasCakraNastav&&window.atlasCakraNastav(document.querySelector('#misto-cakry'),null);
   window.atlasRozsahNastav&&window.atlasRozsahNastav(document.querySelector('#misto-rozsah'),30);
 }
+/* krok ukládání při výpadku spojení zkusí znovu (slabý signál v terénu); vrací poslední odpověď */
+const jeSitova=e=>window.atlasFronta?window.atlasFronta.jeSitovaChyba(e):!navigator.onLine;
+async function sOpakovanim(krok,pokusu=3){
+  let odp={error:new Error('nezkoušeno')};
+  for(let i=0;i<pokusu;i++){
+    try{ odp=await krok(); }catch(e){ odp={error:e}; }
+    if(!odp||!odp.error||!jeSitova(odp.error)) return odp||{};
+    if(i<pokusu-1) await new Promise(ok=>setTimeout(ok,1500*(i+1)));
+  }
+  return odp;
+}
+/* nahraje fotky místa; vrací, kolik se jich uložilo a kolik ne */
 async function nahrajFotky(mistoId){
   const db=window.atlasDb, ucet=window.atlasUcet?.();
   const cesty=[];
+  let selhalo=0;
   for(let index=0;index<photos.length;index++){
     let blob=photos[index], pripona='jpg';
     if(window.atlasZpracujFoto){ const z=await window.atlasZpracujFoto(photos[index]); blob=z.blob; pripona=z.pripona; }
     const cesta=`mista/${mistoId}/${Date.now()}-${index}.${pripona}`;
-    const {error}=await db.storage.from('atlas').upload(cesta,blob,{contentType:blob.type,upsert:false});
-    if(error){console.error('Fotka se nenahrála:',error);continue}
+    const {error}=await sOpakovanim(()=>db.storage.from('atlas').upload(cesta,blob,{contentType:blob.type,upsert:false}));
+    if(error){console.error('Fotka se nenahrála:',error);selhalo++;continue}
     cesty.push({misto_id:mistoId,autor_id:ucet.id,cesta,poradi:index});
   }
-  if(cesty.length)await db.from('atlas_fotky').insert(cesty);
-  return cesty.length;
+  if(cesty.length){
+    const {error}=await sOpakovanim(()=>db.from('atlas_fotky').insert(cesty));
+    if(error){
+      console.error('Fotky se nezapsaly do galerie:',error);
+      cesty.forEach(r=>{ try{ db.storage.from('atlas').remove([r.cesta]); }catch(_){} });
+      return {nahrano:0, selhalo:photos.length};
+    }
+  }
+  return {nahrano:cesty.length, selhalo};
 }
 
 document.querySelector('#place-form')?.addEventListener('submit',async event=>{
@@ -632,15 +668,17 @@ document.querySelector('#place-form')?.addEventListener('submit',async event=>{
   if(error){
     odeslat.disabled=false;odeslat.textContent=puvodni;
     console.error(error);
-    notify('Místo se nepodařilo uložit: '+error.message);
+    notify(jeSitova(error)
+      ? 'Spojení je teď slabé — místo se neuložilo a zůstává vyplněné. Klepni na „Dokončit později": uschová se v telefonu i s fotkami a polohou.'
+      : 'Místo se nepodařilo uložit: '+error.message);
     return;
   }
 
   odeslat.textContent='Nahrávám fotky…';
-  const nahrano=await nahrajFotky(misto.id);
+  const {nahrano, selhalo:fotekSelhalo}=await nahrajFotky(misto.id);
 
   // první návštěva s DNA (zakladatel stojí na místě → ověřený bonus) + prožitek jako komentář
-  let prvniZapis=false;
+  let prvniZapis=false, zErrPosledni=null, zapisZakladPosledni=null;
   {
     const dna=k=>Number(document.querySelector(`#misto-dna input[data-k="${k}"]`).value);
     const zapisZaklad={
@@ -651,12 +689,28 @@ document.querySelector('#place-form')?.addEventListener('submit',async event=>{
     };
     const cakryZaklad=window.atlasCakraVyber?window.atlasCakraVyber(document.querySelector('#misto-cakry')):null;
     if(cakryZaklad) zapisZaklad.cakry=cakryZaklad;
-    const {error:zErr}=await db.from('atlas_zapisy').insert(zapisZaklad);
+    odeslat.textContent='Ukládám první návštěvu…';
+    const {error:zErr}=await sOpakovanim(()=>db.from('atlas_zapisy').insert(zapisZaklad));
+    zErrPosledni=zErr||null; zapisZakladPosledni=zapisZaklad;
     if(zErr) console.warn('První návštěva se nezaložila:', zErr.message);
     else prvniZapis=true;
-    const {error:kErr}=await db.from('atlas_komentare').insert({misto_id:misto.id, autor_id:ucet.id, text:zapisText, lang:window.atlasJazyk()});
+    var {error:kErr}=await sOpakovanim(()=>db.from('atlas_komentare').insert({misto_id:misto.id, autor_id:ucet.id, text:zapisText, lang:window.atlasJazyk()}));
     if(kErr) console.warn('Prožitek se nezaložil:', kErr.message);
   }
+  /* návštěva nebo slova, která neprošla kvůli spojení, počkají v telefonu a odešlou se samy */
+  let pockaVTelefonu=false;
+  if(window.atlasFronta&&((!prvniZapis&&jeSitova(zErrPosledni))||(kErr&&jeSitova(kErr)))){
+    try{
+      await window.atlasFronta.pridej({zaznam:zapisZakladPosledni,zapisHotov:prvniZapis,jenSlova:prvniZapis,
+        komentarText:kErr?zapisText:'',lang:window.atlasJazyk(),fotoBlob:null,vytvoreno:Date.now()});
+      pockaVTelefonu=true;
+    }catch(_){}
+  }
+  /* co se neuložilo, řekneme na rovinu — místo samo uložené je */
+  const chybi=[];
+  if(fotekSelhalo) chybi.push(`${fotekSelhalo} ${sklon(fotekSelhalo,['fotka','fotky','fotek'])}`);
+  if(!pockaVTelefonu&&!prvniZapis) chybi.push('první návštěva');
+  if(!pockaVTelefonu&&kErr) chybi.push('tvá slova o prožitku');
 
   odeslat.disabled=false;odeslat.textContent=puvodni;
 
@@ -668,7 +722,14 @@ document.querySelector('#place-form')?.addEventListener('submit',async event=>{
   }
   aktivniKonceptKlic=null;
   document.querySelectorAll('#misto-dna .slider-row').forEach(radek=>{radek.querySelector('output').textContent=radek.querySelector('input').value});
-  notify(`Děkujeme! „${misto.nazev}" (${nahrano} ${sklon(nahrano,['fotka','fotky','fotek'])}${prvniZapis?' + tvá první návštěva':''}) čeká na schválení.`);
+  if(chybi.length){
+    notify(`Místo „${misto.nazev}" je uložené a čeká na schválení. Neuložilo se: ${chybi.join(', ')} — doplníš to na stránce místa, jakmile bude schválené.`
+      +(pockaVTelefonu?' Návštěva a tvá slova čekají v telefonu a odešlou se samy.':''));
+  } else if(pockaVTelefonu){
+    notify(`Místo „${misto.nazev}" je uložené (${nahrano} ${sklon(nahrano,['fotka','fotky','fotek'])}) a čeká na schválení. První návštěva a tvá slova čekají v telefonu — odešlou se samy, jakmile bude lepší signál.`);
+  } else {
+    notify(`Děkujeme! „${misto.nazev}" (${nahrano} ${sklon(nahrano,['fotka','fotky','fotek'])} + tvá první návštěva) čeká na schválení.`);
+  }
 });
 /* posuvníky DNA ve formuláři místa: živé číslo vedle osy */
 document.querySelector('#misto-dna')?.addEventListener('input',e=>{
