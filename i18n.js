@@ -1048,6 +1048,8 @@
     'Upravit mé naladění': 'Edit my attunement',
 
     /* — podmínky: zprávy z Atlasu — */
+    'Návštěvy počítáme anonymně': 'We count visits anonymously',
+    'Abychom věděli, kolik lidí Atlas otevírá a kolik si ho přidalo na plochu, počítáme návštěvy anonymně: prohlížeč si uloží náhodné číslo a k němu se zapíše den, navštívená část Atlasu a typ zařízení. Jméno, e-mail i poloha zůstávají u tebe. Máš-li v prohlížeči zapnutý signál soukromí (Global Privacy Control), Atlas ho ctí a tvou návštěvu nechá stranou.': 'To know how many people open the Atlas and how many have added it to their home screen, we count visits anonymously: your browser keeps a random number, and with it we note the day, the part of the Atlas you visited and the type of device. Your name, e-mail and location stay with you. If your browser sends a privacy signal (Global Privacy Control), the Atlas honours it and leaves your visit aside.',
     'Zprávy z Atlasu': 'News from the Atlas',
     'Občas se ozveme': 'We\u2019ll be in touch now and then',
     'Vytvořením účtu souhlasíš s tím, že ti na e-mail občas pošleme provozní oznámení o Atlasu — důležité novinky nebo změny, které se tě týkají. Nebude toho mnoho a z každé zprávy se lze jedním klikem odhlásit.': 'By creating an account you agree that we may occasionally e-mail you service announcements about the Atlas — important news or changes that concern you. There won\u2019t be many, and every message can be unsubscribed from with a single click.',

@@ -1,5 +1,5 @@
 /* Atlas energetických míst — service worker (offline shell + rychlé spuštění) */
-const CACHE = 'atlas-v49';
+const CACHE = 'atlas-v50';
 /* knihovny z cizích adres (mapa, databázový klient, písma) — mění se zřídka, přežívají nové verze Atlasu */
 const KNIHOVNY = 'atlas-knihovny-v1';
 const CIZI = ['cdn.jsdelivr.net', 'unpkg.com', 'fonts.googleapis.com', 'fonts.gstatic.com'];

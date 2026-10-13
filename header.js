@@ -378,6 +378,64 @@ function zKdy(iso){if(!iso)return'';const d=new Date(iso);return `${d.getDate()}
 if(window.atlasAuthReady) zpravyInit();
 window.addEventListener('atlas-auth-ready', zpravyInit);
 
+/* ---- anonymní počítadlo návštěv ----
+   Kolik zařízení Atlas otevírá, kolik z ikony na ploše a kolik je nových (přehled je v administraci).
+   Zařízení se pozná podle náhodného čísla uloženého v prohlížeči; jméno, e-mail ani poloha se neposílají.
+   Správce se nepočítá — jeho zařízení si to zapamatuje. */
+(function(){
+  const cesta=location.pathname.replace(/\.html$/,'').replace(/\/+$/,'')||'/';
+  if(cesta==='/sprava') return;
+  const STRANKY={'/':'uvod','/index':'uvod','/objevit':'objevit','/misto':'misto','/denik':'denik',
+    '/o-projektu':'o-projektu','/napoveda':'napoveda','/podminky':'podminky'};
+  const ODSTUP=30*60*1000;                       /* návrat po delší pauze se počítá jako nové otevření */
+  let naposled=0;
+
+  function cisloZarizeni(){
+    let id=localStorage.getItem('atlas_zarizeni');
+    if(!id||!/^[0-9a-f-]{16,40}$/.test(id)){
+      id=crypto.randomUUID?crypto.randomUUID()
+        :Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join('');
+      localStorage.setItem('atlas_zarizeni',id);
+    }
+    return id;
+  }
+
+  function zapocitej(){
+    try{
+      const db=window.atlasDb;
+      if(!db||!window.atlasAuthReady||document.hidden||navigator.onLine===false) return;
+      if(Date.now()-naposled<ODSTUP) return;
+      if(navigator.webdriver||navigator.globalPrivacyControl||navigator.doNotTrack==='1') return;
+      if(/bot|crawl|spider|lighthouse|headless|pagespeed|preview/i.test(navigator.userAgent)) return;
+      const p=window.atlasProfil&&window.atlasProfil();
+      if(p&&p.spravce){
+        if(localStorage.getItem('atlas_mereni')!=='ne'){
+          const drive=localStorage.getItem('atlas_zarizeni');
+          localStorage.setItem('atlas_mereni','ne');
+          if(drive) db.rpc('atlas_metrika',{p_zarizeni:drive}).then(()=>{},()=>{});   /* uklidí dřívější záznamy tohoto zařízení */
+        }
+        return;
+      }
+      if(localStorage.getItem('atlas_mereni')==='ne') return;
+      const zPlochy=navigator.standalone===true||!!(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
+      const mobil=(navigator.userAgentData&&typeof navigator.userAgentData.mobile==='boolean')
+        ?navigator.userAgentData.mobile
+        :(/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)||(/Macintosh/.test(navigator.userAgent)&&navigator.maxTouchPoints>1));
+      naposled=Date.now();
+      db.rpc('atlas_metrika',{
+        p_zarizeni:cisloZarizeni(),
+        p_obrazovka:STRANKY[cesta]||'jine',
+        p_pwa:zPlochy,
+        p_mobil:!!mobil,
+        p_jazyk:window.atlasLang||'cs'
+      }).then(r=>{ if(r&&r.error) naposled=0; },()=>{ naposled=0; });
+    }catch(_){}
+  }
+
+  if(window.atlasAuthReady) zapocitej(); else window.addEventListener('atlas-auth-ready',zapocitej,{once:true});
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden) zapocitej(); });
+})();
+
 /* PWA: registrace service workeru */
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
