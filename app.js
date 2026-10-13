@@ -203,12 +203,7 @@ async function atlasStart(){
   atlasMista = await window.atlasNactiMista();
   dlazdiceVykresli();
   znackyVykresli();
-  if (atlasMista.length){
-    /* místo dne — výloha se každý den protočí na další místo v pořadí */
-    const den = Math.floor(Date.now()/86400000);
-    const dnesni = atlasMista[den % atlasMista.length];
-    kartaZobraz(dnesni);
-  }
+  /* mapa se otevírá celá a volná — karta místa se ukáže po klepnutí na značku */
 }
 if (window.atlasAuthReady) atlasStart();
 else window.addEventListener('atlas-auth-ready', atlasStart, {once:true});
