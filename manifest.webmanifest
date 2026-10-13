@@ -1,7 +1,7 @@
 {
   "name": "Atlas energetických míst",
   "short_name": "Atlas míst",
-  "description": "Živá mapa posvátných a energetických míst České republiky. Prameny, megality, portály a tiché brány.",
+  "description": "Živá mapa posvátných a energetických míst u nás i ve světě. Prameny, megality, portály a tiché brány.",
   "lang": "cs",
   "start_url": "/",
   "scope": "/",

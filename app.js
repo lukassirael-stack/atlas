@@ -56,7 +56,13 @@ function dlazdiceVykresli(){
     grid.innerHTML = `<p class="grid-prazdno">Zatím tu není žádné zveřejněné místo. Buď první — zanes to svoje.</p>`;
     return;
   }
-  grid.innerHTML = atlasMista.slice(0,6).map(m=>{
+  /* čtyři náhodná místa — při každém načtení stránky jiná čtveřice */
+  const vyber = atlasMista.slice();
+  for (let i = vyber.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [vyber[i], vyber[j]] = [vyber[j], vyber[i]];
+  }
+  grid.innerHTML = vyber.slice(0,4).map(m=>{
     const url = window.atlasFotoUrl(m.fotka);
     const rys = window.atlasRys(m.dna);
     const stitek = (m.stitky&&m.stitky[0]) ? window.atlasStitek(m.stitky[0]) : '';

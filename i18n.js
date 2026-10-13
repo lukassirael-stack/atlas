@@ -99,16 +99,16 @@
     'Všechna místa — Atlas energetických míst': 'All places — Atlas of Energetic Places',
     'Můj deník — Atlas energetických míst': 'My journal — Atlas of Energetic Places',
     'Podmínky užití — Atlas energetických míst': 'Terms of use — Atlas of Energetic Places',
-    'Živá mapa posvátných a energetických míst České republiky. Prameny, megality, portály a tiché brány. Objevuj, prožívej, sdílej.':
-      'A living map of the sacred and energetic places of the Czech Republic. Springs, megaliths, portals and quiet gateways. Discover, experience, share.',
+    'Živá mapa posvátných a energetických míst u nás i ve světě. Prameny, megality, portály a tiché brány. Objevuj, prožívej, sdílej.':
+      'A living map of sacred and energetic places in the Czech Republic and around the world. Springs, megaliths, portals and quiet gateways. Discover, experience, share.',
     'Atlas energetických míst je živá paměť krajiny. Místo do něj zaneseš jen tehdy, když u něj skutečně stojíš.':
       'The Atlas of Energetic Places is the living memory of the land. You add a place only when you truly stand beside it.',
 
     /* — hero (úvod) — */
     'Jsou místa,': 'There are places',
     'která promlouvají.': 'that speak to you.',
-    'Prameny, stavby, portály a tiché brány. Prozkoumej tajemná místa naší země.':
-      'Springs, structures, portals and quiet gateways. Explore the mysterious places of our land.',
+    'Prameny, stavby, portály a tiché brány. Prozkoumej tajemná místa naší Země.':
+      'Springs, structures, portals and quiet gateways. Explore the mysterious places of our Earth.',
     'Otevřít mapu': 'Open the map',
     'Navštívit místo': 'Visit a place',
     'Překvapit mě': 'Surprise me',

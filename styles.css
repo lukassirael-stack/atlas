@@ -1054,3 +1054,11 @@ html{overflow-x:clip}
 .ep-bod input{min-width:0}
 .ep-bod-pryc{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:none;color:inherit;font-size:18px;cursor:pointer}
 @media (max-width:560px){.ep-bod{grid-template-columns:1fr auto}.ep-bod .ep-bod-gps{grid-column:1}.ep-bod .ep-bod-pryc{grid-row:1/3;grid-column:2}}
+
+/* ===== úvodní stránka: čtyři náhodná místa v sekci „Kam tě to vede?" ===== */
+.discover .place-grid{grid-template-columns:repeat(4,1fr)}
+.discover .tile-info h3{font-size:23px;line-height:1.12}
+.tile-kostra{background:linear-gradient(135deg,rgba(251,247,239,.07),rgba(201,161,74,.09));border:1px solid var(--line)}
+.tile-kostra:hover{transform:none;box-shadow:none}
+@media(max-width:1180px){.discover .place-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.discover .place-grid{grid-template-columns:1fr}}
