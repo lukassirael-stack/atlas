@@ -72,7 +72,7 @@ function dlazdiceVykresli(){
     const podnazev = m.nazev_oficialni ? `<p class="tile-podnazev" data-i18n="off">${String(m.nazev_oficialni).replace(/</g,'&lt;')}</p>` : '';
     return `<a class="place-tile" href="/misto?m=${m.slug}${m.fotka?`&f=${encodeURIComponent(m.fotka)}`:''}">
       <div class="tile-image"${url?` style="background-image:url(${url})"`:''}></div>
-      <div class="tile-info"><span>${stitek}</span><h3 data-i18n="off">${m.nazev}</h3>${podnazev}<p>${spodek}</p></div>
+      <div class="tile-info"><span>${stitek}</span><h3 data-i18n="off">${String(m.nazev).replace(/&/g,'&amp;').replace(/</g,'&lt;')}</h3>${podnazev}<p>${spodek}</p></div>
     </a>`;
   }).join('');
 }
