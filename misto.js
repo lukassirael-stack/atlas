@@ -9,7 +9,7 @@ const FOTKA_Z_ODKAZU = new URLSearchParams(location.search).get('f');
 let heroCesta = null;
 if (FOTKA_Z_ODKAZU && /^[\w\-./]+$/.test(FOTKA_Z_ODKAZU) && window.atlasFotoUrl) {
   heroCesta = FOTKA_Z_ODKAZU;
-  nastavHero(window.atlasFotoUrl(heroCesta));
+  nastavHeroFoto(heroCesta);
 }
 
 const RADAR = {cx:150, cy:115, r:76};
@@ -144,6 +144,19 @@ async function nactiMisto(){
   nastavUpravuMista();
 }
 
+/* hero z fotky místa: hned malý náhled (bývá v mezipaměti z dlaždice), po něm ostrá verze */
+function nastavHeroFoto(cesta){
+  const el = document.querySelector('#place-hero-bg');
+  if (!el || !cesta || !window.atlasFotoNahled) return;
+  if (el.dataset.cesta === cesta) return;
+  el.dataset.cesta = cesta;
+  const ukaz = url => { if (el.dataset.cesta !== cesta) return; el.dataset.url = url; el.style.backgroundImage = `url("${url}")`; el.classList.add('zjevena'); };
+  const nacti = (url, ok, chyba) => { const i = new Image(); i.onload = () => ok(url); i.onerror = () => chyba && chyba(); i.src = url; };
+  let ostra = false;
+  nacti(window.atlasFotoNahled(cesta, 640), url => { if (!ostra) ukaz(url); });
+  nacti(window.atlasFotoNahled(cesta, 1280), url => { ostra = true; ukaz(url); },
+    () => nacti(window.atlasFotoUrl(cesta), url => { ostra = true; ukaz(url); }, () => { if (el.dataset.cesta === cesta) el.classList.add('zjevena'); }));
+}
 function nastavHero(url){
   const el = document.querySelector('#place-hero-bg');
   if (!el) return;
@@ -161,7 +174,8 @@ async function nactiFotky(autorId, hotovyDotaz){
   const { data } = await (hotovyDotaz || db.rpc('atlas_misto_fotky', { p_slug: SLUG }));
   const fotky = data || [];
   // hlavní foto do hero — prolne se až po načtení (žádné probliknutí)
-  nastavHero(fotky.length ? window.atlasFotoUrl(fotky[0].cesta) : 'img/brana-svit.jpg');
+  if (fotky.length) nastavHeroFoto(fotky[0].cesta);
+  else nastavHero('img/brana-svit.jpg');
 
   // smí přeřazovat? autor místa nebo správce
   const ucet = window.atlasUcet && window.atlasUcet();
@@ -179,12 +193,11 @@ async function nactiFotky(autorId, hotovyDotaz){
 
   sekce.hidden = false;
   grid.innerHTML = fotky.map((f,i)=>{
-    const url = window.atlasFotoUrl(f.cesta) || '';
     const hlavni = i===0;
     /* koš rovnou na dlaždici — tam ho člověk hledá dřív než v otevřené fotce */
     const smiSmazat = jeSpravce || !!(ucet && f.autor_id && ucet.id === f.autor_id);
     return `<figure class="galerie-item${hlavni?' je-hlavni':''}" data-lb="${i}" style="cursor:zoom-in">
-      <img src="${url}" alt="Fotka místa" loading="lazy" />
+      ${window.atlasFotoImg(f.cesta, 400, 'Fotka místa')}
       ${hlavni ? '<span class="foto-odznak">Hlavní</span>' : ''}
       ${smiSmazat ? `<button type="button" class="galerie-smaz" data-smaz-foto="${i}" title="Smazat fotku" aria-label="Smazat fotku">🗑</button>` : ''}
     </figure>`;
@@ -352,7 +365,8 @@ async function nactiKomentare(){
     const nick = k.atlas_profily?.nick || 'poutník';
     const odznak = overen.has(k.autor_id) ? '<span class="log-badge">◎ ověřeno na místě</span>'
                  : (bylTu.has(k.autor_id) ? '<span class="log-badge">✦ byl tu</span>' : '');
-    const foto = k.fotka ? `<img class="koment-foto" data-cesta="${k.fotka}" src="${window.atlasFotoUrl(k.fotka)}" alt="Fotka od poutníka" loading="lazy" style="display:block;max-width:180px;max-height:140px;object-fit:cover;border-radius:10px;margin-top:8px;cursor:zoom-in" />` : '';
+    const fotoOk = k.fotka && /^[\w\-./]+$/.test(k.fotka);
+    const foto = fotoOk ? `<img class="koment-foto" data-cesta="${k.fotka}" src="${window.atlasFotoNahled(k.fotka, 400)}" data-zaloha="${window.atlasFotoUrl(k.fotka)}" onerror="atlasFotoZaloha(this)" alt="Fotka od poutníka" loading="lazy" decoding="async" style="display:block;max-width:180px;max-height:140px;object-fit:cover;border-radius:10px;margin-top:8px;cursor:zoom-in" />` : '';
     const smi = (profil&&profil.spravce) || (ucet&&ucet.id===k.autor_id);
     const upr = smi ? `<button type="button" class="edit-link" data-edit-koment="${k.id}">✎ Upravit</button>` : '';
     const maSlova = (k.text||'').trim().length>1 && (k.text||'').trim()!=='✦';

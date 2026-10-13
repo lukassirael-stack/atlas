@@ -41,9 +41,8 @@ function kartaZobraz(m){
     dnaEl.querySelector('small').textContent = '';
   }
   const obraz = document.querySelector('#place-image');
-  const url = window.atlasFotoUrl(m.fotka);
-  if (url){ obraz.style.backgroundImage=`url(${url})`; obraz.classList.add('ma-foto'); }
-  else { obraz.style.backgroundImage=''; obraz.classList.remove('ma-foto'); }
+  obraz.style.backgroundImage=''; obraz.classList.toggle('ma-foto', !!m.fotka);
+  window.atlasFotoPozadi(obraz, m.fotka, 640);
   const detail = document.querySelector('#place-detail');
   if (detail) detail.href = `/misto?m=${m.slug}${m.fotka?`&f=${encodeURIComponent(m.fotka)}`:''}`;
   document.querySelector('#place-card')?.classList.add('show');
@@ -63,7 +62,6 @@ function dlazdiceVykresli(){
     [vyber[i], vyber[j]] = [vyber[j], vyber[i]];
   }
   grid.innerHTML = vyber.slice(0,4).map(m=>{
-    const url = window.atlasFotoUrl(m.fotka);
     const rys = window.atlasRys(m.dna);
     const stitek = (m.stitky&&m.stitky[0]) ? window.atlasStitek(m.stitky[0]) : '';
     /* kde to je: u českých míst kraj, u zahraničních země */
@@ -71,7 +69,7 @@ function dlazdiceVykresli(){
     const spodek = [rys ? `<b>${rys}</b>` : '<b>Nové místo</b>', kdeJe].filter(Boolean).join(' · ');
     const podnazev = m.nazev_oficialni ? `<p class="tile-podnazev" data-i18n="off">${String(m.nazev_oficialni).replace(/</g,'&lt;')}</p>` : '';
     return `<a class="place-tile" href="/misto?m=${m.slug}${m.fotka?`&f=${encodeURIComponent(m.fotka)}`:''}">
-      <div class="tile-image"${url?` style="background-image:url(${url})"`:''}></div>
+      <div class="tile-image">${window.atlasFotoImg(m.fotka, 640)}</div>
       <div class="tile-info"><span>${stitek}</span><h3 data-i18n="off">${String(m.nazev).replace(/&/g,'&amp;').replace(/</g,'&lt;')}</h3>${podnazev}<p>${spodek}</p></div>
     </a>`;
   }).join('');

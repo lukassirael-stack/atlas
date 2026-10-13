@@ -84,6 +84,54 @@ document.addEventListener('click',function(e){
 });
 document.addEventListener('keydown',function(e){ if(e.key==='Escape') zavriMenu(); });
 
+/* ---- systémové Zpět zavírá otevřené okno ----
+   Formulář i fotka přes celou obrazovku dostanou při otevření vlastní krok v historii.
+   Tlačítko Zpět (v telefonu i v prohlížeči) pak zavře okno a člověk zůstává na stránce,
+   rozepsaný text ve formuláři zůstává. Okna se poznají samy podle třídy .open / atributu hidden. */
+(function(){
+  if(!window.history || !history.pushState || !window.MutationObserver) return;
+  const VRSTVY='.modal-backdrop, #foto-lb';
+  const otevrene=[];            // prvky v pořadí otevření
+  const zavirane=new Set();     // právě zavírané tlačítkem Zpět — historie už je posunutá
+  let tiche=0;                  // kolik vlastních history.back() ještě doběhne
+  const jeOtevrena=el=>el.classList.contains('open');
+
+  function zavri(el){
+    const krizek=el.querySelector('.modal-close, .lb-zavrit');
+    if(krizek) krizek.click();
+    if(jeOtevrena(el)){ el.classList.remove('open'); el.setAttribute('aria-hidden','true'); document.body.style.overflow=''; }
+  }
+  function zmena(el){
+    const i=otevrene.indexOf(el);
+    if(jeOtevrena(el)){
+      if(i>=0) return;
+      otevrene.push(el);
+      try{ history.pushState({atlasOkno:otevrene.length},''); }catch(_){}
+    } else if(i>=0){
+      otevrene.splice(i,1);
+      if(zavirane.delete(el)) return;                 // zavřelo ho Zpět — krok historie je už pryč
+      if(history.state && history.state.atlasOkno){ tiche++; history.back(); }
+    }
+  }
+  new MutationObserver(zaznamy=>{
+    const hotove=new Set();
+    zaznamy.forEach(z=>{
+      const el=z.target;
+      if(el.nodeType!==1 || hotove.has(el) || !el.matches(VRSTVY)) return;
+      hotove.add(el); zmena(el);
+    });
+  }).observe(document.documentElement,{attributes:true,attributeFilter:['class'],subtree:true});
+
+  window.addEventListener('popstate',()=>{
+    if(tiche>0){ tiche--; return; }
+    const el=otevrene[otevrene.length-1];
+    if(!el) return;
+    zavirane.add(el);
+    zavri(el);
+    if(jeOtevrena(el)) zavirane.delete(el);            // okno se zavřít nedalo — nic nepředstírat
+  });
+})();
+
 /* ---- zvoneček: vzkazy od správce + (pro správce) místa čekající na schválení ---- */
 function zpravyInit(){
   const db = window.atlasDb;

@@ -35,6 +35,51 @@ window.atlasFotoUrl = (cesta) => {
   return 'https://myybuesoourgpbouwwst.supabase.co/storage/v1/object/public/atlas/' + cesta;
 };
 
+/* zmenšený náhled fotky (šířka v px) — šetří data i čas; originál zůstává pro prohlížení na celou obrazovku */
+window.atlasFotoNahled = (cesta, sirka = 640) => {
+  if (!cesta) return null;
+  return 'https://myybuesoourgpbouwwst.supabase.co/storage/v1/render/image/public/atlas/' + cesta +
+    '?width=' + sirka + '&quality=' + (sirka > 900 ? 70 : 60);
+};
+/* <img> s náhledem: načítá se, až když se blíží na obrazovku; kdyby náhled selhal, vezme originál */
+window.atlasFotoZaloha = (img) => {
+  const z = img.getAttribute('data-zaloha');
+  img.onerror = null;
+  if (z && img.src !== z) img.src = z;
+};
+window.atlasFotoImg = (cesta, sirka, alt = '', trida = '') => {
+  if (!cesta || !/^[\w\-./]+$/.test(cesta)) return '';
+  return `<img${trida ? ` class="${trida}"` : ''} src="${window.atlasFotoNahled(cesta, sirka)}" data-zaloha="${window.atlasFotoUrl(cesta)}" ` +
+    `alt="${alt}" loading="lazy" decoding="async" onerror="atlasFotoZaloha(this)" />`;
+};
+/* náhled jako pozadí prvku (karta na mapě, hero) — nastaví se až po načtení, se zálohou na originál */
+window.atlasFotoPozadi = (el, cesta, sirka, hotovo) => {
+  if (!el) return;
+  const nahled = window.atlasFotoNahled(cesta, sirka), orig = window.atlasFotoUrl(cesta);
+  el.dataset.foto = cesta || '';
+  if (!cesta){ el.style.backgroundImage = ''; hotovo && hotovo(false); return; }
+  const zkus = (url, dalsi) => {
+    const img = new Image();
+    img.onload = () => { if (el.dataset.foto !== cesta) return; el.style.backgroundImage = `url("${url}")`; hotovo && hotovo(true); };
+    img.onerror = () => { if (el.dataset.foto !== cesta) return; if (dalsi) zkus(dalsi, null); else hotovo && hotovo(false); };
+    img.src = url;
+  };
+  zkus(nahled, orig);
+};
+
+/* vzdálenost dvou bodů v km (haversine) */
+window.atlasVzdalenostKm = (lat1, lng1, lat2, lng2) => {
+  const r = Math.PI / 180, dLat = (lat2 - lat1) * r, dLng = (lng2 - lng1) * r;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * r) * Math.cos(lat2 * r) * Math.sin(dLng / 2) ** 2;
+  return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+};
+/* '850 m' · '3,4 km' · '128 km' · '1 240 km' */
+window.atlasVzdalenostText = (km) => {
+  if (km < 1) return `${Math.max(10, Math.round(km * 100) * 10)} m`;
+  if (km < 10) return `${km.toFixed(1).replace('.', ',')} km`;
+  return `${Math.round(km).toLocaleString('cs-CZ').replace(/\u00a0|\u202f/g, ' ')} km`;
+};
+
 /* pět os DNA → nejsilnější rys jako '{Osa} {hodnota} %' */
 window.atlasRys = (dna) => {
   if (!dna || !dna.zapisu) return null;

@@ -363,6 +363,7 @@
     'Všechna místa': 'All places',
     'Načítám…': 'Loading…',
     'Země': 'Country',
+    'Kraj': 'Region',
     'Vše': 'All',
     'Všechny': 'All',
 
@@ -584,6 +585,14 @@
     /* — stránka místa (misto.html, doplněno po odpolední úpravě) — */
     'Zpět na mapu': 'Back to the map',
     'Zpět': 'Back',
+    'Štítek': 'Tag',
+    'Řazení': 'Sort',
+    'Nejnovější': 'Newest',
+    '◎ Nejblíž ke mně': '◎ Nearest to me',
+    'Přístup k poloze je vypnutý — povol ho v nastavení prohlížeče a zkus to znovu.': 'Location access is off — allow it in your browser settings and try again.',
+    'Polohu se teď nepodařilo načíst. Zkus to prosím znovu.': 'Your location could not be found just now. Please try again.',
+    'Místa se teď nenačetla — nejspíš kvůli slabému signálu.': 'The places did not load just now — most likely a weak signal.',
+    'Zkusit znovu': 'Try again',
     'Kraj Vysočina': 'Vysočina Region',
     /* — názvy zemí (filtr ve Všech místech) — */
     'Afghánistán': 'Afghanistan',
