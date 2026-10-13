@@ -69,6 +69,18 @@ window.atlasFotoPozadi = (el, cesta, sirka, hotovo) => {
   zkus(nahled, orig);
 };
 
+/* skupina blízkých míst na mapě: tři špendlíky u sebe (bez čísla) — klepnutí mapu přiblíží.
+   Barvy drží význam legendy: červená čeká na objevení, zelená navštíveno. */
+window.atlasSkupinaIkona = (shluk) => {
+  const deti = shluk.getAllChildMarkers();
+  const navst = deti.filter(z => z.options.navstiveno).length;
+  const trida = navst && navst === deti.length ? ' navstiveno' : (navst ? ' ma-navstivene' : '');
+  return L.divIcon({
+    html: `<i class="sk-l"></i><i class="sk-p"></i><i class="sk-s"></i><span class="sk-popis">${deti.length} míst</span>`,
+    className: 'atlas-skupina' + trida, iconSize: [40, 30], iconAnchor: [20, 26]
+  });
+};
+
 /* vzdálenost dvou bodů v km (haversine) */
 window.atlasVzdalenostKm = (lat1, lng1, lat2, lng2) => {
   const r = Math.PI / 180, dLat = (lat2 - lat1) * r, dLng = (lng2 - lng1) * r;

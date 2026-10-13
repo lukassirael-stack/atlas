@@ -217,16 +217,11 @@ function mapaInit(){
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
     maxZoom: 19, opacity: 0.9
   }).addTo(mapa);
-  /* blízká místa se při oddálení spojí do kroužku s počtem */
+  /* blízká místa se při oddálení spojí do trojice špendlíků */
   mapaVrstva = L.markerClusterGroup ? L.markerClusterGroup({
     maxClusterRadius: 44, showCoverageOnHover: false, spiderfyOnMaxZoom: true, zoomToBoundsOnClick: true,
     spiderLegPolylineOptions: { weight: 1.5, color: '#e8c877', opacity: .8 },
-    iconCreateFunction: shluk => {
-      const deti = shluk.getAllChildMarkers(), n = shluk.getChildCount();
-      const vse = deti.length && deti.every(z => z.options.navstiveno);
-      const d = n < 10 ? 26 : (n < 100 ? 30 : 34);   // o málo větší než špendlík
-      return L.divIcon({ html: `<b>${n}</b>`, className: 'atlas-shluk' + (vse ? ' navstiveno' : ''), iconSize: [d, d] });
-    }
+    iconCreateFunction: window.atlasSkupinaIkona
   }) : L.layerGroup();
   mapaVrstva.addTo(mapa);
 }

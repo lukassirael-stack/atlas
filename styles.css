@@ -1108,14 +1108,21 @@ html{overflow-x:clip}
 /* ===== mapa: kroužky se seskupenými místy ===== */
 .leaflet-cluster-anim .leaflet-marker-icon,.leaflet-cluster-anim .leaflet-marker-shadow{transition:transform .3s ease-out,opacity .3s ease-in}
 .leaflet-cluster-spider-leg{transition:stroke-dashoffset .3s ease-out,stroke-opacity .3s ease-in}
-.atlas-shluk{display:grid;place-items:center;border-radius:50%;cursor:pointer;
-  background:radial-gradient(circle at 34% 28%,#f6dfa6 0%,#d9b25c 52%,#b98f38 100%);
-  border:1.5px solid rgba(255,250,235,.92);
-  box-shadow:0 0 0 3px rgba(201,161,74,.24),0 4px 12px rgba(5,12,8,.5);
-  transition:box-shadow .2s}
-.atlas-shluk b{font:600 12.5px/1 'Jost',sans-serif;color:var(--forest);letter-spacing:0}
-.atlas-shluk:hover{box-shadow:0 0 0 4px rgba(201,161,74,.34),0 6px 14px rgba(5,12,8,.55)}
-.atlas-shluk.navstiveno{background:radial-gradient(circle at 34% 28%,#b8ecc6 0%,#5cc47c 52%,#2b7f46 100%);box-shadow:0 0 0 3px rgba(92,196,124,.24),0 4px 12px rgba(5,12,8,.5)}
+.atlas-skupina{background:none;border:0;cursor:pointer}
+.atlas-skupina i{position:absolute;left:50%;top:5px;width:18px;height:18px;margin-left:-9px;
+  border-radius:50% 50% 50% 0;transform:rotate(-45deg);
+  border:1.5px solid rgba(255,250,240,.9);
+  box-shadow:0 0 0 1.5px rgba(8,16,11,.55),2px -2px 8px rgba(5,12,8,.6);
+  background:linear-gradient(135deg,#e2604a,#b32d1a);transition:transform .15s ease}
+.atlas-skupina i::after{content:'';position:absolute;inset:5px;border-radius:50%;background:rgba(255,252,245,.9)}
+/* dva menší špendlíky po stranách, o kousek výš a vzadu */
+.atlas-skupina .sk-l,.atlas-skupina .sk-p{width:14px;height:14px;top:2px;filter:brightness(.86) saturate(.92)}
+.atlas-skupina .sk-l{margin-left:-19px}
+.atlas-skupina .sk-p{margin-left:5px}
+.atlas-skupina .sk-l::after,.atlas-skupina .sk-p::after{inset:3.5px}
+.atlas-skupina.navstiveno i,.atlas-skupina.ma-navstivene .sk-p{background:linear-gradient(135deg,#5cc47c,#2b7f46)}
+.atlas-skupina:hover .sk-s{transform:rotate(-45deg) scale(1.18)}
+.atlas-skupina .sk-popis{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 /* ===== mapa na telefonu o kousek nižší — nad ní i pod ní zůstává kus stránky na posun prstem ===== */
 @media(max-width:560px){

@@ -83,22 +83,14 @@ function dlazdiceVykresli(){
 /* ==== Leaflet mapa (satelit) ==== */
 let atlasMap = null;
 let atlasZnacky = [];
-let atlasShluky = null;      // skupina hlavních značek — blízká místa se při oddálení spojí do kroužku s počtem
+let atlasShluky = null;      // skupina hlavních značek — blízká místa se při oddálení spojí do trojice špendlíků
 let atlasPodrobnosti = null; // rozsahy a body souborů míst — ukazují se až při přiblížení
 const PODROBNOSTI_OD_ZOOMU = 11;
-/* kroužek s počtem míst: zlatý, navštívená skupina zelená */
-window.atlasShlukIkona = function(shluk){
-  const deti = shluk.getAllChildMarkers();
-  const vse = deti.length && deti.every(z => z.options.navstiveno);
-  const n = shluk.getChildCount();
-  const d = n < 10 ? 26 : (n < 100 ? 30 : 34);   // o málo větší než špendlík
-  return L.divIcon({ html: `<b>${n}</b>`, className: 'atlas-shluk' + (vse ? ' navstiveno' : ''), iconSize: [d, d] });
-};
 window.atlasShlukySkupina = function(){
   if (!L.markerClusterGroup) return L.layerGroup();
   return L.markerClusterGroup({
     maxClusterRadius: 44, showCoverageOnHover: false, spiderfyOnMaxZoom: true,
-    zoomToBoundsOnClick: true, chunkedLoading: false, iconCreateFunction: window.atlasShlukIkona,
+    zoomToBoundsOnClick: true, chunkedLoading: false, iconCreateFunction: window.atlasSkupinaIkona,
     spiderLegPolylineOptions: { weight: 1.5, color: '#e8c877', opacity: .8 }
   });
 };
