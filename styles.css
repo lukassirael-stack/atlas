@@ -1062,3 +1062,45 @@ html{overflow-x:clip}
 .tile-kostra:hover{transform:none;box-shadow:none}
 @media(max-width:1180px){.discover .place-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:560px){.discover .place-grid{grid-template-columns:1fr}}
+
+/* ===== tlačítko Zpět v hlavičce (všechny stránky kromě úvodní) ===== */
+.topbar-start{display:flex;align-items:center;gap:14px;min-width:0}
+.zpet-btn{flex:none;display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 15px 0 12px;border:1px solid var(--gold);border-radius:99px;background:rgba(201,161,74,.1);color:var(--gold-lume);font:500 13px 'Jost',sans-serif;letter-spacing:.03em;cursor:pointer;transition:background .2s,color .2s}
+.zpet-btn:hover{background:var(--gold);color:var(--forest)}
+.zpet-btn:focus-visible{outline:2px solid var(--gold-lume);outline-offset:3px}
+.zpet-sipka{font-size:17px;line-height:1}
+@media(max-width:900px){
+  .zpet-btn{width:40px;height:40px;padding:0;justify-content:center}
+  .zpet-text{display:none}
+  .zpet-sipka{font-size:19px}
+}
+/* telefon: šipka + znak Atlasu, ať má účet a menu dost místa */
+@media(max-width:560px){
+  .topbar-start{gap:8px}
+  .topbar-start .zpet-btn{margin-left:-6px}
+  .topbar-start .brand>span{display:none}
+  .topbar-start .brand-logo{height:34px}
+}
+
+/* ===== stránka Všechna místa: rozbalovací mapa ===== */
+.mapa-prepinac{display:flex;align-items:center;gap:11px;width:100%;margin:0 0 20px;padding:14px 20px;border:1px solid var(--gold);border-radius:99px;background:linear-gradient(180deg,rgba(201,161,74,.18),rgba(201,161,74,.06));color:var(--gold-lume);font:500 15px 'Jost',sans-serif;letter-spacing:.04em;text-align:left;cursor:pointer;box-shadow:0 6px 22px rgba(201,161,74,.12);transition:background .2s,color .2s}
+.mapa-prepinac:hover{background:linear-gradient(180deg,rgba(201,161,74,.28),rgba(201,161,74,.1))}
+.mapa-prepinac:focus-visible{outline:2px solid var(--gold-lume);outline-offset:3px}
+.mapa-prepinac .mp-ico{font-size:19px;line-height:1}
+.mapa-prepinac .mp-sipka{margin-left:auto;font-size:17px;transition:transform .25s}
+.mapa-prepinac[aria-expanded="true"] .mp-sipka{transform:rotate(180deg)}
+.objevit-mapa-shell{height:min(62vh,480px);margin:0 0 26px}
+.objevit-mapa-shell[hidden]{display:none}
+#objevit-mapa{position:absolute;inset:0;z-index:1;background:#1a2a22}
+.mapa-nacitam{position:absolute;inset:0;z-index:2;display:grid;place-items:center;padding:24px;text-align:center;color:var(--cream-soft);font:400 18px 'Cormorant Garamond',serif}
+/* bublina místa na mapě — stejný papír jako karta na úvodní mapě */
+.atlas-popup .leaflet-popup-content-wrapper{background:var(--paper-lift);color:var(--forest);border-radius:16px;border:1px solid rgba(255,255,255,.82);box-shadow:0 18px 44px rgba(5,12,8,.6)}
+.atlas-popup .leaflet-popup-content{margin:15px 16px 16px;min-width:200px;font-family:'Jost',sans-serif;line-height:1.35}
+.atlas-popup .leaflet-popup-tip{background:var(--paper-lift)}
+.atlas-popup a.leaflet-popup-close-button{top:5px;right:5px;width:32px;height:32px;font:400 22px/32px 'Jost',sans-serif;color:var(--ink-soft)}
+.ap-stitek{display:block;margin:0 26px 5px 0;font:500 10px 'Cinzel',serif;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-deep)}
+.ap-nazev{display:block;margin:0 26px 3px 0;font:500 22px/1.14 'Cormorant Garamond',serif;color:var(--forest)}
+.ap-oficialni{display:block;margin-bottom:5px;font:italic 500 15px 'Cormorant Garamond',serif;color:#6f6852}
+.ap-rys{display:block;margin-top:6px;font-size:13px;color:var(--ink-soft)}
+.ap-rys b{color:var(--gold-deep);font-weight:600}
+.atlas-popup a.detail-button{color:var(--paper);margin-top:12px}

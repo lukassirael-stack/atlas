@@ -583,6 +583,11 @@
 
     /* — stránka místa (misto.html, doplněno po odpolední úpravě) — */
     'Zpět na mapu': 'Back to the map',
+    'Zpět': 'Back',
+    'Zobrazit mapu': 'Show map',
+    'Skrýt mapu': 'Hide map',
+    'Mapa vybraných míst': 'Map of the selected places',
+    'Mapa se teď nenačetla. Zkus to za chvíli znovu.': 'The map did not load just now. Try again in a moment.',
     'Načítám místo…': 'Loading the place…',
     'Zapsat návštěvu': 'Log a visit',
     'Přidat komentář': 'Add a comment',
@@ -1120,7 +1125,8 @@
       b.type = 'button';
       b.setAttribute('data-l', l);
       b.textContent = l.toUpperCase();
-      b.addEventListener('click', function () { setLang(l); });
+      /* přepínač sedí uvnitř odkazu loga — klik přepne jazyk a zůstane na stránce */
+      b.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); setLang(l); });
       wrap.appendChild(b);
     });
     /* domovské místo je pod logem (.brand); když by chybělo, spadne zpět do lišty */

@@ -36,6 +36,31 @@ function notify(message){if(!toast)return;toast.textContent=message;toast.classL
   });
 })();
 
+/* ---- tlačítko Zpět: vlevo v hlavičce na každé stránce kromě úvodní ----
+   Vrací o krok zpět v Atlasu; kdo přišel odjinud (sdílený odkaz, e-mail), toho vede na úvod. */
+(function(){
+  const topbar=document.querySelector('.topbar');
+  const brand=topbar&&topbar.querySelector('.brand');
+  if(!topbar||!brand||topbar.querySelector('.zpet-btn')) return;
+  const norm=s=>(s.replace(/\/+$/,'').replace(/\.html$/,'')||'/');
+  const cesta=norm(location.pathname);
+  if(cesta==='/'||cesta==='/index') return;
+  const start=document.createElement('div');
+  start.className='topbar-start';
+  topbar.insertBefore(start,brand);
+  const b=document.createElement('button');
+  b.type='button';
+  b.className='zpet-btn';
+  b.setAttribute('aria-label','Zpět');
+  b.innerHTML='<span class="zpet-sipka" aria-hidden="true">←</span><span class="zpet-text">Zpět</span>';
+  b.addEventListener('click',function(){
+    let zAtlasu=false;
+    try{ zAtlasu=!!document.referrer && new URL(document.referrer).origin===location.origin; }catch(_){}
+    if(zAtlasu && history.length>1) history.back(); else location.href='/';
+  });
+  start.append(b,brand);
+})();
+
 function nastavMenu(otevrit){
   const nav=document.getElementById('mobile-nav');
   const ov=document.querySelector('.nav-overlay');
