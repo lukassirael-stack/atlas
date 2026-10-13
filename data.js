@@ -35,7 +35,9 @@ window.atlasFotoUrl = (cesta) => {
   return 'https://myybuesoourgpbouwwst.supabase.co/storage/v1/object/public/atlas/' + cesta;
 };
 
-/* zmenšený náhled fotky (šířka v px) — šetří data i čas; originál zůstává pro prohlížení na celou obrazovku */
+/* zmenšený náhled fotky (šířka v px) — šetří data i čas; originál zůstává pro prohlížení na celou obrazovku.
+   Používá se jen pro HLAVNÍ fotku místa (dlaždice, karta mapy, hero, náhled sdílení): Supabase počítá
+   zmenšování podle počtu různých fotek za měsíc (100 v ceně tarifu), další fotky galerie proto jdou v originále. */
 window.atlasFotoNahled = (cesta, sirka = 640) => {
   if (!cesta) return null;
   return 'https://myybuesoourgpbouwwst.supabase.co/storage/v1/render/image/public/atlas/' + cesta +

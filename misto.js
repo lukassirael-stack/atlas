@@ -282,7 +282,8 @@ function vykresliFotky(fotky, autorId){
     /* koš rovnou na dlaždici — tam ho člověk hledá dřív než v otevřené fotce */
     const smiSmazat = jeSpravce || !!(ucet && f.autor_id && ucet.id === f.autor_id);
     return `<figure class="galerie-item${hlavni?' je-hlavni':''}" data-lb="${i}" style="cursor:zoom-in">
-      ${window.atlasFotoImg(f.cesta, 400, 'Fotka místa')}
+      ${hlavni ? window.atlasFotoImg(f.cesta, 640, 'Fotka místa')
+               : `<img src="${window.atlasFotoUrl(f.cesta) || ''}" alt="Fotka místa" loading="lazy" decoding="async" />`}
       ${hlavni ? '<span class="foto-odznak">Hlavní</span>' : ''}
       ${smiSmazat ? `<button type="button" class="galerie-smaz" data-smaz-foto="${i}" title="Smazat fotku" aria-label="Smazat fotku">🗑</button>` : ''}
     </figure>`;
@@ -451,7 +452,7 @@ async function nactiKomentare(){
     const odznak = overen.has(k.autor_id) ? '<span class="log-badge">◎ ověřeno na místě</span>'
                  : (bylTu.has(k.autor_id) ? '<span class="log-badge">✦ byl tu</span>' : '');
     const fotoOk = k.fotka && /^[\w\-./]+$/.test(k.fotka);
-    const foto = fotoOk ? `<img class="koment-foto" data-cesta="${k.fotka}" src="${window.atlasFotoNahled(k.fotka, 400)}" data-zaloha="${window.atlasFotoUrl(k.fotka)}" onerror="atlasFotoZaloha(this)" alt="Fotka od poutníka" loading="lazy" decoding="async" style="display:block;max-width:180px;max-height:140px;object-fit:cover;border-radius:10px;margin-top:8px;cursor:zoom-in" />` : '';
+    const foto = fotoOk ? `<img class="koment-foto" data-cesta="${k.fotka}" src="${window.atlasFotoUrl(k.fotka)}" alt="Fotka od poutníka" loading="lazy" decoding="async" style="display:block;max-width:180px;max-height:140px;object-fit:cover;border-radius:10px;margin-top:8px;cursor:zoom-in" />` : '';
     const smi = (profil&&profil.spravce) || (ucet&&ucet.id===k.autor_id);
     const upr = smi ? `<button type="button" class="edit-link" data-edit-koment="${k.id}">✎ Upravit</button>` : '';
     const maSlova = (k.text||'').trim().length>1 && (k.text||'').trim()!=='✦';
