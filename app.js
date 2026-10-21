@@ -441,7 +441,10 @@ function ukazKrok(n, bezPosunu){
 function krokChybi(n){
   const text=id=>{const el=document.querySelector(id);return el?el.value.trim():''};
   if(n===1){
-    if(!geoFix) return 'Nejdřív načti svou polohu — místo lze zanést jen přímo na místě.';
+    if(!geoFix){
+      const mapaOtevrena=document.querySelector('#geo-mapa')&&!document.querySelector('#geo-mapa').hidden;
+      return mapaOtevrena ? 'Klepni na mapu tam, kde stojíš — tím místu dáš polohu.' : 'Nejdřív načti svou polohu — místo lze zanést jen přímo na místě.';
+    }
     if(!photos.length) return 'Přidej aspoň jednu fotku — ať ostatní vidí, kam jdou.';
   }
   if(n===2){
@@ -485,28 +488,114 @@ function presneKonecUI(){
   if(geoPresneBtn){geoPresneBtn.hidden=false;geoPresneBtn.disabled=false;}
   geoButton.hidden=false;
 }
+/* Když poloha z telefonu nepřijde (zamítnuté oprávnění, prohlížeč v aplikaci, slabý
+   signál…), formulář sám otevře mapu: člověk klepne tam, kde stojí, a jde dál.
+   Nic v telefonu nenastavuje. Místo takto dostane polohu „označeno na mapě"
+   (presnost_m zůstane prázdné) a ◎ ověření získá při další návštěvě s polohou. */
 function geoChybaText(err){
   if(err&&err.code===4)
     return err.nejlepsi
-      ? `Nejlepší poloha byla za půl minuty jen ±${Math.round(err.nejlepsi)} m, potřebujeme ±100 m. Vypadá to, že jsi uvnitř budovy — beton a střecha družicový signál nepustí. Vyjdi prosím ven pod otevřené nebe a zkus to znovu.`
-      : 'Poloha se za půl minuty vůbec nenačetla. Vypadá to, že jsi uvnitř budovy — vyjdi prosím ven pod otevřené nebe a zkus to znovu.';
+      ? `Poloha byla za půl minuty jen ±${Math.round(err.nejlepsi)} m — pod střechou nebo mezi domy je signál slabý. Označ místo klepnutím na mapu, nebo vyjdi pod otevřené nebe a zkus to znovu.`
+      : 'Poloha se za půl minuty nenačetla — pod střechou nebo mezi domy je signál slabý. Označ místo klepnutím na mapu, nebo vyjdi pod otevřené nebe a zkus to znovu.';
   if(/FBAN|FBAV|FB_IAB|Instagram/i.test(navigator.userAgent))
-    return 'Prohlížeč uvnitř aplikace (Facebook, Instagram…) polohu neumí. Otevři Atlas přes menu ⋮ v běžném prohlížeči — bez polohy místo zanést nelze.';
+    return 'Označ místo klepnutím na mapu — tam, kde stojíš. (Polohu z telefonu umí běžný prohlížeč, Safari nebo Chrome.)';
   if(err&&err.code===1)
-    return 'Přístup k poloze je zablokovaný. Klepni na ikonu vedle adresy → Oprávnění → Poloha → Povolit a stránku obnov. Bez polohy místo zanést nelze.';
+    return 'Prohlížeč má polohu vypnutou. Označ místo klepnutím na mapu — tam, kde stojíš.';
   if(!window.isSecureContext)
-    return 'Stránka neběží přes zabezpečené spojení, prohlížeč proto polohu nepovolí.';
+    return 'Označ místo klepnutím na mapu — tam, kde stojíš. (Polohu z telefonu umí jen zabezpečené spojení https.)';
   if(err&&err.code===0)
-    return 'Tvůj prohlížeč polohu nepodporuje.';
+    return 'Označ místo klepnutím na mapu — tam, kde stojíš.';
   if(err&&err.code===2)
-    return 'Zařízení polohu nedokáže určit. Na telefonu zapni polohu (GPS), na počítači bývá poloha často nedostupná úplně.';
+    return 'Telefon polohu teď neurčil. Označ místo klepnutím na mapu — tam, kde stojíš — nebo zapni polohu (GPS) a zkus to znovu.';
   if(err&&err.code===3)
-    return 'Hledání polohy trvá moc dlouho. Zkus to prosím znovu.';
-  return 'Polohu se nepodařilo načíst. Máš v telefonu zapnutou polohu (GPS)?';
+    return 'Hledání polohy trvá dlouho. Označ místo klepnutím na mapu — tam, kde stojíš — nebo to zkus znovu.';
+  return 'Poloha z telefonu nepřišla. Označ místo klepnutím na mapu — tam, kde stojíš.';
+}
+/* popis načtené polohy pod tlačítky (GPS: přesnost; mapa: označeno na mapě) */
+function geoPopis(fix){
+  const sour=`<b>${window.atlasSouradnice(fix.lat,fix.lng,5)}</b><br>`;
+  if(fix.accuracy==null) return sour+'označeno na mapě — špendlík můžeš ještě posunout';
+  return sour+`přesnost ±${Math.round(fix.accuracy)} m`+(fix.mereni?` · průměr z ${fix.mereni} měření`:'');
+}
+/* poloha z telefonu nepřišla: ukázat důvod a otevřít mapu; špendlík, který už na mapě je, zůstává */
+function geoChybaZobraz(text){
+  if(geoFix&&geoFix.accuracy==null){
+    geoStatus.className='geo-status ok'; geoStatus.innerHTML=geoPopis(geoFix); geoVychozi();
+    notify('Poloha z telefonu teď nepřišla — špendlík na mapě platí dál.');
+  } else {
+    geoStatus.className='geo-status err'; geoStatus.textContent=text;
+    if(geoFix) geoHotovo(); else geoVychozi();
+  }
+  mapaVyberUkaz();
 }
 function geoVychozi(){geoButton.textContent='◎ Načíst mou polohu';geoButton.classList.remove('hotovo');geoButton.removeAttribute('title');geoButton.disabled=false;if(geoPresneBtn)geoPresneBtn.disabled=false}
 function geoHotovo(){geoButton.textContent='✓ Poloha načtena';geoButton.classList.add('hotovo');geoButton.title='Načíst polohu znovu';geoButton.disabled=false;if(geoPresneBtn)geoPresneBtn.disabled=false}
-function geoReset(){if(presneMereni){presneMereni.zrus();presneKonecUI();}geoFix=null;geoCapture.classList.remove('ready');geoStatus.className='geo-status';geoStatus.textContent='Poloha zatím nenačtena. Musíš stát přímo na místě.';geoVychozi()}
+function geoReset(){if(presneMereni){presneMereni.zrus();presneKonecUI();}geoFix=null;geoCapture.classList.remove('ready');geoStatus.className='geo-status';geoStatus.textContent='Poloha zatím nenačtena. Musíš stát přímo na místě.';geoVychozi();mapaVyberSkryj()}
+
+/* ---- označení místa na mapě ----
+   Mapa se otevře sama, jakmile poloha z telefonu nepřijde. Klepnutí položí špendlík,
+   špendlík jde přetáhnout, další klepnutí ho přesune. Vyhledávání (obec, park, kopec…
+   nebo rovnou souřadnice z Map) mapu jen posune — bod vždy určí člověk klepnutím. */
+const geoMapaEl=document.querySelector('#geo-mapa');
+const geoMapaPlatno=document.querySelector('#geo-mapa-platno');
+const geoHledatInput=document.querySelector('#geo-hledat');
+const geoHledatBtn=document.querySelector('#geo-hledat-btn');
+let vyberMapa=null, vyberSpendlik=null;
+function mapaVyberPoloz(ll){
+  geoFix={lat:ll.lat,lng:ll.lng,accuracy:null,rucne:true};
+  if(!vyberSpendlik){
+    vyberSpendlik=L.marker(ll,{icon:znackaIkona,draggable:true,keyboard:false}).addTo(vyberMapa);
+    vyberSpendlik.on('dragend',()=>mapaVyberPoloz(vyberSpendlik.getLatLng()));
+  } else vyberSpendlik.setLatLng(ll);
+  geoCapture.classList.add('ready');
+  geoStatus.className='geo-status ok';
+  geoStatus.innerHTML=geoPopis(geoFix);
+  geoVychozi();
+}
+function mapaVyberUkaz(){
+  if(!geoMapaEl||!geoMapaPlatno||!window.L) return;
+  geoMapaEl.hidden=false;
+  if(!vyberMapa){
+    const stred=atlasMap?atlasMap.getCenter():L.latLng(49.75,15.5);
+    const zoom=atlasMap?Math.max(atlasMap.getZoom(),7):7;
+    vyberMapa=L.map(geoMapaPlatno,{center:stred,zoom,zoomControl:false,scrollWheelZoom:false,attributionControl:true});
+    L.control.zoom({position:'topright'}).addTo(vyberMapa);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,className:'satelit-tlum',attribution:'Esri, Maxar, Earthstar Geographics'}).addTo(vyberMapa);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,opacity:0.9}).addTo(vyberMapa);
+    vyberMapa.on('click',e=>mapaVyberPoloz(e.latlng));
+  }
+  setTimeout(()=>{ vyberMapa.invalidateSize(); if(vyberSpendlik) vyberMapa.panTo(vyberSpendlik.getLatLng()); },50);
+}
+function mapaVyberSkryj(){
+  if(geoMapaEl) geoMapaEl.hidden=true;
+  if(vyberSpendlik){ vyberSpendlik.remove(); vyberSpendlik=null; }
+}
+/* hledání: souřadnice (48.1852, 16.3124) rovnou; jinak jméno přes OpenStreetMap (Nominatim) */
+async function mapaVyberHledej(){
+  const dotaz=(geoHledatInput&&geoHledatInput.value||'').trim();
+  if(!dotaz||!vyberMapa) return;
+  const sour=dotaz.match(/^\s*(-?\d{1,2}[.,]\d+)\s*[,; ]\s*(-?\d{1,3}[.,]\d+)\s*$/);
+  if(sour){
+    const lat=parseFloat(sour[1].replace(',','.')), lng=parseFloat(sour[2].replace(',','.'));
+    if(Math.abs(lat)<=90&&Math.abs(lng)<=180){ vyberMapa.setView([lat,lng],17); mapaVyberPoloz(L.latLng(lat,lng)); return; }
+  }
+  if(geoHledatBtn){ geoHledatBtn.disabled=true; geoHledatBtn.textContent='Hledám…'; }
+  try{
+    const jazyk=window.atlasJazyk?window.atlasJazyk():'cs';
+    const r=await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&accept-language='+encodeURIComponent(jazyk)+'&q='+encodeURIComponent(dotaz));
+    const data=r.ok?await r.json():[];
+    if(data&&data.length){
+      const lat=parseFloat(data[0].lat), lng=parseFloat(data[0].lon);
+      const bb=data[0].boundingbox;
+      if(bb&&bb.length===4) vyberMapa.fitBounds([[parseFloat(bb[0]),parseFloat(bb[2])],[parseFloat(bb[1]),parseFloat(bb[3])]],{maxZoom:17});
+      else vyberMapa.setView([lat,lng],15);
+      notify('Mapa ukazuje hledanou oblast — teď klepni přesně tam, kde stojíš.');
+    } else notify('Zkus zadat jméno obce nebo známého místa poblíž, případně souřadnice z Map.');
+  }catch(_){ notify('Hledání teď potřebuje signál — mapu můžeš posunout prstem a klepnout.'); }
+  finally{ if(geoHledatBtn){ geoHledatBtn.disabled=false; geoHledatBtn.textContent='Hledat'; } }
+}
+geoHledatBtn?.addEventListener('click',mapaVyberHledej);
+geoHledatInput?.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); mapaVyberHledej(); } });
 geoButton?.addEventListener('click',()=>{
   if(!navigator.geolocation){geoStatus.className='geo-status err';geoStatus.textContent='Tvůj prohlížeč polohu nepodporuje.';return}
   geoStatus.className='geo-status';geoStatus.textContent='Hledám tvou polohu…';
@@ -522,15 +611,12 @@ geoButton?.addEventListener('click',()=>{
     hotovo:position=>{
     const{latitude,longitude,accuracy}=position.coords;
     geoFix={lat:latitude,lng:longitude,accuracy};
+    mapaVyberSkryj();
     geoCapture.classList.add('ready');
     geoStatus.className='geo-status ok';
-    geoStatus.innerHTML=`<b>${window.atlasSouradnice(latitude,longitude,5)}</b><br>přesnost ±${Math.round(accuracy)} m`;
+    geoStatus.innerHTML=geoPopis(geoFix);
     geoHotovo();
-  },chyba:error=>{
-    geoStatus.className='geo-status err';
-    geoStatus.textContent=geoChybaText(error);
-    if(geoFix) geoHotovo(); else geoVychozi();
-  }});
+  },chyba:error=>geoChybaZobraz(geoChybaText(error))});
 });
 
 /* ---- přesné zaměření bodu: delší měření + vážený průměr ----
@@ -540,8 +626,8 @@ function geoStavPodleFixu(){
   if(geoFix){
     geoCapture.classList.add('ready');
     geoStatus.className='geo-status ok';
-    geoStatus.innerHTML=`<b>${window.atlasSouradnice(geoFix.lat,geoFix.lng,5)}</b><br>přesnost ±${Math.round(geoFix.accuracy)} m`;
-    geoHotovo();
+    geoStatus.innerHTML=geoPopis(geoFix);
+    if(geoFix.accuracy!=null) geoHotovo(); else geoVychozi();
   } else geoReset();
 }
 geoPresneBtn?.addEventListener('click',()=>{
@@ -564,19 +650,18 @@ geoPresneBtn?.addEventListener('click',()=>{
     },
     hotovo:vysledek=>{
       presneKonecUI();
-      geoFix={lat:vysledek.lat,lng:vysledek.lng,accuracy:vysledek.accuracy};
+      geoFix={lat:vysledek.lat,lng:vysledek.lng,accuracy:vysledek.accuracy,mereni:vysledek.mereni};
+      mapaVyberSkryj();
       geoCapture.classList.add('ready');
       geoStatus.className='geo-status ok';
-      geoStatus.innerHTML=`<b>${window.atlasSouradnice(geoFix.lat,geoFix.lng,5)}</b><br>přesnost ±${Math.round(geoFix.accuracy)} m · průměr z ${vysledek.mereni} měření`;
+      geoStatus.innerHTML=geoPopis(geoFix);
       geoHotovo();
     },
     chyba:error=>{
       presneKonecUI();
-      geoStatus.className='geo-status err';
-      geoStatus.textContent=(error&&error.code===4)
-        ? 'Přesné zaměření se nepovedlo — družicový signál je moc slabý. Zkus volnější nebe, nebo použij běžné načtení polohy.'
-        : geoChybaText(error);
-      if(geoFix) geoHotovo(); else geoVychozi();
+      geoChybaZobraz((error&&error.code===4)
+        ? 'Družicový signál je teď slabý. Zkus volnější nebe, běžné načtení polohy, nebo označ místo klepnutím na mapu.'
+        : geoChybaText(error));
     }
   });
 });
@@ -711,7 +796,7 @@ document.querySelector('#place-form')?.addEventListener('submit',async event=>{
     nazev:nazev,
     nazev_oficialni:hodnota('#misto-nazev-oficialni'),
     poloha:`SRID=4326;POINT(${geoFix.lng} ${geoFix.lat})`,
-    presnost_m:Math.round(geoFix.accuracy),
+    presnost_m:geoFix.accuracy!=null?Math.round(geoFix.accuracy):null,   /* null = označeno na mapě */
     stitky,
     stav:'ceka',
     zeme:uzemi.zeme,
@@ -734,15 +819,16 @@ document.querySelector('#place-form')?.addEventListener('submit',async event=>{
   const {nahrano, selhalo:fotekSelhalo}=await nahrajFotky(misto.id);
 
   // první návštěva s DNA (zakladatel stojí na místě → ověřený bonus) + prožitek jako komentář
+  // poloha označená na mapě ◎ ověření nenese — první návštěva se zapíše bez polohy
   let prvniZapis=false, zErrPosledni=null, zapisZakladPosledni=null;
   {
     const dna=k=>Number(document.querySelector(`#misto-dna input[data-k="${k}"]`).value);
     const zapisZaklad={
       misto_id:misto.id, autor_id:ucet.id, text:'',
-      poloha:`SRID=4326;POINT(${geoFix.lng} ${geoFix.lat})`, presnost_m:Math.round(geoFix.accuracy),
       klid:dna('klid'), energie:dna('energie'), mystika:dna('mystika'), krasa:dna('krasa'), lecivost:dna('lecivost'),
       lang:window.atlasJazyk()
     };
+    if(geoFix.accuracy!=null){ zapisZaklad.poloha=`SRID=4326;POINT(${geoFix.lng} ${geoFix.lat})`; zapisZaklad.presnost_m=Math.round(geoFix.accuracy); }
     const cakryZaklad=window.atlasCakraVyber?window.atlasCakraVyber(document.querySelector('#misto-cakry')):null;
     if(cakryZaklad) zapisZaklad.cakry=cakryZaklad;
     odeslat.textContent='Ukládám první návštěvu…';
@@ -860,9 +946,10 @@ function obnovKonceptMista(k,klic){
     geoCapture&&geoCapture.classList.add('ready');
     if(geoStatus){
       geoStatus.className='geo-status ok';
-      geoStatus.innerHTML=`<b>${window.atlasSouradnice(geoFix.lat,geoFix.lng,5)}</b><br>přesnost ±${Math.round(geoFix.accuracy)} m`;
+      geoStatus.innerHTML=geoPopis(geoFix);
     }
-    geoHotovo();
+    if(geoFix.accuracy!=null) geoHotovo();
+    else { geoVychozi(); mapaVyberUkaz(); setTimeout(()=>{ if(vyberMapa&&geoFix&&geoFix.accuracy==null){ vyberMapa.setView([geoFix.lat,geoFix.lng],16); mapaVyberPoloz(L.latLng(geoFix.lat,geoFix.lng)); } },120); }
   }
   openModal();
 }

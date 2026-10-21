@@ -1227,6 +1227,20 @@ html{overflow-x:clip}
 .krok .form-step{margin:0 0 10px}
 /* tlačítka přesného zaměření se ukazují až během měření */
 .geo-presne-akce[hidden]{display:none}
+
+/* ===== označení místa na mapě — otevře se samo, když poloha z telefonu nepřijde ===== */
+.geo-mapa{width:100%;justify-self:stretch;display:grid;gap:8px;text-align:left;margin-top:4px}
+.geo-mapa[hidden]{display:none}
+.geo-mapa-text{margin:0;font:500 13px 'Jost',sans-serif;color:var(--forest);text-align:center;line-height:1.45}
+.geo-hledat{display:flex;gap:6px;align-items:stretch}
+.geo-hledat input{flex:1 1 auto;width:auto;min-width:0;border:1px solid #cbb98f;border-radius:99px;padding:9px 14px;font:400 14px 'Jost',sans-serif;background:#fff;color:var(--forest);-webkit-appearance:none;appearance:none}
+.geo-hledat input:focus{outline:0;border-color:var(--gold-deep);box-shadow:0 0 0 3px rgba(201,161,74,.15)}
+.geo-hledat .geo-button{flex:none}
+.geo-mapa-platno{height:min(320px,46vh);border-radius:12px;overflow:hidden;border:1px solid #cbb98f;background:#1a2a22;cursor:crosshair}
+.geo-mapa-platno .leaflet-control-attribution{font-size:9px;line-height:1.2}
+.geo-mapa-platno .leaflet-control-zoom{margin-top:8px!important;margin-right:8px!important}
+.geo-mapa-platno .atlas-spendlik{cursor:grab}
+.sk-rucne{color:#7a5c1e;white-space:nowrap}
 @media(max-width:560px){
   #place-modal .krok-akce .button{padding-left:14px;padding-right:14px;white-space:nowrap}
 }
