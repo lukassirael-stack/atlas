@@ -804,7 +804,7 @@ document.querySelector('#place-form')?.addEventListener('submit',async event=>{
     popis:hodnota('#misto-popis'),
     rozsah_m:window.atlasRozsahVyber?window.atlasRozsahVyber(document.querySelector('#misto-rozsah')):30,
     lang:window.atlasJazyk()
-  }).select('id,slug,nazev').single();
+  }).select('id,slug,nazev,stav').single();
 
   if(error){
     odeslat.disabled=false;odeslat.textContent=puvodni;
@@ -864,15 +864,74 @@ document.querySelector('#place-form')?.addEventListener('submit',async event=>{
   }
   aktivniKonceptKlic=null;
   document.querySelectorAll('#misto-dna .slider-row').forEach(radek=>{radek.querySelector('output').textContent=radek.querySelector('input').value});
+  let zprava;
   if(chybi.length){
-    notify(`Místo „${misto.nazev}" je uložené a čeká na schválení. Neuložilo se: ${chybi.join(', ')} — doplníš to na stránce místa, jakmile bude schválené.`
-      +(pockaVTelefonu?' Návštěva a tvá slova čekají v telefonu a odešlou se samy.':''));
+    zprava=`Místo „${misto.nazev}" je uložené a čeká na schválení. Neuložilo se: ${chybi.join(', ')} — doplníš to na stránce místa, jakmile bude schválené.`
+      +(pockaVTelefonu?' Návštěva a tvá slova čekají v telefonu a odešlou se samy.':'');
   } else if(pockaVTelefonu){
-    notify(`Místo „${misto.nazev}" je uložené (${nahrano} ${sklon(nahrano,['fotka','fotky','fotek'])}) a čeká na schválení. První návštěva a tvá slova čekají v telefonu — odešlou se samy, jakmile bude lepší signál.`);
+    zprava=`Místo „${misto.nazev}" je uložené (${nahrano} ${sklon(nahrano,['fotka','fotky','fotek'])}) a čeká na schválení. První návštěva a tvá slova čekají v telefonu — odešlou se samy, jakmile bude lepší signál.`;
   } else {
-    notify(`Děkujeme! „${misto.nazev}" (${nahrano} ${sklon(nahrano,['fotka','fotky','fotek'])} + tvá první návštěva) čeká na schválení.`);
+    zprava=`Děkujeme! „${misto.nazev}" (${nahrano} ${sklon(nahrano,['fotka','fotky','fotek'])} + tvá první návštěva) čeká na schválení.`;
   }
+  if(misto.stav==='zverejnene' && !chybi.length && !pockaVTelefonu) zprava='Děkujeme! Místo je zapsané v Atlasu.';
+  ukazSdileniMista(misto, zprava);
 });
+
+/* ---- po zapsání místa: nabídka sdílení ----
+   Na telefonu otevře systémové sdílení (WhatsApp, Messenger, e-mail…),
+   jinde zkopíruje odkaz. Náhled odkazu s fotkou dodá middleware.js. */
+function ukazSdileniMista(misto, zprava){
+  let okno=document.querySelector('#sdilet-modal');
+  if(!okno){
+    okno=document.createElement('div');
+    okno.className='modal-backdrop';okno.id='sdilet-modal';okno.setAttribute('aria-hidden','true');
+    okno.innerHTML=`<section class="add-modal sdilet-modal" role="dialog" aria-modal="true" aria-labelledby="sdilet-nazev">
+      <button class="modal-close" type="button" aria-label="Zavřít">×</button>
+      <p class="eyebrow">✦ Zapsáno do Atlasu</p>
+      <h2 id="sdilet-nazev" data-i18n="off"></h2>
+      <p class="sdilet-zprava"></p>
+      <p class="sdilet-pozvani"></p>
+      <div class="sdilet-akce">
+        <button class="button primary" type="button" id="sdilet-tlacitko">↗ Sdílet místo</button>
+        <a class="button quiet" id="sdilet-otevrit" href="#">Otevřít místo</a>
+      </div>
+      <p class="sdilet-odkaz" data-i18n="off"></p>
+    </section>`;
+    document.body.appendChild(okno);
+    const zavri=()=>{okno.classList.remove('open');okno.setAttribute('aria-hidden','true')};
+    okno.querySelector('.modal-close').addEventListener('click',zavri);
+    okno.addEventListener('click',e=>{if(e.target===okno)zavri()});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'&&okno.classList.contains('open'))zavri()});
+    okno.querySelector('#sdilet-tlacitko').addEventListener('click',async e=>{
+      const btn=e.currentTarget, {url,nazev}=okno.dataset;
+      const tt=window.atlasT||(x=>x);
+      if(navigator.share){
+        try{ await navigator.share({title:nazev, text:`${nazev} — ${tt('Atlas energetických míst')}`, url}); return; }
+        catch(err){ if(err&&err.name==='AbortError') return; }
+      }
+      try{
+        await navigator.clipboard.writeText(url);
+        btn.textContent='✓ Odkaz zkopírován';
+        notify('Odkaz je zkopírovaný — vlož ho, komu chceš 🌿');
+      }catch(_){
+        /* bez schránky: odkaz je pod tlačítky, stačí ho označit */
+        const r=document.createRange(); r.selectNodeContents(okno.querySelector('.sdilet-odkaz'));
+        const sel=getSelection(); sel.removeAllRanges(); sel.addRange(r);
+      }
+    });
+  }
+  const url=`${location.origin}/misto?m=${encodeURIComponent(misto.slug)}`;
+  okno.dataset.url=url; okno.dataset.nazev=misto.nazev;
+  okno.querySelector('#sdilet-nazev').textContent=misto.nazev;
+  okno.querySelector('.sdilet-zprava').textContent=zprava;
+  okno.querySelector('.sdilet-pozvani').textContent=misto.stav==='zverejnene'
+    ? 'Pošli ho přátelům, ať ho objeví i oni.'
+    : 'Odkaz můžeš poslat už teď — lidem se místo otevře hned po schválení.';
+  okno.querySelector('#sdilet-tlacitko').textContent='↗ Sdílet místo';
+  okno.querySelector('#sdilet-otevrit').href=url;
+  okno.querySelector('.sdilet-odkaz').textContent=url;
+  okno.classList.add('open');okno.setAttribute('aria-hidden','false');
+}
 /* posuvníky DNA ve formuláři místa: živé číslo vedle osy */
 document.querySelector('#misto-dna')?.addEventListener('input',e=>{
   if(e.target.type==='range') e.target.closest('.slider-row').querySelector('output').textContent=e.target.value;
