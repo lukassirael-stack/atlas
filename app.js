@@ -904,16 +904,9 @@ function ukazSdileniMista(misto, zprava){
     document.addEventListener('keydown',e=>{if(e.key==='Escape'&&okno.classList.contains('open'))zavri()});
     okno.querySelector('#sdilet-tlacitko').addEventListener('click',async e=>{
       const btn=e.currentTarget, {url,nazev}=okno.dataset;
-      const tt=window.atlasT||(x=>x);
-      if(navigator.share){
-        try{ await navigator.share({title:nazev, text:`${nazev} — ${tt('Atlas energetických míst')}`, url}); return; }
-        catch(err){ if(err&&err.name==='AbortError') return; }
-      }
-      try{
-        await navigator.clipboard.writeText(url);
-        btn.textContent='✓ Odkaz zkopírován';
-        notify('Odkaz je zkopírovaný — vlož ho, komu chceš 🌿');
-      }catch(_){
+      const vysledek=await window.atlasSdilej(url,nazev);
+      if(vysledek==='zkopirovano') btn.textContent='✓ Odkaz zkopírován';
+      else if(vysledek===false){
         /* bez schránky: odkaz je pod tlačítky, stačí ho označit */
         const r=document.createRange(); r.selectNodeContents(okno.querySelector('.sdilet-odkaz'));
         const sel=getSelection(); sel.removeAllRanges(); sel.addRange(r);

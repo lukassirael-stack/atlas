@@ -9,6 +9,21 @@ function notify(message){
   toastCasovac=setTimeout(()=>toast.classList.remove('show'),Math.min(9000,Math.max(2800,String(message).length*55)));
 }
 
+/* sdílení místa: na telefonu systémová nabídka (WhatsApp, Messenger, e-mail…), jinde zkopírování odkazu.
+   Vrací 'sdileno' | 'zkopirovano' | 'zruseno' | false (schránka nedostupná). */
+window.atlasSdilej=async function(url, nazev){
+  const tt=window.atlasT||(x=>x);
+  if(navigator.share){
+    try{ await navigator.share({title:nazev, text:`${nazev} — ${tt('Atlas energetických míst')}`, url}); return 'sdileno'; }
+    catch(err){ if(err&&err.name==='AbortError') return 'zruseno'; }
+  }
+  try{
+    await navigator.clipboard.writeText(url);
+    notify('Odkaz je zkopírovaný — vlož ho, komu chceš 🌿');
+    return 'zkopirovano';
+  }catch(_){ return false; }
+};
+
 /* ---- mobilní menu ---- */
 /* menu i překryv přesunout VEN z hlavičky přímo do <body>:
    topbar má backdrop-filter, který připnutým potomkům mění vztažný bod

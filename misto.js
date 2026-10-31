@@ -196,7 +196,13 @@ function vykresliMisto(m){
     nav.innerHTML =
       `<a class="nav-btn nav-primary" href="${g}" target="_blank" rel="noopener">🧭 Naviguj mě sem</a>` +
       `<a class="nav-btn" href="${mapy}" target="_blank" rel="noopener">🗺 Mapy.cz</a>` +
-      `<button type="button" class="nav-btn nav-copy" data-gps="${m.lat}, ${m.lng}">⎘ GPS</button>`;
+      `<button type="button" class="nav-btn nav-copy" data-gps="${m.lat}, ${m.lng}">⎘ GPS</button>` +
+      `<button type="button" class="nav-btn nav-share">↗ Sdílet</button>`;
+    nav.querySelector('.nav-share')?.addEventListener('click', async () => {
+      const slug = m.slug || SLUG;
+      const vysledek = await window.atlasSdilej(`${location.origin}/misto?m=${encodeURIComponent(slug)}`, m.nazev);
+      if (vysledek === false) notify('Kopírování se nepodařilo.');
+    });
     nav.querySelector('.nav-copy')?.addEventListener('click', async (e) => {
       try {
         await navigator.clipboard.writeText(e.currentTarget.dataset.gps);

@@ -901,6 +901,7 @@
     'Děkujeme! Komentář je zveřejněn.': 'Thank you! Your comment is published.',
     '✦ Zapsáno do Atlasu': '✦ Recorded in the Atlas',
     '↗ Sdílet místo': '↗ Share the place',
+    '↗ Sdílet': '↗ Share',
     'Otevřít místo': 'Open the place',
     '✓ Odkaz zkopírován': '✓ Link copied',
     'Odkaz je zkopírovaný — vlož ho, komu chceš 🌿': 'Link copied — paste it to anyone you like 🌿',
