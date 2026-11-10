@@ -743,11 +743,11 @@ document.querySelector('#edit-comment-form')?.addEventListener('submit',async ev
   const text=m.querySelector('#edit-comment-text').value.trim();
   if(!text){notify('Komentář nemůže být prázdný.');return}
   const btn=event.currentTarget.querySelector('button[type=submit]'); btn.disabled=true; const p=btn.textContent; btn.textContent='Ukládám…';
-  const {data:upraveno,error}=await db.from('atlas_komentare').update({text}).eq('id',m.dataset.id).select('id');
+  const {data:upraveno,error}=await db.from('atlas_komentare').update({text}).eq('id',m.dataset.id).select('id,stav');
   btn.disabled=false; btn.textContent=p;
   if(error){notify('Úprava se nepodařila: '+error.message);return}
   if(!upraveno||!upraveno.length){notify('Úprava se neuložila — nemáš k ní oprávnění, nebo vypršelo přihlášení.');return}
-  closeModal(m); notify('Komentář upraven 🌿'); nactiKomentare();
+  closeModal(m); notify(upraveno[0].stav==='ceka'?'Komentář upraven — znovu se zobrazí po schválení 🌿':'Komentář upraven 🌿'); nactiKomentare();
 });
 
 /* ---- modály ---- */
