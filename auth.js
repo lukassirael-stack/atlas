@@ -44,7 +44,12 @@ async function nactiProfil() {
     if (!profil) profil = profilZTelefonu();
     return;
   }
-  const { data, error } = await db.from('atlas_profily').select('id,nick,spravce').eq('id', ucet.id).maybeSingle();
+  const [prof, sprava] = await Promise.all([
+    db.from('atlas_profily').select('id,nick').eq('id', ucet.id).maybeSingle(),
+    db.rpc('atlas_je_spravce')
+  ]);
+  const error = prof.error || sprava.error;
+  const data = prof.data ? { ...prof.data, spravce: sprava.data === true } : null;
   if (error) {
     /* bez signálu: nezahazovat, co víme — držet stávající profil, případně vzít mezipaměť */
     profilZnamy = false;

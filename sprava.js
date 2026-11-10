@@ -19,8 +19,8 @@ async function overPristup(){
     return;
   }
   const prof = window.atlasProfil?.();
-  const { data } = await db.from('atlas_profily').select('spravce').eq('id',ucet.id).maybeSingle();
-  jsemSpravce = !!data?.spravce;
+  const { data } = await db.rpc('atlas_je_spravce');
+  jsemSpravce = data === true;
   if(!jsemSpravce){
     obsah.innerHTML = `<p class="sprava-stav">Tvůj účet nemá oprávnění správce.</p>`;
     return;
