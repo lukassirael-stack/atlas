@@ -289,7 +289,7 @@ function vykresliFotky(fotky, autorId){
     const smiSmazat = jeSpravce || !!(ucet && f.autor_id && ucet.id === f.autor_id);
     return `<figure class="galerie-item${hlavni?' je-hlavni':''}" data-lb="${i}" style="cursor:zoom-in">
       ${hlavni ? window.atlasFotoImg(f.cesta, 640, 'Fotka místa')
-               : `<img src="${window.atlasFotoUrl(f.cesta) || ''}" alt="Fotka místa" loading="lazy" decoding="async" />`}
+               : (/^[\w\-./]+$/.test(f.cesta || '') ? `<img src="${window.atlasFotoUrl(f.cesta)}" alt="Fotka místa" loading="lazy" decoding="async" />` : '')}
       ${hlavni ? '<span class="foto-odznak">Hlavní</span>' : ''}
       ${smiSmazat ? `<button type="button" class="galerie-smaz" data-smaz-foto="${i}" title="Smazat fotku" aria-label="Smazat fotku">🗑</button>` : ''}
     </figure>`;
